@@ -1,0 +1,89 @@
+#! /bin/bash -x
+
+# Script para obter e organizar os logs do SMNA 
+#
+# @cfbastarz (29/02/2024)
+
+inctime=/home/carlos.bastarz/bin/inctime
+
+datai=#DATAI#
+dataf=#DATAF#
+
+data=${datai}
+
+while [ ${data} -le ${dataf} ]
+do
+
+  if [ ${data:8:2} -eq 00 ]
+  then
+
+    Exps=(gsi pre model pos)
+
+  else
+
+
+    Exps=(gsi pre model)
+
+  fi
+
+  for exp in ${Exps[@]}
+  do
+
+    #lpath=/pesq/share/das/dist/carlos.bastarz/GSIMonitor/logs/${exp}
+    lpath=/share/das/dist/carlos.bastarz/GSIMonitor/logs/${exp}
+
+    echo ${data} ${exp}
+
+    if [ ${exp} == "gsi" ]
+    then        
+
+      epath=/lustre_xc50/ioper/models/SMNA-Oper/SMG/datainout/gsi/dataout/${data}
+      nlog=$(ssh carlos_bastarz@login-xc50.cptec.inpe.br ls ${epath}/gsiStdout_${data}.runTime-*.log | wc -l)
+      echo ${nlog} > ${lpath}/nlog_${exp}_${data}.txt
+      logf=$(ssh carlos_bastarz@login-xc50.cptec.inpe.br ls -t1 ${epath}/gsiStdout_${data}.runTime-*.log | head -1)
+      logl=gsi_${data}.log
+
+    elif [ ${exp} == "pre" ]
+    then
+
+      epath=/lustre_xc50/ioper/models/SMNA-Oper/SMG/datainout/bam/pre/exec        
+      nlog=$(ssh carlos_bastarz@login-xc50.cptec.inpe.br ls ${epath}/saida_${data}_*.txt | wc -l)
+      echo ${nlog} > ${lpath}/nlog_${exp}_${data}.txt
+      logf=$(ssh carlos_bastarz@login-xc50.cptec.inpe.br ls -t1 ${epath}/saida_${data}_*.txt | head -1)
+      logl=pre_${data}.log
+
+    elif [ ${exp} == "model" ]
+    then
+
+      datafct=$(${inctime} ${data} +9h %y4%m2%d2%h2)
+      epath=/lustre_xc50/ioper/models/SMNA-Oper/SMG/datainout/bam/model/DAS/exec_CPT${data}/setout
+      nlog=$(ssh carlos_bastarz@login-xc50.cptec.inpe.br ls ${epath}/Print.model.${data}.${datafct}.*.MPI*.out | wc -l)
+      echo ${nlog} > ${lpath}/nlog_${exp}_${data}.txt
+      logf=$(ssh carlos_bastarz@login-xc50.cptec.inpe.br ls -t1 ${epath}/Print.model.${data}.${datafct}.*.MPI*.out | head -1)
+      logl=model_${data}.${datafct}.log
+
+    elif [ ${exp} == "pos" ]
+    then
+
+      datafct=$(${inctime} ${data} +11d %y4%m2%d2%h2)
+      epath=/lustre_xc50/ioper/models/SMNA-Oper/SMG/datainout/bam/pos/exec_CPT${data}/setout
+      nlog=$(ssh carlos_bastarz@login-xc50.cptec.inpe.br ls ${epath}/Print.post.${data}.${datafct}.*.MPI*.out | wc -l)
+      echo ${nlog} > ${lpath}/nlog_${exp}_${data}.txt
+      logf=$(ssh carlos_bastarz@login-xc50.cptec.inpe.br ls -t1 ${epath}/Print.post.${data}.${datafct}.*.MPI*.out | head -1)
+      logl=pos_${data}.${datafct}.log
+
+    fi
+
+
+    mkdir -p ${lpath}/
+
+    scp -v carlos_bastarz@login-xc50.cptec.inpe.br:${logf} ${lpath}/${logl}
+
+  done
+
+  data=$(${inctime} ${data} +6h %y4%m2%d2%h2)
+
+done
+
+
+exit 0

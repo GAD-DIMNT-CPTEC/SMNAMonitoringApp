@@ -1,0 +1,46 @@
+#! /bin/bash -x
+
+# Wrapper script to run convert_smna_diag_to_parquet_readDiag.py.
+#
+# @cfbastarz (April, 2024)
+
+#eval "$(conda shell.bash hook)"
+#conda activate pyBAM
+
+inctime=/home/carlos.bastarz/bin/inctime
+
+lpath=/share/das/dist/carlos.bastarz/GSIMonitor/rdiag
+rpath=/lustre_xc50/ioper/models/SMNA-Oper/SMG/datainout/gsi/dataout
+
+datai=#DATAI#
+dataf=#DATAF#
+
+data=${datai}
+
+Loops=(1 3)
+
+while [ ${data} -le ${dataf} ]
+do
+
+  mkdir -p /share/das/dist/carlos.bastarz/GSIMonitor/rdiag/diag_tmp/${data}
+  mkdir -p /share/das/dist/carlos.bastarz/GSIMonitor/rdiag/${data}
+
+  cd /share/das/dist/carlos.bastarz/GSIMonitor/rdiag/diag_tmp/${data}
+
+  for loop in ${Loops[@]}
+  do
+    rsync -arv carlos_bastarz@login-xc50.cptec.inpe.br:${rpath}/${data}/diag_conv_0${loop}.${data} .
+
+    cat ${lpath}/convert_smna_diag_to_parquet_readDiag.py-template | sed "s,%DATA%,${data},g" > ${lpath}/convert_smna_diag_to_parquet_readDiag.py
+    sed -i "s,%LOOP%,${loop},g" ${lpath}/convert_smna_diag_to_parquet_readDiag.py
+
+    /share/das/miniconda3/envs/readDiag/bin/python3 ${lpath}/convert_smna_diag_to_parquet_readDiag.py
+  done
+
+  data=$(${inctime} ${data} +6h %y4%m2%d2%h2)
+
+done
+
+#conda deactivate pyBAM
+
+/share/das/dist/carlos.bastarz/GSIMonitor/rdiag/create_catalog.sh

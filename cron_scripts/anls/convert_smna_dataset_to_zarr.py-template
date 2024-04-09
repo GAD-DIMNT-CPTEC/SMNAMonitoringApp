@@ -1,0 +1,73 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# Script to convert the SMNA analysis grib files to the Zarr format.
+#
+# @cfbastarz (March, 2024)
+
+import os
+import os.path
+import zarr
+import numpy as np
+import xarray as xr
+from datetime import datetime, timedelta
+
+compressor = zarr.Blosc(cname="zstd", clevel=3, shuffle=2)
+encoding = {
+    'PSNM_GDS4_MSL': {"compressor": compressor},
+    'ZGEO_GDS4_ISBL': {"compressor": compressor},
+    'TEMP_GDS4_ISBL': {"compressor": compressor},
+    'UVEL_GDS4_ISBL': {"compressor": compressor},
+    'VVEL_GDS4_ISBL': {"compressor": compressor},
+    'FCOR_GDS4_ISBL': {"compressor": compressor},
+    'POTV_GDS4_ISBL': {"compressor": compressor},
+    'OMEG_GDS4_ISBL': {"compressor": compressor},
+    'UMES_GDS4_ISBL': {"compressor": compressor},
+    'AGPL_GDS4_EATM': {"compressor": compressor},
+    #'PREC_GDS4_SFC_acc6h': {"compressor": compressor},
+    #'PRCV_GDS4_SFC_acc6h': {"compressor": compressor},
+    'LSMK_GDS4_SFC': {"compressor": compressor},
+    #'ROLE_GDS4_NTAT': {"compressor": compressor},
+    #'CLSF_GDS4_SFC': {"compressor": compressor},
+    #'CSSF_GDS4_SFC': {"compressor": compressor},
+    'U10M_GDS4_HTGL': {"compressor": compressor},
+    'V10M_GDS4_HTGL': {"compressor": compressor},
+    'TOPO_GDS4_SFC': {"compressor": compressor},
+    'PSLC_GDS4_SFC': {"compressor": compressor},
+    #'VAR_161_GDS4_HTGL': {"compressor": compressor},
+    #'VAR_166_GDS4_ISBL': {"compressor": compressor},
+    #'OLIS_GDS4_SFC': {"compressor": compressor},
+    #'OCIS_GDS4_SFC': {"compressor": compressor},
+    #'OLES_GDS4_SFC': {"compressor": compressor},
+    #'OCES_GDS4_SFC': {"compressor": compressor},
+    #'ROCE_GDS4_NTAT': {"compressor": compressor},
+    #'VDCC_GDS4_ISBL': {"compressor": compressor},
+    #'RSMT_GDS4_ISBL': {"compressor": compressor}
+}
+
+Vars = list(encoding.keys())
+
+inpath = '/share/das/dist/carlos.bastarz/GSIMonitor/anls/grib_tmp'
+outpath = '/share/das/dist/carlos.bastarz/GSIMonitor/anls'
+
+datai = datetime.strptime("#DATAI#", "%Y%m%d%H")
+dataf = datetime.strptime("#DATAF#", "%Y%m%d%H")
+ 
+delta = 24
+data = datai
+
+while (data <= dataf):
+    datafmt=data.strftime("%Y%m%d%H")
+    
+    grbfile = 'GPOSCPT' + datafmt + datafmt + 'P.icn.TQ0299L064.grb'
+    fnamein = os.path.join(inpath, datafmt, grbfile)
+    
+    zarrfile = 'GPOSCPT' + datafmt + datafmt + 'P.icn.TQ0299L064' + 'F.zarr'
+    fnameout = os.path.join(outpath, datafmt, zarrfile)
+
+    if os.path.isfile(fnamein):
+        dset = xr.open_dataset(fnamein, engine='pynio').to_zarr(fnameout, mode='w', consolidated=True, encoding=encoding)
+    else:
+        print(fnamein + ' não existe!')
+           
+    data = data + timedelta(hours=delta)

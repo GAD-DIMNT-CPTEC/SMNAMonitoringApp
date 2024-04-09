@@ -1,0 +1,230 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+import os
+import xarray as xr
+import hvplot.xarray
+import pandas as pd
+import panel as pn
+import intake
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
+import holoviews as hvs
+from datetime import datetime
+
+from monitor_texts import MonitoringAppTexts
+from monitor_dates import MonitoringAppDates
+
+hvplot.extension("matplotlib")
+
+monitor_app_texts = MonitoringAppTexts()
+
+catalog_anl = intake.open_catalog('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/GSIMonitor/anls/catalog_anl.yml')
+catalog_bkg = intake.open_catalog('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/GSIMonitor/anls/catalog_bkg.yml')
+
+variable_list = [
+'TOPOGRAPHY',                           
+'LAND SEA ICE MASK',                    
+'LN SURFACE PRESSURE',                  
+'DIVERGENCE',                           
+'VORTICITY',                            
+'SPECIFIC HUMIDITY',                    
+'VIRTUAL TEMPERATURE',                  
+'ROUGHNESS LENGTH',                     
+'SURFACE TEMPERATURE',                  
+'DEEP SOIL TEMPERATURE',                
+'STORAGE ON CANOPY',                    
+'STORAGE ON GROUND',                    
+'SOIL WETNESS OF SURFACE',              
+'SOIL WETNESS OF ROOT ZONE',            
+'SOIL WETNESS OF DRAINAGE ZONE',        
+'TEMPERATURE AT 2-M FROM SURFACE',      
+'SPECIFIC HUMIDITY AT 2-M FROM SURFACE',
+'ZONAL WIND AT 10-M FROM SURFACE',      
+'MERID WIND AT 10-M FROM SURFACE',      
+'MASK VEGETATION',                      
+'MASK SOIL TEXTURE CLASSES',            
+'PARTIAL OXYGEN DENSITY',               
+'SURFACE SOIL TEMPERATURE',             
+'VEGETATION COVER',                     
+'SNOW DEPTH',                           
+'LIQ MIXING RATIO PROGNOSTIC',          
+'ICE MIXING RATIO PROGNOSTIC',          
+'CLOUD TOTAL PROGNOSTIC',               
+        ]        
+                 
+variable = pn.widgets.Select(name='Variable', value=variable_list[0], options=variable_list)
+
+vcoord_levels = [1.0000000e+03, 9.9467389e+02, 9.8864404e+02, 9.8182812e+02,
+       9.7413733e+02, 9.6547662e+02, 9.5574554e+02, 9.4483936e+02,
+       9.3265070e+02, 9.1907172e+02, 9.0399707e+02, 8.8732709e+02,
+       8.6897253e+02, 8.4885895e+02, 8.2693237e+02, 8.0316449e+02,
+       7.7755896e+02, 7.5015576e+02, 7.2103583e+02, 6.9032397e+02,
+       6.5818927e+02, 6.2484418e+02, 5.9053998e+02, 5.5556073e+02,
+       5.2021417e+02, 4.8482129e+02, 4.4970471e+02, 4.1517715e+02,
+       3.8153036e+02, 3.4902579e+02, 3.1788751e+02, 2.8829736e+02,
+       2.6039276e+02, 2.3426695e+02, 2.0997141e+02, 1.8751950e+02,
+       1.6689160e+02, 1.4804048e+02, 1.3089703e+02, 1.1537564e+02,
+       1.0137925e+02, 8.8803711e+01, 7.7541557e+01, 6.7485062e+01,
+       5.8528511e+01, 5.0570110e+01, 4.3513206e+01, 3.7267128e+01,
+       3.1747662e+01, 2.6877260e+01, 2.2585030e+01, 1.8806541e+01,
+       1.5483560e+01, 1.2563700e+01, 1.0000000e+01, 7.7563500e+00,
+       5.8265901e+00, 4.2146201e+00, 2.9185901e+00, 1.9237399e+00,
+       1.1999500e+00, 7.0422000e-01, 3.8661000e-01, 1.9740000e-01]
+
+level = pn.widgets.Select(name='Level', value=vcoord_levels[0], options=vcoord_levels)
+
+monitoring_app_dates = MonitoringAppDates()
+sdate = monitoring_app_dates.getDates()[0]
+edate = monitoring_app_dates.getDates()[1]
+
+start_date = datetime(int(sdate[0:4]), int(sdate[4:6]), int(sdate[6:8]), int(sdate[8:10]))
+end_date = datetime(int(edate[0:4]), int(edate[4:6]), int(edate[6:8]), int(edate[8:10]))
+date_range = [d.strftime('%Y%m%d%H') for d in pd.date_range(start_date, end_date, freq='6h')][::-1]
+date = pn.widgets.Select(name='Date', value=date_range[0], options=date_range)
+
+colormaps = ['nipy_spectral',  'Blues',  'BrBG',  'BuGn',  'BuPu',  'CMRmap',  'Dark2',  'GnBu', 
+             'Greens',  'Greys',  'OrRd',  'Oranges',  'PRGn',  'Paired',  'Pastel1', 
+             'Pastel2',  'PiYG',  'PuBu', 'PuBuGn',   'PuOr',  'PuRd',  'Purples', 
+             'RdBu',  'RdGy',  'RdPu',  'RdYlBu',  'RdYlGn',  'Reds',  'Set1', 
+             'Set2',  'Set3',  'Spectral',  'Wistia',  'YlGn', 'YlGnBu',   'YlOrBr', 
+             'YlOrRd',  'afmhot',  'autumn',  'binary',  'bone',  'brg',  'bwr', 
+             'cividis',  'cool', 
+             'Accent',  'copper',  'crest',  'cubehelix',  'flag',  'flare',  
+             'gist_earth',  'gist_gray',  'gist_heat',  'gist_ncar',   
+             'gist_stern',  'gist_yarg',  'gnuplot', 'gnuplot2',   'gray',  'hot',  'hsv', 
+             'icefire',  'inferno',  'jet',  'magma',  'mako',  'coolwarm',  
+             'ocean',  'pink',  'plasma',  'prism',  'rainbow',  'rocket',  'seismic', 
+             'spring',  'summer',  'tab10',  'tab20',  'tab20b',  'tab20c',  'terrain',  
+             'turbo',  'twilight',  'twilight_shifted',  'viridis',  'vlag',  'winter']
+
+colormap = pn.widgets.Select(name='Colormap', value=colormaps[0], options=colormaps)      
+invert_colors = pn.widgets.Checkbox(name='Invert Colors', value=False) 
+
+showdiff = pn.widgets.Checkbox(name='Show Difference', value=False)
+
+@pn.cache
+def loadDataAnl(lfname):
+    return catalog_anl[lfname].to_dask()
+
+@pn.cache
+def loadDataBkg(lfname):
+    return catalog_anl[lfname].to_dask()
+
+@pn.depends(variable, level, date, colormap, invert_colors, showdiff)
+def plotFields(variable, level, date, colormap, invert_colors, showdiff):
+    lfname = date
+
+    vars3d = ['DIVERGENCE', 'VORTICITY', 'SPECIFIC HUMIDITY', 'VIRTUAL TEMPERATURE', 'LIQ MIXING RATIO PROGNOSTIC', 'ICE MIXING RATIO PROGNOSTIC', 'CLOUD TOTAL PROGNOSTIC']
+
+    try:
+        dfs_anl = loadDataAnl(lfname)
+        dfs_bkg = loadDataBkg(lfname)
+
+        cmin=dfs_anl[variable].min()
+        cmax=dfs_anl[variable].max()
+
+        frame_height=900
+        frame_height2=1800
+
+        height=450
+        width=1600
+        fontsize=10
+
+        if invert_colors == True:
+            cmap = colormap + '_r'
+        else:
+            cmap = colormap
+        if variable in vars3d:
+            if showdiff:
+                dfsdiff = dfs_anl[variable].sel(lev=level)-dfs_bkg[variable].sel(lev=level)
+
+                ax = dfsdiff.hvplot.contourf(x="lon", y="lat", 
+                                             geo=True, 
+                                             coastline=True,
+                                             frame_height=frame_height2,
+                                             grid=True, 
+                                             cmap=cmap,
+                                             rasterize=True,
+                                             title="Analysis Minus Background of " + str(variable) + " @ level " + str(level) + " (valid for " + str(date) + ")",
+                                             fontsize=fontsize)
+            else:
+                ax_anl = dfs_anl[variable].sel(lev=level).hvplot.contourf(x="lon", y="lat", 
+                                                                          geo=True, 
+                                                                          coastline=True, 
+                                                                          #frame_height=frame_height, 
+                                                                          #height=height,
+                                                                          width=width,
+                                                                          grid=True, 
+                                                                          cmap=cmap,
+                                                                          rasterize=True,
+                                                                          title="Analysis of " + str(variable) + " @ level " + str(level) + " (valid for " + str(date) + ")",
+                                                                          fontsize=fontsize)
+
+                ax_bkg = dfs_bkg[variable].sel(lev=level).hvplot.contourf(x="lon", y="lat", 
+                                                                          geo=True, 
+                                                                          coastline=True, 
+                                                                          #frame_height=frame_height, 
+                                                                          #height=height,
+                                                                          width=width,
+                                                                          grid=True, 
+                                                                          cmap=cmap,
+                                                                          rasterize=True,
+                                                                          title="Background of " + str(variable) + " @ level " + str(level) + " (valid for " + str(date) + ")",
+                                                                          fontsize=fontsize)
+
+                ax = hvs.Layout(ax_anl + ax_bkg).cols(2)
+        else:
+            if showdiff:
+                dfsdiff = dfs_anl[variable]-dfs_bkg[variable]
+
+                ax = dfsdiff.hvplot.contourf(x="lon", y="lat", 
+                                             geo=True, 
+                                             coastline=True, 
+                                             frame_height=frame_height2, 
+                                             grid=True, 
+                                             cmap=cmap,
+                                             rasterize=True,
+                                             title="Analysis Minus Background of " + str(variable) + " (valid for " + str(date) + ")",
+                                             fontsize=fontsize)
+            else:   
+                ax_anl = dfs_anl[variable].hvplot.contourf(x="lon", y="lat", 
+                                                           geo=True, 
+                                                           coastline=True, 
+                                                           #frame_height=frame_height,
+                                                           #height=height,
+                                                           width=width, 
+                                                           grid=True, 
+                                                           cmap=cmap,
+                                                           rasterize=True,
+                                                           title="Analysis of " + str(variable) + " (valid for " + str(date) + ")",
+                                                           fontsize=fontsize)
+                
+                ax_bkg = dfs_bkg[variable].hvplot.contourf(x="lon", y="lat", 
+                                                           geo=True, 
+                                                           coastline=True, 
+                                                           #frame_height=frame_height, 
+                                                           #height=height,
+                                                           width=width,
+                                                           grid=True, 
+                                                           cmap=cmap,
+                                                           rasterize=True,
+                                                           title="Background of " + str(variable) + " (valid for " + str(date) + ")",
+                                                           fontsize=fontsize)
+
+                ax = hvs.Layout(ax_anl + ax_bkg).cols(2)
+    except:
+        ax = monitor_app_texts.warnings_anl(lfname)
+    return pn.Column(ax, sizing_mode='stretch_width')
+
+def LayoutSidebarAnl():
+    card_parameters = pn.Card(date, variable, level, showdiff, colormap, invert_colors, title='Parameters', collapsed=False)
+    return pn.Column(card_parameters)
+
+def LayoutMainAnl():
+    main_text = pn.Column("""
+    # Analysis Plots
+
+    Set the parameters on the left to update the map below and explore our analysis features.
+    """)
+    return pn.Column(main_text, plotFields)

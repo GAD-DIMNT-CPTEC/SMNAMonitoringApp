@@ -1,0 +1,198 @@
+#! /bin/bash -x
+#
+# Script to organize and create a table with information from the logs of the SMNA data assimilation system.
+#
+# Note: run from virtual machines (e.g., itapemirim)
+#
+# @cfbastarz (March, 2024)
+
+inctime=/home/carlos.bastarz/bin/inctime
+
+datai=#DATAI#
+dataf=#DATAF#
+
+data=${datai}
+
+lpath=/share/das/dist/carlos.bastarz/GSIMonitor/logs
+burl=http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/GSIMonitor/logs/
+
+if [ -e ${lpath}/logs_tmp.csv ]; then rm ${lpath}/logs_tmp.csv; fi
+if [ -e ${lpath}/logs.csv ]; then rm ${lpath}/logs.csv; fi
+
+flag_text() {
+  # 1 = status
+  # 2 = nexp
+  if [ ${1} -eq 0 ]
+  then
+    flag="C"
+  else
+    flag="P"
+  fi
+}        
+
+note_text() {     
+  note="${2} TRIAL(S)"
+}        
+
+action_text() {
+  # 1 = nlog
+  # 2 = nexp
+  # 3 = flag
+  # 4 = date
+  if [ ${2} == "pre" ]
+  then
+    if [ ${1} -gt 2 ]
+    then
+      #action="⚠ CHECK LOGS"
+      action="⚠ <a href="${burl}/${2}/${2}_${4}.log" target="_blank">CHECK LOGS</a>"
+    elif [ ${1} -lt 2 ]
+    then
+      action="⚙ WAIT FINISH"
+    else
+      if [ ${3} == "C" ]
+      then
+        action="✅  GOOD"          
+      elif [ ${3} == "P" ]
+      then
+        action="⚙️ WAIT FINISH"
+      else
+        action="💩"
+      fi
+    fi
+  else
+    if [ ${1} -gt 1 ]
+    then
+      #action="⚠ CHECK LOGS"
+      action="⚠ <a href="${burl}/${2}/${2}_${4}.log" target="_blank">CHECK LOGS</a>"
+    elif [ ${1} -lt 1 ]
+    then
+      action="⚙ WAIT FINISH"
+    else
+      if [ ${3} == "C" ]
+      then
+        action="✅ GOOD"
+      elif [ ${3} == "P" ]
+      then
+        action="⚙ WAIT FINISH"
+      else
+        action="💩"
+      fi
+    fi
+  fi
+}
+
+Exps=(gsi pre model pos)
+
+while [ ${data} -le ${dataf} ]
+do
+
+#  if [ ${data:8:2} -eq 00 ]
+#  then        
+#    Exps=(gsi pre model pos)
+#  else
+#    Exps=(gsi pre model)
+#  fi  
+
+  for exp in ${Exps[@]}
+  do
+ 
+    if [ ${exp} == "model" ]
+    then
+      datafct=$(${inctime} ${data} +9h %y4%m2%d2%h2)
+      mlog=${lpath}/${exp}/${exp}_${data}.${datafct}.log
+    elif [ ${exp} == "pos" ]
+    then
+      datafct=$(${inctime} ${data} +11d %y4%m2%d2%h2)
+      mlog=${lpath}/${exp}/${exp}_${data}.${datafct}.log
+    else        
+      mlog=${lpath}/${exp}/${exp}_${data}.log
+    fi
+ 
+    nlog=$(cat ${lpath}/${exp}/nlog_${exp}_${data}.txt)
+
+    if [ -e ${mlog} ]
+    then
+      if [ ${exp} == "gsi" ]
+      then
+        gsi_message="PROGRAM GSI_ANL HAS ENDED"
+        gsi_status_text=$(cat ${mlog} | grep -a "${gsi_message}")
+        if [[ $? -eq 0 ]]; then gsi_status=0; else gsi_status=1; fi
+        flag_text ${gsi_status} ${exp}
+        gsi_flag=${flag}
+        note_text ${exp} ${nlog}
+        gsi_note=${note}
+        action_text ${nlog} ${exp} ${gsi_flag} ${data}
+        gsi_action=${action}
+      elif [ ${exp} == "pre" ]
+      then
+        pre_message="Master Processor Received finished signal"
+        pre_status_text=$(cat ${mlog} | grep -a "${pre_message}")
+        if [[ $? -eq 0 ]]; then pre_status=0; else pre_status=1; fi
+        flag_text ${pre_status} ${exp}
+        pre_flag=${flag}
+        note_text ${exp} ${nlog}
+        pre_note=${note}
+        action_text ${nlog} ${exp} ${pre_flag} ${data}
+        pre_action=${action}
+      elif [ ${exp} == "model" ]
+      then
+        model_message="MODEL EXECUTION ENDS NORMALY"
+        model_status_text=$(cat ${mlog} | grep -a "${model_message}")
+        if [[ $? -eq 0 ]]; then model_status=0; else model_status=1; fi
+        flag_text ${model_status} ${exp}
+        model_flag=${flag}
+        note_text ${exp} ${nlog}
+        model_note=${note}
+        action_text ${nlog} ${exp} ${model_flag} ${data}
+        model_action=${action}
+      elif [ ${exp} == "pos" ]
+      then
+        pos_message="THE FILE LIST WAS FINALIZED"
+        pos_status_text=$(cat ${mlog} | grep -a "${pos_message}")
+        if [[ $? -eq 0 ]]; then pos_status=0; else pos_status=1; fi
+        flag_text ${pos_status} ${exp}
+        pos_flag=${flag}
+        note_text ${exp} ${nlog}
+        pos_note=${note}
+        action_text ${nlog} ${exp} ${pos_flag} ${data}
+        pos_action=${action}
+      fi
+    else
+      if [ ${exp} == "gsi" ]
+      then
+        gsi_flag="A"
+        gsi_note="0 TRIAL(S)"
+        gsi_action="🕓 WAIT START"
+      elif [ ${exp} == "pre" ]
+      then
+        pre_flag="A"
+        pre_note="0 TRIAL(S)"
+        pre_action="🕓 WAIT START"
+      elif [ ${exp} == "model" ]
+      then
+        model_flag="A"
+        model_note="0 TRIAL(S)"
+        model_action="🕓 WAIT START"
+      elif [ ${exp} == "pos" ]
+      then
+        pos_flag="A"
+        pos_note="0 TRIAL(S)"
+        pos_action="🕓 WAIT START"
+      fi
+    fi
+  done  
+
+  odate=$(${inctime} ${data} +0h %y4-%m2-%d2-%h2:00)
+  cdate=$(${inctime} ${data} -3h %y4-%m2-%d2-%h2:00)
+
+  echo "${cdate},${odate},${gsi_flag},${pre_flag},${model_flag},${pos_flag},${gsi_note},${pre_note},${model_note},${pos_note},${gsi_action},${pre_action},${model_action},${pos_action}" >> ${lpath}/logs_tmp.csv
+
+  data=$(${inctime} ${data} +6h %y4%m2%d2%h2)
+
+done
+
+tac ${lpath}/logs_tmp.csv > ${lpath}/logs.csv
+
+sed -i '1 i\Current Date,Last Operational Run,Status GSI,Status PRE,Status MODEL,Status POS,Note GSI,Note PRE,Note MODEL,Note POS,Action GSI,Action PRE,Action MODEL,Action POS' ${lpath}/logs.csv
+
+exit 0

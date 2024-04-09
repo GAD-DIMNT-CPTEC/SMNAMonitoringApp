@@ -1,0 +1,40 @@
+#! /bin/bash -x
+
+# Wrapper script to run convert_smna_dataset_to_zarr.py.
+#
+# @cfbastarz (March, 2024)
+
+inctime=/home/carlos.bastarz/bin/inctime
+
+lpath=/share/das/dist/carlos.bastarz/GSIMonitor/anls
+rpath=/lustre_xc50/ioper/models/SMNA-Oper/SMG/datainout/bam/pos/dataout/TQ0299L064
+
+datai=#DATAI#
+dataf=#DATAF#
+
+data=${datai}
+
+while [ ${data} -le ${dataf} ]
+do
+
+  # First, get the SMNA analysis from the BAM post-processing in XC50
+  mkdir -p /share/das/dist/carlos.bastarz/GSIMonitor/anls/grib_tmp/${data}
+  mkdir -p /share/das/dist/carlos.bastarz/GSIMonitor/anls/${data}
+
+  cd /share/das/dist/carlos.bastarz/GSIMonitor/anls/grib_tmp/${data}
+
+  rsync -arv carlos_bastarz@login-xc50.cptec.inpe.br:${rpath}/${data}/GPOSCPT${data}${data}P.icn.TQ0299L064.grb .
+
+  data=$(${inctime} ${data} +1d %y4%m2%d2%h2)
+
+done
+
+cd ${lpath}
+
+#source /scripts/das/conda/envs/pyNIO/bin/activate
+
+/scripts/das/conda/envs/pyNIO/bin/python3 ${lpath}/convert_smna_dataset_to_zarr.py
+
+#source /scripts/das/conda/envs/pyNIO/bin/deactivate
+
+/share/das/dist/carlos.bastarz/GSIMonitor/anls/create_catalog.sh

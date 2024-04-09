@@ -1,0 +1,79 @@
+#! /bin/bash -x
+
+inctime=${HOME}/bin/inctime
+
+lpath=/share/das/dist/carlos.bastarz/GSIMonitor/anls
+
+Names=(anl bkg)
+
+for name in ${Names[@]}
+do
+
+  datai=#DATAI#
+  dataf=#DATAF#
+  
+  data=${datai}
+
+  echo "sources:" > ${lpath}/catalog_${name}.yml
+  
+  while [ ${data} -le ${dataf} ]
+  do
+  
+    echo ${data}
+  
+  if [ ${name} == "anl" ]
+  then
+
+cat << EOF >> ${lpath}/catalog_${name}.yml
+
+  '${data}':
+    args:
+      consolidated: true
+      urlpath: https://s0.cptec.inpe.br/pesquisa/das/dist/carlos.bastarz/GSIMonitor/anls/${data}/GFCTCPT${data}${data}F.icn.TQ0299L064.zarr
+    description: SMNA Analysis for ${data}
+    driver: intake_xarray.xzarr.ZarrSource
+    metadata: 
+      catalog_dir: https://s0.cptec.inpe.br/pesquisa/das/dist/carlos.bastarz/GSIMonitor/anls/${data}
+      tags:
+        - atmosphere
+        - analysis
+        - data_assimilation
+        - smna
+        - field
+      url: https://s0.cptec.inpe.br/pesquisa/das/dist/carlos.bastarz/GSIMonitor/anls/${data}
+
+EOF
+  
+  else
+
+    datafct=$(${inctime} ${data} +6h %y4%m2%d2%h2)
+
+cat << EOF >> ${lpath}/catalog_${name}.yml
+
+  '${data}':
+    args:
+      consolidated: true
+      urlpath: https://s0.cptec.inpe.br/pesquisa/das/dist/carlos.bastarz/GSIMonitor/anls/${data}/GFCTCPT${data}${datafct}F.fct.TQ0299L064.zarr
+    description: SMNA Analysis for ${data}
+    driver: intake_xarray.xzarr.ZarrSource
+    metadata: 
+      catalog_dir: https://s0.cptec.inpe.br/pesquisa/das/dist/carlos.bastarz/GSIMonitor/anls/${data}
+      tags:
+        - atmosphere
+        - background
+        - data_assimilation
+        - smna
+        - field
+      url: https://s0.cptec.inpe.br/pesquisa/das/dist/carlos.bastarz/GSIMonitor/anls/${data}
+
+EOF
+  
+  fi
+
+    data=$(${inctime} ${data} +6h %y4%m2%d2%h2)
+  
+  done
+
+done
+
+exit 0
