@@ -40,10 +40,10 @@ def showLogs(date):
     datemfct = calcDate(date, int(9))
     datepfct = calcDate(date, int(264))
 
-    gsi_log = "http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/GSIMonitor/logs/gsi/gsi_" + str(date) + ".log"           
-    model_log = "http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/GSIMonitor/logs/model/model_" + str(date) + "." + str(datemfct) + ".log"
-    pos_log = "http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/GSIMonitor/logs/pos/pos_" + str(date) + "." + str(datepfct) + ".log"
-    pre_log = "http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/GSIMonitor/logs/pre/pre_" + str(date) + ".log"
+    gsi_log = "http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/logs/gsi/gsi_" + str(date) + ".log"           
+    model_log = "http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/logs/model/model_" + str(date) + "." + str(datemfct) + ".log"
+    pos_log = "http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/logs/pos/pos_" + str(date) + "." + str(datepfct) + ".log"
+    pre_log = "http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/logs/pre/pre_" + str(date) + ".log"
 
     try:
         read_log_gsi = openFile(gsi_log)

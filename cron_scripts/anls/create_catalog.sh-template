@@ -2,7 +2,7 @@
 
 inctime=${HOME}/bin/inctime
 
-lpath=/share/das/dist/carlos.bastarz/GSIMonitor/anls
+lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls
 
 Names=(anl bkg)
 
@@ -29,18 +29,18 @@ cat << EOF >> ${lpath}/catalog_${name}.yml
   '${data}':
     args:
       consolidated: true
-      urlpath: https://s0.cptec.inpe.br/pesquisa/das/dist/carlos.bastarz/GSIMonitor/anls/${data}/GFCTCPT${data}${data}F.icn.TQ0299L064.zarr
+      urlpath: https://s0.cptec.inpe.br/pesquisa/das/dist/carlos.bastarz/SMNAMonitoringApp/anls/${data}/GFCTCPT${data}${data}F.icn.TQ0299L064.zarr
     description: SMNA Analysis for ${data}
     driver: intake_xarray.xzarr.ZarrSource
     metadata: 
-      catalog_dir: https://s0.cptec.inpe.br/pesquisa/das/dist/carlos.bastarz/GSIMonitor/anls/${data}
+      catalog_dir: https://s0.cptec.inpe.br/pesquisa/das/dist/carlos.bastarz/SMNAMonitoringApp/anls/${data}
       tags:
         - atmosphere
         - analysis
         - data_assimilation
         - smna
         - field
-      url: https://s0.cptec.inpe.br/pesquisa/das/dist/carlos.bastarz/GSIMonitor/anls/${data}
+      url: https://s0.cptec.inpe.br/pesquisa/das/dist/carlos.bastarz/SMNAMonitoringApp/anls/${data}
 
 EOF
   
@@ -53,18 +53,18 @@ cat << EOF >> ${lpath}/catalog_${name}.yml
   '${data}':
     args:
       consolidated: true
-      urlpath: https://s0.cptec.inpe.br/pesquisa/das/dist/carlos.bastarz/GSIMonitor/anls/${data}/GFCTCPT${data}${datafct}F.fct.TQ0299L064.zarr
+      urlpath: https://s0.cptec.inpe.br/pesquisa/das/dist/carlos.bastarz/SMNAMonitoringApp/anls/${data}/GFCTCPT${data}${datafct}F.fct.TQ0299L064.zarr
     description: SMNA Analysis for ${data}
     driver: intake_xarray.xzarr.ZarrSource
     metadata: 
-      catalog_dir: https://s0.cptec.inpe.br/pesquisa/das/dist/carlos.bastarz/GSIMonitor/anls/${data}
+      catalog_dir: https://s0.cptec.inpe.br/pesquisa/das/dist/carlos.bastarz/SMNAMonitoringApp/anls/${data}
       tags:
         - atmosphere
         - background
         - data_assimilation
         - smna
         - field
-      url: https://s0.cptec.inpe.br/pesquisa/das/dist/carlos.bastarz/GSIMonitor/anls/${data}
+      url: https://s0.cptec.inpe.br/pesquisa/das/dist/carlos.bastarz/SMNAMonitoringApp/anls/${data}
 
 EOF
   

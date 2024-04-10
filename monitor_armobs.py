@@ -41,7 +41,7 @@ from monitor_dates import MonitoringAppDates
 pn.extension('floatpanel')
 pn.extension(sizing_mode="stretch_width", notifications=True)
 
-dfs = pd.read_csv('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/GSIMonitor/obsm/mon_rec_obs_final.csv', header=[0], 
+dfs = pd.read_csv('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/obsm/mon_rec_obs_final.csv', header=[0], 
                   parse_dates=[('Data do Download'), ('Data da Observação')])
 
 dfs['Diferença de Tempo'] = (dfs['Data do Download'] - dfs['Data da Observação']) - timedelta(hours=3)

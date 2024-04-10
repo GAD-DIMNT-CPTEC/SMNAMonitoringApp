@@ -41,7 +41,7 @@ pn.extension(sizing_mode='stretch_width')
 
 monitor_app_texts = MonitoringAppTexts()
 
-data_catalog = intake.open_catalog('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/GSIMonitor/objeval/catalog-scantec-s0.yml')
+data_catalog = intake.open_catalog('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/objeval/catalog-scantec-s0.yml')
 
 monitoring_app_dates = MonitoringAppDates()
 sdate = monitoring_app_dates.getDates()[0].strip()

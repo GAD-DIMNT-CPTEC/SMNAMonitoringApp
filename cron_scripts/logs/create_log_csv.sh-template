@@ -13,8 +13,8 @@ dataf=#DATAF#
 
 data=${datai}
 
-lpath=/share/das/dist/carlos.bastarz/GSIMonitor/logs
-burl=http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/GSIMonitor/logs/
+lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp/logs
+burl=http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/logs/
 
 if [ -e ${lpath}/logs_tmp.csv ]; then rm ${lpath}/logs_tmp.csv; fi
 if [ -e ${lpath}/logs.csv ]; then rm ${lpath}/logs.csv; fi

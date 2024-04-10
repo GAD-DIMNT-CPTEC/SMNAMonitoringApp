@@ -14,7 +14,7 @@ conda activate pyBAM
 
 inctime=/home/carlos.bastarz/bin/inctime
 
-lpath=/share/das/dist/carlos.bastarz/GSIMonitor/anls
+lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls
 rpath=/lustre_xc50/ioper/models/SMNA-Oper/SMG/datainout/bam/model/dataout/TQ0299L064/DAS
 
 datai=#DATAI#
@@ -28,10 +28,10 @@ do
   datafct=$(${inctime} ${data} +6h %y4%m2%d2%h2)
   
   # First, get the SMNA analysis from the BAM post-processing in XC50
-  mkdir -p /share/das/dist/carlos.bastarz/GSIMonitor/anls/spec_tmp/${data}
-  mkdir -p /share/das/dist/carlos.bastarz/GSIMonitor/anls/${data}
+  mkdir -p /share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls/spec_tmp/${data}
+  mkdir -p /share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls/${data}
 
-  cd /share/das/dist/carlos.bastarz/GSIMonitor/anls/spec_tmp/${data}
+  cd /share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls/spec_tmp/${data}
 
   rsync -arv carlos_bastarz@login-xc50.cptec.inpe.br:${rpath}/${data}/GFCTCPT${data}${data}F.icn.TQ0299L064 .
   rsync -arv carlos_bastarz@login-xc50.cptec.inpe.br:${rpath}/${data}/GFCTCPT${data}${data}F.dic.TQ0299L064 .
@@ -49,4 +49,4 @@ done
 
 conda deactivate pyBAM
 
-/share/das/dist/carlos.bastarz/GSIMonitor/anls/create_catalog.sh
+/share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls/create_catalog.sh

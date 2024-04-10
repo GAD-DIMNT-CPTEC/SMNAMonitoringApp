@@ -29,7 +29,7 @@ do
 
     echo ${data} ${exp}
 
-    lpath=/share/das/dist/carlos.bastarz/GSIMonitor/jo/${exp}
+    lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp/jo/${exp}
     #if [ ${data} -ge 2024021300 -a ${exp} == "preOper" ]
     if [ ${exp} == "preOper" ]
     then

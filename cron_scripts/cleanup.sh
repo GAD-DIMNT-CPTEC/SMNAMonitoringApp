@@ -6,7 +6,7 @@
 
 inctime=/home/carlos.bastarz/bin/inctime
 
-lpath=/share/das/dist/carlos.bastarz/GSIMonitor
+lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp
 
 Prods=(logs anls obsm)
 Logs=(gsi pre model pos)

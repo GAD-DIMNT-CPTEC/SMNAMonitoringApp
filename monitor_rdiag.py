@@ -16,8 +16,8 @@ pn.extension()
 
 monitor_app_texts = MonitoringAppTexts()
 
-catalog_diag_conv_01 = intake.open_catalog('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/GSIMonitor/rdiag/catalog_diag_conv_01.yml')
-catalog_diag_conv_03 = intake.open_catalog('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/GSIMonitor/rdiag/catalog_diag_conv_03.yml')
+catalog_diag_conv_01 = intake.open_catalog('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/rdiag/catalog_diag_conv_01.yml')
+catalog_diag_conv_03 = intake.open_catalog('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/rdiag/catalog_diag_conv_03.yml')
 
 monitoring_app_dates = MonitoringAppDates()
 sdate = monitoring_app_dates.getDates()[0].strip()

@@ -29,7 +29,7 @@ class MonitoringAppInfo:
                 ))
         return logo_cptec
 
-    def LogoGSIMonitor(self):
+    def LogoSMNAMonitoringApp(self):
         gsimonitor_logo = pn.pane.PNG('img/gsimonitor.png', width=150)
         logo_gsimonitor = pn.Column(
                 pn.Row(

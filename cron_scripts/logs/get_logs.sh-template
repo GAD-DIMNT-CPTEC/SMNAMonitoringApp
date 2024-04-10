@@ -29,8 +29,8 @@ do
   for exp in ${Exps[@]}
   do
 
-    #lpath=/pesq/share/das/dist/carlos.bastarz/GSIMonitor/logs/${exp}
-    lpath=/share/das/dist/carlos.bastarz/GSIMonitor/logs/${exp}
+    #lpath=/pesq/share/das/dist/carlos.bastarz/SMNAMonitoringApp/logs/${exp}
+    lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp/logs/${exp}
 
     echo ${data} ${exp}
 

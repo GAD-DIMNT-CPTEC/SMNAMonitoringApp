@@ -31,7 +31,7 @@ class MonitoringAppCStatus:
                 ))
         return logo_cptec
 
-    def LogoGSIMonitor(self):
+    def LogoSMNAMonitoringApp(self):
         gsimonitor_logo = pn.pane.PNG('img/gsimonitor.png', width=150)
         logo_gsimonitor = pn.Column(
                 pn.Row(
@@ -60,7 +60,7 @@ class MonitoringAppCStatus:
 
     def LayoutMain(self):
 
-        self.logs = "http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/GSIMonitor/logs/logs.csv"           
+        self.logs = "http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/logs/logs.csv"           
         df = pd.read_csv(self.logs)
 
         link_formatters = {

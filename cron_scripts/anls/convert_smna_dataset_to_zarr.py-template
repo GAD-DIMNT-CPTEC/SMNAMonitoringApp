@@ -47,8 +47,8 @@ encoding = {
 
 Vars = list(encoding.keys())
 
-inpath = '/share/das/dist/carlos.bastarz/GSIMonitor/anls/grib_tmp'
-outpath = '/share/das/dist/carlos.bastarz/GSIMonitor/anls'
+inpath = '/share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls/grib_tmp'
+outpath = '/share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls'
 
 datai = datetime.strptime("#DATAI#", "%Y%m%d%H")
 dataf = datetime.strptime("#DATAF#", "%Y%m%d%H")

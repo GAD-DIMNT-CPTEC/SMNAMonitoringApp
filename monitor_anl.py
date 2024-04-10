@@ -23,8 +23,8 @@ gv.extension("bokeh")
 
 monitor_app_texts = MonitoringAppTexts()
 
-catalog_anl = intake.open_catalog('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/GSIMonitor/anls/catalog_anl.yml')
-catalog_bkg = intake.open_catalog('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/GSIMonitor/anls/catalog_bkg.yml')
+catalog_anl = intake.open_catalog('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/anls/catalog_anl.yml')
+catalog_bkg = intake.open_catalog('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/anls/catalog_bkg.yml')
 
 variable_list = [
 'VIRTUAL TEMPERATURE',

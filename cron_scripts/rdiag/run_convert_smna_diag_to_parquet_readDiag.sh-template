@@ -9,7 +9,7 @@
 
 inctime=/home/carlos.bastarz/bin/inctime
 
-lpath=/share/das/dist/carlos.bastarz/GSIMonitor/rdiag
+lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp/rdiag
 rpath=/lustre_xc50/ioper/models/SMNA-Oper/SMG/datainout/gsi/dataout
 
 datai=#DATAI#
@@ -22,10 +22,10 @@ Loops=(1 3)
 while [ ${data} -le ${dataf} ]
 do
 
-  mkdir -p /share/das/dist/carlos.bastarz/GSIMonitor/rdiag/diag_tmp/${data}
-  mkdir -p /share/das/dist/carlos.bastarz/GSIMonitor/rdiag/${data}
+  mkdir -p /share/das/dist/carlos.bastarz/SMNAMonitoringApp/rdiag/diag_tmp/${data}
+  mkdir -p /share/das/dist/carlos.bastarz/SMNAMonitoringApp/rdiag/${data}
 
-  cd /share/das/dist/carlos.bastarz/GSIMonitor/rdiag/diag_tmp/${data}
+  cd /share/das/dist/carlos.bastarz/SMNAMonitoringApp/rdiag/diag_tmp/${data}
 
   for loop in ${Loops[@]}
   do
@@ -43,4 +43,4 @@ done
 
 #conda deactivate pyBAM
 
-/share/das/dist/carlos.bastarz/GSIMonitor/rdiag/create_catalog.sh
+/share/das/dist/carlos.bastarz/SMNAMonitoringApp/rdiag/create_catalog.sh

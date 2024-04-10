@@ -1,6 +1,6 @@
 #! /bin/bash -x
 
-# Script to start up the processess related to the GSIMonitor (i.e., get the current date and update the dates within scripts).
+# Script to start up the processess related to the SMNAMonitoringApp (i.e., get the current date and update the dates within scripts).
 #
 # Note: make sure to run this script at time 01, 07, 13 and 19 UTC (otherwise it will choke at 00 UTC)
 #
@@ -8,7 +8,7 @@
 
 inctime=${HOME}/bin/inctime
 
-lpath=/share/das/dist/carlos.bastarz/GSIMonitor
+lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp
 
 today=$(date '+%Y%m%d%H')
 #today=2024031401

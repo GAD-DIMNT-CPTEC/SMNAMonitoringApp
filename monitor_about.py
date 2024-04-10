@@ -31,6 +31,6 @@ class MonitoringAppAbout:
 
 The SMNA (Sistema de Modelagem Numérica e Assimilação de Dados - in portuguese) is the global data assimilation system from CPTEC. It is based on the Brazilian Atmospheric Model (BAM) and the Gridpoint Statistical Interpolation system (GSI). Currently, our system is capable of assimilating radiances (from the AMSU-A/B, SATWND, GNSS-RO and radiosondes).
 
-The dashboard code is available at [our GitHub repository](https://github.com/GAD-DIMNT-CPTEC/GSIMonitor).
+The dashboard code is available at [our GitHub repository](https://github.com/GAD-DIMNT-CPTEC/SMNAMonitoringApp).
         """)
         return aboutText 

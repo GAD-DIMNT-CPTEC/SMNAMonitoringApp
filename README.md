@@ -18,4 +18,10 @@ Then, run the command:
 panel serve --show --autoreload monitor.py
 ```
 
+Or, just use the script:
+
+```
+./SMNAMonitoringApp
+```
+
 carlos.bastarz@inpe.br (April, 2024).

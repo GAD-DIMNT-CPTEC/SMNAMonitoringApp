@@ -69,7 +69,7 @@ class MonitoringAppMass:
         
     def load_data(self):
         try:
-            self.download_file("https://raw.githubusercontent.com/GAD-DIMNT-CPTEC/GSIMonitor/main/data/costFile_Oper.db")           
+            self.download_file("http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/mass/costFile_Oper.db")           
             con = sqlite3.connect("costFile_Oper.db")
             self.df = pd.read_sql_query("select * from costCons order by date", con, parse_dates=["date"], index_col='date')
             self.df.replace(-1e38,np.nan)
@@ -165,7 +165,7 @@ class MonitoringAppMass:
         #self.app = pn.template.MaterialTemplate(
         self.app = pn.template.FastListTemplate(
             site="SMNA Dashboard",
-            title="GSIMonitor",
+            title="SMNAMonitoringApp",
             #header_background="#1976d2",
         )
 

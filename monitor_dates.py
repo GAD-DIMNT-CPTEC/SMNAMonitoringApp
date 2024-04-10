@@ -15,8 +15,8 @@ class MonitoringAppDates:
         return decoded_line
 
     def getDates(self):
-        sdate = "http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/GSIMonitor/aweekbefore.txt"
-        edate = "http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/GSIMonitor/todaym1H.txt"
+        sdate = "http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/aweekbefore.txt"
+        edate = "http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/todaym1H.txt"
 
         start_date = self.openFile(sdate)
         end_date = self.openFile(edate)

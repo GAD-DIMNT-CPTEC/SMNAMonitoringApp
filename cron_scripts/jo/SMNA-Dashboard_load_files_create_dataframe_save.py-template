@@ -186,7 +186,7 @@ def df_Nobs(fname, nexp, mname):
 
 
 # Nota: os arquivos de log utilizados neste notebook, podem ser encontrados em /scripts/das/carlos.bastarz/SMNA-Dashboard na máquina Itapemirim
-bpath = '/share/das/dist/carlos.bastarz/GSIMonitor/jo'
+bpath = '/share/das/dist/carlos.bastarz/SMNAMonitoringApp/jo'
 
 # Função para obter os dataframes em um intervalo de datas para um determinado experimento
 

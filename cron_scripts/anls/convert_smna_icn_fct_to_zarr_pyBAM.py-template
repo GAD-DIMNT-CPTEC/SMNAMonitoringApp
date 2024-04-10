@@ -12,7 +12,7 @@ import hvplot.xarray
 
 # In[2]:
 
-lpath = '/share/das/dist/carlos.bastarz/GSIMonitor/anls'
+lpath = '/share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls'
 
 ficn = os.path.join(lpath, 'spec_tmp', '%DATAI%', 'GFCTCPT%DATAI%%DATAI%F.dic.TQ0299L064')
 ffct = os.path.join(lpath, 'spec_tmp', '%DATAI%', 'GFCTCPT%DATAI%%DATAF%F.dir.TQ0299L064')

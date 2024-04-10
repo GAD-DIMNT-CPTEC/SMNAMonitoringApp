@@ -7,8 +7,8 @@
 
 inctime=/home/carlos.bastarz/bin/inctime
 
-lpath=/share/das/dist/carlos.bastarz/GSIMonitor/obsm
-dataloggsi=/share/das/dist/carlos.bastarz/GSIMonitor/logs/gsi
+lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp/obsm
+dataloggsi=/share/das/dist/carlos.bastarz/SMNAMonitoringApp/logs/gsi
 
 datai=#DATAI#
 dataf=#DATAF#

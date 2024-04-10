@@ -6,7 +6,7 @@
 
 inctime=/home/carlos.bastarz/bin/inctime
 
-lpath=/share/das/dist/carlos.bastarz/GSIMonitor/anls
+lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls
 rpath=/lustre_xc50/ioper/models/SMNA-Oper/SMG/datainout/bam/pos/dataout/TQ0299L064
 
 datai=#DATAI#
@@ -18,10 +18,10 @@ while [ ${data} -le ${dataf} ]
 do
 
   # First, get the SMNA analysis from the BAM post-processing in XC50
-  mkdir -p /share/das/dist/carlos.bastarz/GSIMonitor/anls/grib_tmp/${data}
-  mkdir -p /share/das/dist/carlos.bastarz/GSIMonitor/anls/${data}
+  mkdir -p /share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls/grib_tmp/${data}
+  mkdir -p /share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls/${data}
 
-  cd /share/das/dist/carlos.bastarz/GSIMonitor/anls/grib_tmp/${data}
+  cd /share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls/grib_tmp/${data}
 
   rsync -arv carlos_bastarz@login-xc50.cptec.inpe.br:${rpath}/${data}/GPOSCPT${data}${data}P.icn.TQ0299L064.grb .
 
@@ -37,4 +37,4 @@ cd ${lpath}
 
 #source /scripts/das/conda/envs/pyNIO/bin/deactivate
 
-/share/das/dist/carlos.bastarz/GSIMonitor/anls/create_catalog.sh
+/share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls/create_catalog.sh
