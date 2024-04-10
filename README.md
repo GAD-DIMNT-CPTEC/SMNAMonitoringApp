@@ -13,6 +13,14 @@ conda env create -f environment.yml
 conda activate SMNAMonitoringApp
 ```
 
+**Note:** For Mac OS X users, use the commands:
+
+```
+conda create -n SMNAMonitoringApp python==3.12.2
+conda activate SMNAMonitoringApp
+pip install -e .
+```
+
 Finally, run the command:
 
 
