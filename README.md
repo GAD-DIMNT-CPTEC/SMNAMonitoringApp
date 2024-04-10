@@ -24,4 +24,6 @@ Or, just use the script:
 ./SMNAMonitoringApp
 ```
 
+<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode" target="_blank"><img src="https://mirrors.creativecommons.org/presskit/buttons/88x31/png/by-nc-sa.png" alt="CC-BY-NC-SA" width="100"/></a>
+
 carlos.bastarz@inpe.br (April, 2024).

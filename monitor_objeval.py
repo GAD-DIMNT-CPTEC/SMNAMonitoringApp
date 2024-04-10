@@ -200,7 +200,7 @@ def get_min_max_ds(ds):
 
 def get_df(reg, exp, stat, ref, varlev):
     kname = 'scantec-' + reg + '-' + stat + '-' + exp.lower() + '-' + ref + '-table'
-    print(kname)
+    #print(kname)
     #if data_catalog is not None:
     df = data_catalog[kname].read()
     df.set_index('Unnamed: 0', inplace=True)
@@ -223,7 +223,7 @@ def plotCurves(varlev_st, reg_st, ref_st, expt_st, loaded):
         for count, i in enumerate(expt_st):
             if count == 0:
                 exp = expt_st[count] 
-                print(reg_st, exp, 'vies', ref_st, varlev_st)
+                #print(reg_st, exp, 'vies', ref_st, varlev_st)
                 df_vies = get_df(reg_st, exp, 'vies', ref_st, varlev_st)
             
                 if df_vies is not None:
@@ -469,7 +469,7 @@ def plotFields(state, varlev_de, reg_de, ref_de, date, colormap_de, invert_color
     
     date = str(date) + ' 12:00' # consertar...
 
-    print(varlev_de)
+    #print(varlev_de)
 
     var = varlev_de.replace(':', '').lower()
     
