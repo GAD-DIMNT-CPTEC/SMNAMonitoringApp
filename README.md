@@ -4,14 +4,16 @@ SMNAMonitoringApp - a Python Dashboard based on Panel developed to monitor the s
 
 ## Test
 
-First, create the correct environment by using the provided `environment.yml` file:
+First, make sure to have the GNU C compiler installed.
+
+Then, create the correct environment by using the provided `environment.yml` file:
 
 ```
 conda env create -f environment.yml
 conda activate SMNAMonitoringApp
 ```
 
-Then, run the command:
+Finally, run the command:
 
 
 ```
