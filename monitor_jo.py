@@ -144,9 +144,9 @@ def plotCurves(variable, experiment, synoptic_time, iter_fcost, date_range):
                 
             xticks = len(df_s['Date'].values)    
                 
-            ax_nobs = df_s.hvplot.line(x='Date', y='Nobs', xlabel='Data', ylabel=str('Nobs'), persist=True, rot=90, grid=True, label=str(i), line_width=3, height=height, responsive=True)    
-            ax_jo = df_s.hvplot.line(x='Date', y='Jo', xlabel='Data', ylabel=str('Jo'), persist=True, rot=90, grid=True, label=str(i), line_width=3, height=height, responsive=True)    
-            ax_jon = df_s.hvplot.line(x='Date', y='Jo/n', xlabel='Data', ylabel=str('Jo/n'), persist=True, rot=90, grid=True, label=str(i), line_width=3, height=height, responsive=True)
+            ax_nobs = df_s.hvplot.line(x='Date', y='Nobs', xlabel='Date', ylabel=str('Nobs'), persist=True, rot=90, grid=True, label=str(i), line_width=3, height=height, responsive=True)    
+            ax_jo = df_s.hvplot.line(x='Date', y='Jo', xlabel='Date', ylabel=str('Jo'), persist=True, rot=90, grid=True, label=str(i), line_width=3, height=height, responsive=True)    
+            ax_jon = df_s.hvplot.line(x='Date', y='Jo/n', xlabel='Date', ylabel=str('Jo/n'), persist=True, rot=90, grid=True, label=str(i), line_width=3, height=height, responsive=True)
             
             # Adiciona pontos às curvas
             sax_nobs = df_s.hvplot.scatter(x='Date', y='Nobs', height=height, label=str(i), persist=True, responsive=True).opts(size=5, marker='o')    
@@ -186,9 +186,9 @@ def plotCurves(variable, experiment, synoptic_time, iter_fcost, date_range):
                 
             xticks = len(df_s['Date'].values)
             
-            ax_nobs *= df_s.hvplot.line(x='Date', y='Nobs', xlabel='Data', ylabel=str('Nobs'), persist=True, rot=90, grid=True, label=str(i), line_width=3, height=height, responsive=True)
-            ax_jo *= df_s.hvplot.line(x='Date', y='Jo', xlabel='Data', ylabel=str('Jo'), persist=True, rot=90, grid=True, label=str(i), line_width=3, height=height, responsive=True)
-            ax_jon *= df_s.hvplot.line(x='Date', y='Jo/n', xlabel='Data', ylabel=str('Jo/n'), persist=True, rot=90, grid=True, label=str(i), line_width=3, height=height, responsive=True)
+            ax_nobs *= df_s.hvplot.line(x='Date', y='Nobs', xlabel='Date', ylabel=str('Nobs'), persist=True, rot=90, grid=True, label=str(i), line_width=3, height=height, responsive=True)
+            ax_jo *= df_s.hvplot.line(x='Date', y='Jo', xlabel='Date', ylabel=str('Jo'), persist=True, rot=90, grid=True, label=str(i), line_width=3, height=height, responsive=True)
+            ax_jon *= df_s.hvplot.line(x='Date', y='Jo/n', xlabel='Date', ylabel=str('Jo/n'), persist=True, rot=90, grid=True, label=str(i), line_width=3, height=height, responsive=True)
             
             # Adiciona pontos às curvas
             sax_nobs *= df_s.hvplot.scatter(x='Date', y='Nobs', height=height, label=str(i), persist=True, responsive=True).opts(size=5, marker='o')    
@@ -290,9 +290,9 @@ def monitor_jo_sidebar():
 def monitor_jo_main():
     tabs_contents_jb = pn.Tabs(('PLOTS', plotCurves), ('TABLE', getTable))
     tabs_contents_jo = pn.Tabs(('PLOTS', plotCurves), ('TABLE', getTable))
-    tabs_contents = pn.Tabs(('Jo', pn.Column('Jo minimization.', tabs_contents_jo)), 
-                            ('Jb', pn.Column('Jb minimization.', tabs_contents_jb)),
-                            ('Jc', pn.Column('Jc minimization.', tabs_contents_jo)), active=1)
+    tabs_contents = pn.Tabs(('Jo', pn.Column('Jo minimization.', tabs_contents_jo)))#, 
+                            #('Jb', pn.Column('Jb minimization.', tabs_contents_jb)),
+                            #('Jc', pn.Column('Jc minimization.', tabs_contents_jo)), active=1)
     main_text = pn.Column("""
     # Minimization Plots
 

@@ -29,7 +29,7 @@ date_range = [d.strftime('%Y%m%d%H') for d in pd.date_range(start_date, end_date
 date = pn.widgets.Select(name='Date', value=date_range[0], options=date_range)
 
 # From the catalogs, assemble a dictionary with all the kx values:
-variable_list = ['q', 'ps', 't', 'uv']
+variable_list = ['q', 'ps', 't', 'uv', 'gps']
 zlevs = [1000.0, 900.0, 800.0, 700.0, 600.0, 500.0, 400.0, 300.0, 250.0, 200.0, 150.0, 100.0, 50.0, 0.0]
 
 #_kx_values = {}
@@ -40,10 +40,11 @@ zlevs = [1000.0, 900.0, 800.0, 700.0, 600.0, 500.0, 400.0, 300.0, 250.0, 200.0, 
 #
 #_kx_valuesm = _kx_values.copy()
 
-_kx_values = {'q':  [181, 120, 187, 180, 183],
-              'ps': [181, 180, 120, 187, 183],
-              't':  [181, 180, 120, 187, 183, 130, 126],
-              'uv': [257,  258,  281,  280,  253,  243,  254,  220,  287,  221,  284,  230,  244,  259,  252,  242,  250,  210,  229,  224,  282]}
+_kx_values = {'q':   [181, 120, 187, 180, 183],
+              'ps':  [181, 180, 120, 187, 183],
+              't':   [181, 180, 120, 187, 183, 130, 126],
+              'uv':  [257,  258,  281,  280,  253,  243,  254,  220,  287,  221,  284,  230,  244,  259,  252,  242,  250,  210,  229,  224,  282],
+              'gps': [42, 269, 5, 44, 43, 3, 754, 752, 755, 753, 751, 750]}
 
 _kx_valuesn = _kx_values.copy()
 _kx_valuess = _kx_values.copy()

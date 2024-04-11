@@ -375,7 +375,7 @@ def plotSelSize(otype_w, ftype_w, synoptic_time, date_range, units_w):
 card_parameters = pn.Card(date_range_slider, synoptic_time, units_w, pn.Column(ftype_w, height=120), pn.Column(otype_w, height=450), title='Parameters', collapsed=False)
 
 #tabs_contents = pn.Tabs(('PLOTS', pn.Row(plotLine, pn.Row(plotSelSize, width=600))), ('TABLE', getTable))
-tabs_contents = pn.Tabs(('PLOTS', plotLine), ('TABLE', getTable))
+tabs_contents = pn.Tabs(('PLOTS', pn.Column('Time series for the observation storage.', plotLine)), ('TABLE', pn.Column('Summary table for the observation storage.', getTable)))
 
 def monitor_armobs_sidebar():
     return card_parameters

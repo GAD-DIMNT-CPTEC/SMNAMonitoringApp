@@ -8,7 +8,7 @@ inctime=/home/carlos.bastarz/bin/inctime
 
 lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp
 
-Prods=(logs anls obsm)
+Prods=(logs anls obsm rdiag jo)
 Logs=(gsi pre model pos)
 
 now=$(date '+%Y%m%d')00
@@ -46,7 +46,16 @@ do
       rm -rf ${lpath}/${prod}/txt/gsilog_${data}.txt
       rm -rf ${lpath}/${prod}/csv/obs_${data}*.csv
       rm -rf ${lpath}/${prod}/csv/gsilog_${data}.csv
+    elif [ ${prod} == "rdiag" ]
+    then
+      rm -rf ${lpath}/${prod}/${data}
+      rm -rf ${lpath}/${prod}/diag_tmp/${data}
+    elif [ ${prod} == "jo" ]
+    then
+      rm -rf ${lpath}/${prod}/preOper/${data}
+      rm -rf ${lpath}/${prod}/JGerd/${data}
     fi
+
   done
 
   echo

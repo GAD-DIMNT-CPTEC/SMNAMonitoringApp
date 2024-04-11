@@ -55,6 +55,14 @@ echo "Updating script ${lpath}/anls/create_catalog.sh"
 cat ${lpath}/anls/create_catalog.sh-template | sed "s,#DATAI#,${aweekbefore},g" > ${lpath}/anls/create_catalog.sh
 sed -i "s,#DATAF#,${todaym1H},g" ${lpath}/anls/create_catalog.sh
 
+echo "Updating script ${lpath}/rdiag/run_convert_smna_diag_to_parquet_readDiag.sh"
+cat ${lpath}/rdiag/run_convert_smna_diag_to_parquet_readDiag.sh-template | sed "s,#DATAI#,${aweekbefore},g" > ${lpath}/rdiag/run_convert_smna_diag_to_parquet_readDiag.sh
+sed -i "s,#DATAF#,${todaym1H},g" ${lpath}/rdiag/run_convert_smna_diag_to_parquet_readDiag.sh
+
+echo "Updating script ${lpath}/rdiag/create_catalog.sh"
+cat ${lpath}/rdiag/create_catalog.sh-template | sed "s,#DATAI#,${aweekbefore},g" > ${lpath}/rdiag/create_catalog.sh
+sed -i "s,#DATAF#,${todaym1H},g" ${lpath}/rdiag/create_catalog.sh
+
 #if [ ${todaym1H:8:2} == "00" ]
 #then
 #
