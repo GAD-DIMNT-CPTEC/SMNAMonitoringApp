@@ -21,7 +21,7 @@ start_date = datetime(int(sdate[0:4]), int(sdate[4:6]), int(sdate[6:8]), int(sda
 end_date = datetime(int(edate[0:4]), int(edate[4:6]), int(edate[6:8]), int(edate[8:10]))
 
 date_range = [d.strftime('%Y%m%d%H') for d in pd.date_range(start_date, end_date, freq='6h')][::-1]
-date = pn.widgets.Select(name='Date', value=date_range[-1], options=date_range)
+date = pn.widgets.Select(name='Date', value=date_range[3], options=date_range)
       
 def openFile(log):
     open_log = urlopen(log)

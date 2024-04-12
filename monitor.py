@@ -414,7 +414,7 @@ class MonitoringApp:
 
         The SMNA Monitoring App is also partially powered by the [readDiag](https://github.com/GAD-DIMNT-CPTEC/readDiag), [GSIBerror](https://github.com/GAD-DIMNT-CPTEC/GSIBerror), [SCANTEC]() and [SCANPLOT](https://github.com/GAM-DIMNT-CPTEC/SCANPLOT) projects all developed by the CPTEC staff in the [GAD-DIMNT-CPTEC](https://github.com/GAD-DIMNT-CPTEC) and [GAM-DIMNT-CPTEC](https://github.com/GAM-DIMNT-CPTEC) organizations.
 
-        If you find this content interesting, please drop us a line at the [discussion page in the SMNA Monitoring App repository](https://github.com/GAD-DIMNT-CPTEC/SMNAMonitoringApp).
+        If you find this content interesting, please drop us a line at the [discussion page in the SMNA Monitoring App repository](https://github.com/GAD-DIMNT-CPTEC/SMNAMonitoringApp/discussions).
 
         ---
 

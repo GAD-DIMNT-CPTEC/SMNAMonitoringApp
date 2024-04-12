@@ -214,7 +214,7 @@ def plotStDev(stdevvars, show_profile, vertical_log_am, colormap, invert_colors)
                                   responsive=True,
                                   title='Standard Deviation of ' + str(vfname)) 
 
-        ax = ax_sst * gv.feature.land.options(fill_color='k', line_color='k')      
+        ax = ax_sst * gv.feature.land.options(fill_color='k', line_color='w')      
     else:
         vname = 'amplitudes_' + str(stdevvars)
         dset = catalog_berror[vname].to_dask()         
@@ -300,7 +300,7 @@ def plotHScale(hscalevars, vertical_log_hs, colormap, invert_colors):
                                   responsive=True,
                                   title='Horizontal Length Scale of ' + str(vfname))   
 
-        ax = ax_sst * gv.feature.land.options(fill_color='k', line_color='k')       
+        ax = ax_sst * gv.feature.land.options(fill_color='k', line_color='w')       
     else:       
         ax = dset.hvplot.image(y='level',
                                   x='latitude',
@@ -383,7 +383,7 @@ def plotVScale(vscalevars, vertical_log_vs, colormap, invert_colors):
                                   coastline=True,  
                                   responsive=True,
                                   title='Vertical Length Scale of ' + str(vfname))          
-        ax = ax_sst * gv.feature.land.options(fill_color='k', line_color='k')
+        ax = ax_sst * gv.feature.land.options(fill_color='k', line_color='w')
     else:
         vname = 'vscales_' + str(vscalevars)
         dset = catalog_berror[vname].to_dask()          

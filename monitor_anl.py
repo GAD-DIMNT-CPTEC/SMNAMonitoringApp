@@ -87,7 +87,7 @@ edate = monitoring_app_dates.getDates()[1].strip()
 start_date = datetime(int(sdate[0:4]), int(sdate[4:6]), int(sdate[6:8]), int(sdate[8:10]))
 end_date = datetime(int(edate[0:4]), int(edate[4:6]), int(edate[6:8]), int(edate[8:10]))
 date_range = [d.strftime('%Y%m%d%H') for d in pd.date_range(start_date, end_date, freq='6h')][::-1]
-date = pn.widgets.Select(name='Date', value=date_range[0], options=date_range)
+date = pn.widgets.Select(name='Date', value=date_range[3], options=date_range)
 
 colormaps = ['nipy_spectral',  'Blues',  'BrBG',  'BuGn',  'BuPu',  'CMRmap',  'Dark2',  'GnBu', 
              'Greens',  'Greys',  'OrRd',  'Oranges',  'PRGn',  'Paired',  'Pastel1', 
