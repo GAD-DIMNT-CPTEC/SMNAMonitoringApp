@@ -28,6 +28,8 @@ end_date = datetime(int(edate[0:4]), int(edate[4:6]), int(edate[6:8]), int(edate
 date_range = [d.strftime('%Y%m%d%H') for d in pd.date_range(start_date, end_date, freq='6h')][::-1]
 date = pn.widgets.Select(name='Date', value=date_range[0], options=date_range)
 
+loop = pn.widgets.Select(name='Loop', value='01', options=['01', '03'])
+
 # From the catalogs, assemble a dictionary with all the kx values:
 variable_list = ['q', 'ps', 't', 'uv', 'gps']
 zlevs = [1000.0, 900.0, 800.0, 700.0, 600.0, 500.0, 400.0, 300.0, 250.0, 200.0, 150.0, 100.0, 50.0, 0.0]
@@ -74,18 +76,22 @@ by_level = pn.widgets.Toggle(name='by Level', value=False, button_type='success'
 by_kx = pn.widgets.Toggle(name='by kx', value=False, button_type='success')
 
 @pn.cache
-def loadData(lfname):
+def loadData(lfname, loop):
     try:
-        ax = catalog_diag_conv_01[lfname].read()
+        if loop == '01':
+            ax = catalog_diag_conv_01[lfname].read()
+        elif loop == '03':
+            ax = catalog_diag_conv_03[lfname].read()
     except:
         ax = monitor_app_texts.warnings_rdiag(lfname + ' (loadData)')
     return ax
 
-@pn.depends(vars, kxs, level, iuse, date)
-def plotPtmap(vars, kxs, level, iuse, date):
+@pn.depends(vars, kxs, level, iuse, date, loop)
+def plotPtmap(vars, kxs, level, iuse, date, loop):
     try:
-        lfname = str(vars) + '_diag_conv_01_' + str(sdate)
-        obsInfo = loadData(lfname)
+        lfname = str(vars) + '_diag_conv_' + str(loop) + '_' + str(date)
+        print(lfname)
+        obsInfo = loadData(lfname, loop)
         df = obsInfo
 
         maskl = df['press'] == level
@@ -106,11 +112,12 @@ def plotPtmap(vars, kxs, level, iuse, date):
         ax = monitor_app_texts.warnings_rdiag(lfname + ' (plotPtmap)')
     return pn.Column(ax) 
 
-@pn.depends(vars, kxs, level, iuse, date)
-def plotPtmapMulti(vars, kxs, level, iuse, date):
+@pn.depends(vars, kxs, level, iuse, date, loop)
+def plotPtmapMulti(vars, kxs, level, iuse, date, loop):
     try:
-        lfname = str(vars) + '_diag_conv_01_' + str(sdate)
-        obsInfo = loadData(lfname)
+        lfname = str(vars) + '_diag_conv_' + str(loop) + '_' + str(date)
+        print(lfname)
+        obsInfo = loadData(lfname, loop)
         df = obsInfo.loc[kxs]
 
         maskl = df['press'] == level
@@ -130,11 +137,11 @@ def plotPtmapMulti(vars, kxs, level, iuse, date):
         ax = monitor_app_texts.warnings_rdiag(lfname + ' (plotPtmapMulti)')
     return pn.Column(ax) 
     
-@pn.depends(varn, kxn, by_level, date)
-def plotPcount(varn, kxn, by_level, date):
+@pn.depends(varn, kxn, by_level, date, loop)
+def plotPcount(varn, kxn, by_level, date, loop):
     try:
-        lfname = str(varn) + '_diag_conv_01_' + str(sdate)
-        obsInfo = loadData(lfname)
+        lfname = str(varn) + '_diag_conv_' + str(loop) + '_' + str(date)
+        obsInfo = loadData(lfname, loop)
         if by_level:
             df = obsInfo.loc[kxn].groupby('press').size()
             ax = df.hvplot.bar(x='press',
@@ -157,11 +164,12 @@ def plotPcount(varn, kxn, by_level, date):
         ax = monitor_app_texts.warnings_rdiag(lfname + ' (plotPcount)')
     return pn.Column(ax)
 
-@pn.depends(varn, kxn, by_level, by_kx, date)
-def plotPcount2(varn, kxn, by_level, by_kx, date):
+@pn.depends(varn, kxn, by_level, by_kx, date, loop)
+def plotPcount2(varn, kxn, by_level, by_kx, date, loop):
     try:
-        lfname = str(varn) + '_diag_conv_01_' + str(sdate)
-        obsInfo = loadData(lfname)
+        lfname = str(varn) + '_diag_conv_' + str(loop) + '_' + str(date)
+        print(lfname)
+        obsInfo = loadData(lfname, loop)
         if by_level:
             df = obsInfo.loc[kxn].groupby('press').size()
             #df = obsInfo.groupby(['press', 'kx']).size()
@@ -198,11 +206,12 @@ def plotPcount2(varn, kxn, by_level, by_kx, date):
         ax = monitor_app_texts.warnings_rdiag(lfname + ' (plotPcount2)')
     return pn.Column(ax)
 
-@pn.depends(varn, kxn, by_level, date)
-def getTable(varn, kxn, by_level, date):
+@pn.depends(varn, kxn, by_level, date, loop)
+def getTable(varn, kxn, by_level, date, loop):
     try:
-        lfname = str(varn) + '_diag_conv_01_' + str(sdate)
-        obsInfo = loadData(lfname)
+        lfname = str(varn) + '_diag_conv_' + str(loop) + '_' + str(date)
+        print(lfname)
+        obsInfo = loadData(lfname, loop)
         if by_level:
             ax = obsInfo[varn].head(50)#[varn].loc[kxn]#.loc[kxn].groupby('press')#.size()
             #ax = pn.widgets.Tabulator(df)
@@ -215,9 +224,9 @@ def getTable(varn, kxn, by_level, date):
 
 def LayoutSidebarRdiag():   
     card_parameters = pn.Card(date,
-                              pn.Card(varn, by_level, kxn, by_kx, title='Number of Observations', collapsed=False),
+                              pn.Card(varn, loop, by_level, kxn, by_kx, title='Number of Observations', collapsed=False),
                               #pn.Card(varn, by_level, kxn, title='Table', collapsed=True),
-                              pn.Card(vars, kxs, level, iuse, title='Spatial Distribution', collapsed=True),
+                              pn.Card(vars, loop, kxs, level, iuse, title='Spatial Distribution', collapsed=True),
                               title='Parameters', collapsed=False)
 
     return pn.Column(card_parameters)
