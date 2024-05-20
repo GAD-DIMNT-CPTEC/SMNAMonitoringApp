@@ -33,27 +33,27 @@ do
     then
       for log in ${Logs[@]}
       do
-        rm -rf ${lpath}/${prod}/${log}/*${log}_${data}*
+        rm -rf ${lpath}/${prod}/${log}/*${log}_${data:0:8}*
       done
     elif [ ${prod} == "anls" ]
     then
-      rm -rf ${lpath}/${prod}/${data}
-      #rm -rf ${lpath}/${prod}/grib_tmp/${data}
-      rm -rf ${lpath}/${prod}/spec_tmp/${data}
+      rm -rf ${lpath}/${prod}/${data:0:8}*
+      #rm -rf ${lpath}/${prod}/grib_tmp/${data:0:8}*
+      rm -rf ${lpath}/${prod}/spec_tmp/${data:0:8}*
     elif [ ${prod} == "obsm" ]
     then
-      rm -rf ${lpath}/${prod}/txt/obs_${data}*.txt
-      rm -rf ${lpath}/${prod}/txt/gsilog_${data}.txt
-      rm -rf ${lpath}/${prod}/csv/obs_${data}*.csv
-      rm -rf ${lpath}/${prod}/csv/gsilog_${data}.csv
+      rm -rf ${lpath}/${prod}/txt/obs_${data:0:8}*.txt
+      rm -rf ${lpath}/${prod}/txt/gsilog_${data:0:8}*.txt
+      rm -rf ${lpath}/${prod}/csv/obs_${data:0:8}*.csv
+      rm -rf ${lpath}/${prod}/csv/gsilog_${data:0:8}*.csv
     elif [ ${prod} == "rdiag" ]
     then
-      rm -rf ${lpath}/${prod}/${data}
-      rm -rf ${lpath}/${prod}/diag_tmp/${data}
+      rm -rf ${lpath}/${prod}/${data:0:8}*
+      rm -rf ${lpath}/${prod}/diag_tmp/${data:0:8}*
     elif [ ${prod} == "jo" ]
     then
-      rm -rf ${lpath}/${prod}/preOper/${data}
-      rm -rf ${lpath}/${prod}/JGerd/${data}
+      rm -rf ${lpath}/${prod}/preOper/${data:0:8}*
+      rm -rf ${lpath}/${prod}/JGerd/${data:0:8}*
     fi
 
   done
