@@ -190,10 +190,11 @@ else:
 
 
 for d,LABEL in enumerate(iter_time(args.LABELI, args.LABELF, args.incr)):
-   #anlDate = LABEL.strftime('%Y%m%d%H')
+   anlDate = LABEL.strftime('%Y%m%d%H')
+   cmdargs = vars(args)
    #file = args.path+'/'+anlDate+'/fort.220'
-   file = args.path.replace('%Y%m%d%H', LABEL.strftime("%Y%m%d%H"))+'/fort.220'
-   print(file)
+   #file = args.path.replace('%Y%m%d%H', LABEL.strftime("%Y%m%d%H"))+'/fort.220'
+   file = os.path.join(cmdargs['path'],anlDate,'fort.220')
    date      = []
    hour      = []
    date2     = []
