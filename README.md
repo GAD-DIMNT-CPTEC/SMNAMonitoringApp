@@ -4,7 +4,7 @@
 
 SMNAMonitoringApp - a Python Dashboard based on Panel developed to monitor the status of the global operational data assimilation system from the Center for Weather Forecasts and Climate Studies (CPTEC).
 
-## Test
+## Test locally
 
 First, make sure to have the GNU C and C++ compiler installed. On Debian based distros, install `gcc` and `g++` as such:
 
@@ -38,6 +38,15 @@ Or, just use the script:
 
 ```
 ./SMNAMonitoringApp
+```
+
+## Test with Docker
+
+Before proceding, make sure to have Docker properly installed and configured on your system. Then, run:
+
+```
+docker build -t smna-monitoring .
+docker run -p 5006:5006 smna-monitoring
 ```
 
 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode" target="_blank"><img src="https://mirrors.creativecommons.org/presskit/buttons/88x31/png/by-nc-sa.png" alt="CC-BY-NC-SA" width="100"/></a>

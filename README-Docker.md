@@ -1,22 +1,20 @@
-# Imagem Docker para o SMNAMonitoringApp
+# Docker container for the SMNAMonitoringApp
 
-## Criação da imagem
-
-1. Criar o arquivo `Dockerfile`;
-2. Criar o arquivo `docker-compose.yml` (opcional);
-3. Criar o arquivo `requirements.txt` (editar manualmente, se necessário):
+1. Create the `Dockerfile` file;
+2. Create the `docker-compose.yml` file (optional);
+3. Create the `requirements.txt` file (if necessary, manually edit the file):
     ```
     pip freeze > requirements.txt
     ```
-4. Construir o container:
+4. Build the container:
     ```
     docker build -t smna-monitoring .
     ```
-5. Executar o container:
+5. Run the container:
     ```
     docker run -p 5006:5006 smna-monitoring
     ```
-6. Construir e executar o container com o `docker-compose.yml`:
+6. If using the `docker-compose.yml` file, build and run the container:
     ```
     docker-compose up --build
     ```
