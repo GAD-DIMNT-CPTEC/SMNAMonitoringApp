@@ -1,0 +1,19 @@
+[Desktop Entry]
+Categories=Utility;Application;
+Comment[en_US]=Aplicação Electron do SMNAMonitoringApp - Um Sistema de Monitoramento do SMNA (V1.0.0a1)
+Comment=Aplicação Electron do SMNAMonitoringApp - Um Sistema de Monitoramento do SMNA (V1.0.0a1)
+Exec=/bin/bash -c /home/carlos/GitHub/SMNAMonitoringApp.repo/smnamonitoringapp.sh
+GenericName[en_US]=
+GenericName=
+Icon=/home/carlos/Pictures/scanplot.png
+MimeType=
+Name[en_US]=SMNAMonitoringApp
+Name=SMNAMonitoringApp
+Path=
+PrefersNonDefaultGPU=false
+StartupNotify=true
+Terminal=false
+TerminalOptions=\s--noclose
+Type=Application
+X-KDE-SubstituteUID=false
+X-KDE-Username=

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=SMNAMonitoringApp
+Comment=Aplicação Electron do SMNAMonitoringApp - Um Sistema de Monitoramento do SMNA (V1.0.0a1)
+Exec=/bin/bash -c "/home/carlos/GitHub/SMNAMonitoringApp.repo/smnamonitoringapp.sh"
+Icon=/home/carlos/Pictures/scanplot.png
+Terminal=true
+Type=Application
+Categories=Utility;Application;
+
