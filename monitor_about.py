@@ -2,15 +2,19 @@
 
 import panel as pn
 
+from monitor_texts import MonitoringAppTexts
+
+monitor_app_texts = MonitoringAppTexts()
+monitor_warning_bottom_main = monitor_app_texts.warnings()
+
 class MonitoringAppAbout:
     def __init__(self):
         pn.extension('floatpanel')
 
     def LayoutSidebar(self):
         cptec_logo = pn.pane.PNG('img/cptec.png', width=100)
-        inpe_logo = pn.pane.PNG(
-                'img/logo_mcti_vertical_positiva_02.png', 
-                width=300)
+        inpe_logo = pn.pane.PNG('img/logo_mcti_vertical_positiva_02.png', width=300)
+        #inpe_logo = pn.pane.WebP('img/img_sidebar2.webp', width=300)
         logos = pn.Column(
                 pn.Row(
                   pn.layout.HSpacer(),
@@ -34,5 +38,5 @@ The SMNA (Sistema de Modelagem Numérica e Assimilação de Dados - in portugues
 The dashboard code is available at [our GitHub repository](https://github.com/GAD-DIMNT-CPTEC/SMNAMonitoringApp).
                               
 If want to learn more about the SMNAMonitoringApp, take a look at the [project documentation](https://gad-dimnt-cptec.github.io/SMNAMonitoringApp).                              
-        """)
+        """, monitor_warning_bottom_main, sizing_mode='stretch_width')
         return aboutText 

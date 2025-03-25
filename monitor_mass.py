@@ -21,19 +21,22 @@
 #-----------------------------------------------------------------------------#
 #BOC
 
-
+import os
+import requests
 import sqlite3
-from datetime import datetime, date
 import numpy as np
 import pandas as pd
 import panel as pn
 import holoviews as hv
 import hvplot.pandas
-from bokeh.models.formatters import DatetimeTickFormatter
-import os
-import requests
 
-#class MonitoringApp:
+from datetime import datetime, date
+from bokeh.models.formatters import DatetimeTickFormatter
+from monitor_texts import MonitoringAppTexts
+
+monitor_app_texts = MonitoringAppTexts()
+monitor_warning_bottom_main = monitor_app_texts.warnings()
+
 class MonitoringAppMass:
     def __init__(self):
         # Inicialização do Panel
@@ -87,11 +90,11 @@ class MonitoringAppMass:
         
     def create_widgets(self):
         # Widgets do Panel
-        self.Hour = pn.widgets.RadioBoxGroup(name="Hour Cycle", options=self.df.hour.unique().tolist())#, inline=True)
-        self.Outer = pn.widgets.RadioBoxGroup(name="Outer Loop", options=self.df.outer.unique().tolist())#, inline=True)
-        self.Vars = pn.widgets.Select(name='Variables', options=self.df.keys()[2:].tolist())#, inline=True)
-        self.use_mean = pn.widgets.Switch(name='Monthly Mean')#, inline=True)
-        self.column_name = pn.widgets.Select(name='Column to Plot', options=self.dc.columns.tolist()[3:])#, inline=True)
+        self.Hour = pn.widgets.RadioBoxGroup(name="Hour Cycle", options=self.df.hour.unique().tolist())
+        self.Outer = pn.widgets.Select(name="Outer Loop", options=self.df.outer.unique().tolist(), width=250)
+        self.Vars = pn.widgets.Select(name='Variables', options=self.df.keys()[2:].tolist(), width=250)
+        self.use_mean = pn.widgets.Checkbox(name='Mean', width=250)
+        self.column_name = pn.widgets.Select(name='Column to Plot', options=self.dc.columns.tolist()[3:])
        
         # Widget para selecionar a data e a hora
         self.date_time_picker = pn.widgets.DatetimePicker(
@@ -101,80 +104,40 @@ class MonitoringAppMass:
             value=datetime(self.min_date.year, self.min_date.month, self.min_date.day, 0, 0)  # Inicialize com 00:00
         )
 
-
         # Widget para selecionar o intervalo de tempo
-        #self.date_range_slider = pn.widgets.DateRangeSlider(
-        #    name="Select Date Range",
-        #    start=self.df.index.min(),
-        #    end=self.df.index.max(),
-        #    value=(self.df.index.min(), self.df.index.max())
-        #)
         self.date_range_slider = pn.widgets.DatetimeRangePicker(
             name="Date Range",
             value=(self.df.index.min(), self.df.index.max()),
-            enable_time=False
+            enable_time=False,
+            width=250
         )
 
     def create_layout(self):
 
         self.tab1 = pn.Column(
-            pn.bind(self.plotMassFig, self.Vars, self.Outer, self.use_mean, self.date_range_slider.param.value),
-            sizing_mode="stretch_both"
-        )
-
-        self.tab2 = pn.Column(
-                    pn.Row(pn.pane.HTML("<span style='display: inline-block; margin-top: 9px;'>Minimization Plots</span>")),
-                    sizing_mode="stretch_both"
-        )    
-        
-        # Conteúdo da aplicação
-        tabs = pn.Tabs(dynamic=True, active=0)
-        tabs.append(("Constrains", self.tab1))
-        tabs.append(("Minimization Plots", self.tab2))
+            pn.bind(self.plotMassFig, self.Vars, self.Outer, self.use_mean, self.date_range_slider.param.value), 
+            height=800)
 
         # Layout da barra lateral
         sidebar1 = pn.Column(
-            self.Vars,
-            pn.Row(pn.pane.HTML("<span style='display: inline-block; margin-top: 9px;'>Select OuterLoop:</span>"), self.Outer),
-            pn.Row(pn.pane.HTML("<span style='display: inline-block; margin-top: 0px;'>Use the mean: </span>"), self.use_mean),
-            self.date_range_slider
+            pn.Row(self.date_range_slider, pn.widgets.TooltipIcon(value='Choose a date range', align='start')),
+            pn.Row(self.Vars, pn.widgets.TooltipIcon(value='Choose a variable', align='start')),
+            pn.Row(self.Outer, pn.widgets.TooltipIcon(value='Choose the outerloop', align='start')),
+            pn.Row(self.use_mean, pn.widgets.TooltipIcon(value='Whether to use the mean', align='start'))            
         )
         
-        sidebar2 = pn.Column(
-            self.date_time_picker,
-            self.column_name
-            )
-
         col = pn.Column(sidebar1)
         
-        @pn.depends(self.column_name, self.date_time_picker, watch=True)
-        def update_tab2(column_name, date_time_picker):
-            self.tab2.clear()
-            selected_date_time = date_time_picker.strftime("%Y-%m-%d %H:%M:%S")  # Não é necessário .value aqui
-            self.tab2.append(self.plot_column(column_name,date_time_picker))
-
-        @pn.depends(tabs.param.active, watch=True)
-        def insert_widget(active_tab):
-            print (active_tab)
-            if active_tab == 0: 
-                col[0] = sidebar1
-            else:
-                col[0] = sidebar2
-
         # Criar o template da aplicação
-        #self.app = pn.template.MaterialTemplate(
         self.app = pn.template.FastListTemplate(
             site="SMNA Dashboard",
             title="SMNAMonitoringApp",
-            #header_background="#1976d2",
         )
 
-
-        self.app.main.append(tabs)
+        #self.app.main.append(tabs)
         self.app.sidebar.append(col)
 
     def plotMassFig(self, var, outer, use_mean, date_range):
-        # Implemente sua lógica aqui
         plots = []
         for hour in ["0"] + list(np.arange(6, 24, 6)):
             query = f"hour == {hour} & outer == {outer}"
@@ -214,7 +177,6 @@ class MonitoringAppMass:
     
         return layout
 
-
     def get_last_dates_with_hour(self,dataframe, num_last_days, hour=None):
         """Calcula as últimas datas com base no número especificado e na hora desejada."""
         # Filtra o DataFrame para as datas com a hora desejada
@@ -235,7 +197,6 @@ class MonitoringAppMass:
         mean_data = last_days_data.groupby(groupby).mean().reset_index()
         std_data = last_days_data.groupby(groupby).std().reset_index()
         return mean_data, std_data
-
 
     def plot_column(self, column_name, date_time, num_last_dates=4, num_last_days=7):
         print('-->>column:', column_name)
@@ -264,7 +225,6 @@ class MonitoringAppMass:
         
         # Adicione as séries temporais para as últimas datas
         last_dates = pd.date_range(end=date_time,periods=num_last_dates,freq='6H')
-        #print(last_dates)
         for date in last_dates:
             print(date)
             if date != date_time:
@@ -286,22 +246,9 @@ class MonitoringAppMass:
         plot_mean = mean.hvplot.line(y=column_name, color='black', line_width=3, label=f"Mean {column_name} (Last {num_last_days} Days)",
                                 responsive=True)
         plot_std_band = hv.Area((X, std_upper, std_lower),vdims=['y', 'y2'], label=f'std {column_name} (Last {num_last_days} Days)')
-        #return plot * plot_mean
         return (plot_std_band.options(alpha=0.25) * plot * plot_mean  )
 
-#    def modal_about(self):
-#        self.modal_btn = pn.widgets.Button(name='📊 About', button_type='success')
-#        self.text_about = pn.Column("# About")
-#        self.modal_btn.on_click(self.show_modal_about)
-#        return pn.Column(self.modal_btn)
-#
-#    def show_modal_about(self, event):
-#        self.app.modal[0].clear()
-#        self.app.modal[0].append(self.text_about)
-#        self.app.open_modal()
-
     def LayoutSidebar(self):
-        #return pn.Card(pn.Column(self.app.sidebar[0], self.modal_about()), title='Parameters', collapsed=False)
         return pn.Card(pn.Column(self.app.sidebar[0]), title='Parameters', collapsed=False)
 
     def LayoutMain(self):
@@ -310,21 +257,4 @@ class MonitoringAppMass:
 
         Set the parameters on the left to update the curves.
         """)
-        return pn.Column(main_text, self.tab1)
-
-
-
-#    def run(self):
-#        # Servir a aplicação
-#        self.app.servable()
-#        #self.app.show()
-#
-##print('name:',__name__)
-##if __name__ == "__main__":
-##    print('Olá mundo')
-#monitoring_app = MonitoringApp()
-#monitoring_app.run()
-#    
-## EOC
-## -----------------------------------------------------------------------------
-#
+        return pn.Column(main_text, self.tab1, monitor_warning_bottom_main, sizing_mode='stretch_width')

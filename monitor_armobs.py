@@ -28,7 +28,7 @@ import pandas as pd
 import hvplot.pandas
 import holoviews as hv
 import panel as pn
-from datetime import timedelta
+#from datetime import timedelta
 from math import pi
 from bokeh.palettes import Category20c, Category20
 from bokeh.plotting import figure
@@ -36,15 +36,23 @@ from bokeh.transform import cumsum
 from bokeh.models.widgets.tables import DateFormatter
 from datetime import datetime, timedelta
 
+from monitor_texts import MonitoringAppTexts
 from monitor_dates import MonitoringAppDates
 
 pn.extension('floatpanel')
 pn.extension(sizing_mode="stretch_width", notifications=True)
 
+monitor_app_texts = MonitoringAppTexts()
+monitor_warning_bottom_main = monitor_app_texts.warnings()
+
 dfs = pd.read_csv('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/obsm/mon_rec_obs_final.csv', header=[0], 
                   parse_dates=[('Data do Download'), ('Data da Observação')])
+#dfs = pd.read_csv('/extra2/SMNAMonitoringApp_DATA/obsm/mon_rec_obs_final.csv', header=[0], 
+#                  parse_dates=[('Data do Download'), ('Data da Observação')])
 
 dfs['Diferença de Tempo'] = (dfs['Data do Download'] - dfs['Data da Observação']) - timedelta(hours=3)
+
+#print(dfs)
 
 monitoring_app_dates = MonitoringAppDates()
 sdate = monitoring_app_dates.getDates()[0].strip()
@@ -68,18 +76,18 @@ end_date = datetime(int(edate[0:4]), int(edate[4:6]), int(edate[6:8]), int(edate
 #)
 
 values = (start_date, end_date)
-
-date_range_slider = pn.widgets.DatetimeRangePicker(name='Date Range', value=values, enable_time=False)
+print(values)
+date_range_slider = pn.widgets.DatetimeRangePicker(name='Date Range', value=values, enable_time=False, width=240)
 
 units = ['KB', 'MB', 'GB', 'TB', 'PB']
 otype = ['1bamua', '1bhrs4', 'airsev', 'atms', 'crisf4', 'eshrs3', 'esmhs', 'gome', 'gpsipw', 'gpsro', 'mtiasi', 'osbuv8', 'prepbufr', 'satwnd', 'sevcsr']
 ftype = ['gdas', 'gfs']
 synoptic_time_list = ['00Z', '06Z', '12Z', '18Z', '00Z e 12Z', '06Z e 18Z', '00Z, 06Z, 12Z e 18Z']
 
-units_w = pn.widgets.Select(name='Unit', value=units[2], options=units)
-otype_w = pn.widgets.MultiChoice(name='Observation type', value=otype, options=otype, solid=False)
-ftype_w = pn.widgets.MultiChoice(name='File type', value=[ftype[0]], options=ftype, solid=False)
-synoptic_time = pn.widgets.RadioBoxGroup(name='Synopit time', value=synoptic_time_list[-1], options=synoptic_time_list, inline=False)
+units_w = pn.widgets.Select(name='Unit', value=units[2], options=units, width=240)
+otype_w = pn.widgets.MultiChoice(name='Observation type', value=otype, options=otype, solid=False, width=260)
+ftype_w = pn.widgets.MultiChoice(name='File type', value=[ftype[0]], options=ftype, solid=False, width=260)
+synoptic_time = pn.widgets.RadioBoxGroup(name='Synopit time', value=synoptic_time_list[-1], options=synoptic_time_list, inline=False, width=240)
 
 date_range = date_range_slider.value
 
@@ -90,7 +98,9 @@ def getSizeDic(dfsp, otype_w):
     return dic_size    
     
 def subDataframe(df, start_date, end_date):
+    #print('subdataframe', df, start_date, end_date)
     mask = (df['Data da Observação'] >= start_date) & (df['Data da Observação'] <= end_date)
+    #print('mask', df.loc[mask])
     return df.loc[mask]
 
 def subTimeDataFrame(synoptic_time):
@@ -174,6 +184,8 @@ def getTable(otype_w, ftype_w, synoptic_time, date_range, units_w):
     dfs_tmp = dfs.copy()
     dfs2 = subDataframe(dfs_tmp, start_date, end_date)    
    
+    print(date_range)
+
     factor, n1factor, n2factor, n3factor = unitConvert(units_w)
 
     #dfs2[n1factor] = dfs2['Tamanho do Download (KB)'].multiply(factor)   
@@ -182,6 +194,8 @@ def getTable(otype_w, ftype_w, synoptic_time, date_range, units_w):
     
     time_fmt0, time_fmt1 = subTimeDataFrame(synoptic_time)
     
+    #print('teste', dfs_tmp)
+
     if time_fmt0 == time_fmt1:
         dfsp = dfs2.loc[dfs2['Tipo de Observação'].isin(otype_w)].loc[dfs2['Tipo de Arquivo'].isin(ftype_w)].set_index('Data da Observação').at_time(str(time_fmt0)).reset_index()
     else:
@@ -199,49 +213,60 @@ def getTable(otype_w, ftype_w, synoptic_time, date_range, units_w):
     }
 
     # Avançado
-#    df_tb = pn.pane.DataFrame(dfsp, 
-#                              name='DataFrame', 
-#                              height=600, 
-#                              bold_rows=True,
-#                              border=15,
-#                              decimal='.',
-#                              index=True,
-#                              show_dimensions=True,
-#                              justify='center',
-#                              sparsify=True,
-#                              sizing_mode='stretch_both',
-#                             )
+    #df_tb = pn.pane.DataFrame(dfsp, 
+    #                          name='DataFrame', 
+    #                          height=600, 
+    #                          bold_rows=True,
+    #                          border=15,
+    #                          decimal='.',
+    #                          index=True,
+    #                          show_dimensions=True,
+    #                          justify='center',
+    #                          sparsify=True,
+    #                          sizing_mode='stretch_both',
+    #                         )
     
     # Avançado
-    df_tb = pn.widgets.DataFrame(dfsp, 
-                                 name='DataFrame', 
-                                 height=600, 
-                                 show_index=True, 
-                                 frozen_rows=0, 
-                                 frozen_columns=2, 
-                                 autosize_mode='force_fit', 
-                                 fit_columns=True,
-                                 formatters=bokeh_formatters,
-                                 auto_edit=False,
-                                 reorderable=True,
-                                 sortable=True,
-                                 text_align='center',
-                                )
+    #df_tb = pn.widgets.DataFrame(dfsp, 
+    #                             name='DataFrame', 
+    #                             height=600, 
+    #                             show_index=True, 
+    #                             frozen_rows=0, 
+    #                             frozen_columns=2, 
+    #                             autosize_mode='force_fit', 
+    #                             fit_columns=True,
+    #                             formatters=bokeh_formatters,
+    #                             auto_edit=False,
+    #                             reorderable=True,
+    #                             sortable=True,
+    #                             text_align='center',
+    #                            )
 
+    stylesheet = """
+        .tabulator-cell {
+        font-size: 12px;
+    }
+    """
 
     # Muito Avançado (e pesado)
-#    df_tb = pn.widgets.Tabulator(dfsp, 
-#                                 name='DataFrame', 
-#                                 frozen_rows=[0,1],
-#                                 frozen_columns=[2], 
-#                                 pagination=None,
-#                                 selectable='toggle',
-#                                 show_index=True,
-#                                 theme='default',
-#                                 formatters=bokeh_formatters,
-#                                )
+    df_tb = pn.widgets.Tabulator(dfsp, 
+                                 name='DataFrame', 
+                                 #frozen_rows=[0,1],
+                                 #frozen_columns=[2], 
+                                 #pagination=None,
+                                 disabled=True,
+                                 selectable='toggle',
+                                 #show_index=True,
+                                 theme='bootstrap4',
+                                 text_align='center',
+                                 layout='fit_data', #width=400,
+                                 stylesheets=[stylesheet],
+                                 formatters=bokeh_formatters,
+                                )
     
-    return pn.Column(df_tb, sizing_mode="stretch_both")
+    #print(df_tb)
+
+    return pn.Column(df_tb, height=800, sizing_mode="stretch_width")
        
 @pn.depends(otype_w, ftype_w, synoptic_time, date_range_slider.param.value, units_w)
 def plotLine(otype_w, ftype_w, synoptic_time, date_range, units_w):
@@ -372,7 +397,12 @@ def plotSelSize(otype_w, ftype_w, synoptic_time, date_range, units_w):
 
     return pn.Column(pn.pane.Bokeh(p))
          
-card_parameters = pn.Card(date_range_slider, synoptic_time, units_w, pn.Column(ftype_w, height=120), pn.Column(otype_w, height=450), title='Parameters', collapsed=False)
+card_parameters = pn.Card(pn.Row(date_range_slider, pn.widgets.TooltipIcon(value='Choose a date range', align='start')),
+                          pn.Row(synoptic_time, pn.widgets.TooltipIcon(value='Choose a synoptic time', align='start')),
+                          pn.Row(units_w, pn.widgets.TooltipIcon(value='Choose a unit', align='start')), 
+                          pn.Row(pn.Column(ftype_w, height=120), pn.widgets.TooltipIcon(value='Choose a file type', align='start')), 
+                          pn.Row(pn.Column(otype_w, height=450), pn.widgets.TooltipIcon(value='Choose one or more observation types', align='start')), 
+                          title='Parameters', collapsed=False)
 
 #tabs_contents = pn.Tabs(('PLOTS', pn.Row(plotLine, pn.Row(plotSelSize, width=600))), ('TABLE', getTable))
 tabs_contents = pn.Tabs(('PLOTS', pn.Column('Time series for the observation storage.', plotLine)), ('TABLE', pn.Column('Summary table for the observation storage.', getTable)))
@@ -385,4 +415,4 @@ def monitor_armobs_main():
                      # Observation Storage
                      
                      Set the parameters on the sidebar to update the plots. Click on the `TABLE` tab to get an overview of the observation stored.
-                     """, tabs_contents)
+                     """, tabs_contents,  monitor_warning_bottom_main, sizing_mode='stretch_width')

@@ -12,21 +12,21 @@ class MonitoringAppTexts:
     
     def warnings_anl(self, fname):
         text = (
-            "🛑 **Error:** The analysis field is not available for the selected date. File name is {fname}."
+            "🛑 **Error:** The analysis field is not available for the selected date. File name is **{fname}**."
         )
         message = pn.pane.Alert(text.format(fname=fname), alert_type='danger')
         return message
     
     def warnings_rdiag(self, fname):
         text = (
-            "🛑 **Error:** Data unavailable for the selection. File name is {fname}."
+            "🛑 **Error:** Data unavailable for the selection. File name is **{fname}**."
         )
         message = pn.pane.Alert(text.format(fname=fname), alert_type='danger')
         return message
 
     def warnings_logs(self, fname):
         text = (
-        "🛑 **Error:** The log file is not available for the selected date. File name is {fname}."
+        "🛑 **Error:** The log file is not available for the selected date. File name is **{fname}**."
         )
         message = pn.pane.Alert(text.format(fname=fname), alert_type='danger')
         return message

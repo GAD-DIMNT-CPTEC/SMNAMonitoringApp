@@ -34,9 +34,12 @@ from monitor_dates import MonitoringAppDates
 pn.extension()
 
 monitor_app_texts = MonitoringAppTexts()
+monitor_warning_bottom_main = monitor_app_texts.warnings()
 
-catalog_diag_conv_01 = intake.open_catalog('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/rdiag/catalog_diag_conv_01.yml')
-catalog_diag_conv_03 = intake.open_catalog('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/rdiag/catalog_diag_conv_03.yml')
+#catalog_diag_conv_01 = intake.open_catalog('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/rdiag/catalog_diag_conv_01.yml')
+#catalog_diag_conv_03 = intake.open_catalog('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/rdiag/catalog_diag_conv_03.yml')
+catalog_diag_conv_01 = intake.open_catalog('/extra2/SMNAMonitoringApp_DATA/rdiag/catalog_diag_conv_01.yml')
+catalog_diag_conv_03 = intake.open_catalog('/extra2/SMNAMonitoringApp_DATA/rdiag/catalog_diag_conv_03.yml')
 
 monitoring_app_dates = MonitoringAppDates()
 sdate = monitoring_app_dates.getDates()[0].strip()
@@ -45,13 +48,13 @@ edate = monitoring_app_dates.getDates()[1].strip()
 start_date = datetime(int(sdate[0:4]), int(sdate[4:6]), int(sdate[6:8]), int(sdate[8:10]))
 end_date = datetime(int(edate[0:4]), int(edate[4:6]), int(edate[6:8]), int(edate[8:10]))
 date_range = [d.strftime('%Y%m%d%H') for d in pd.date_range(start_date, end_date, freq='6h')][::-1]
-date = pn.widgets.Select(name='Date', value=date_range[3], options=date_range)
+date = pn.widgets.Select(name='Date', value=date_range[3], options=date_range, width=235)
 
-loop = pn.widgets.Select(name='Loop', value='01', options=['01', '03'])
+loop = pn.widgets.Select(name='Loop', value='01', options=['01', '03'], width=230)
 
 Tiles = ['CartoDark', 'CartoLight', 'EsriImagery', 'EsriNatGeo', 'EsriUSATopo',
          'EsriTerrain', 'EsriStreet', 'EsriReference', 'OSM', 'OpenTopoMap']
-tile = pn.widgets.Select(name='Tiles', value=Tiles[8], options=Tiles)
+tile = pn.widgets.Select(name='Tiles', value=Tiles[8], options=Tiles, width=230)
 
 # From the catalogs, assemble a dictionary with all the kx values:
 variable_list = ['q', 'ps', 't', 'uv', 'gps']
@@ -66,8 +69,8 @@ _kx_values = {'q':   [181, 120, 187, 180, 183],
 _kx_valuesn = _kx_values.copy()
 _kx_valuess = _kx_values.copy()
 
-varn = pn.widgets.Select(name='Variable', value=variable_list[0], options=variable_list)
-kxn = pn.widgets.MultiChoice(name='kx', value=_kx_values[varn.value], options=_kx_values[varn.value], solid=False)
+varn = pn.widgets.Select(name='Variable', value=variable_list[0], options=variable_list, width=230)
+kxn = pn.widgets.MultiChoice(name='kx', value=_kx_values[varn.value], options=_kx_values[varn.value], solid=False, width=230)
 
 @pn.depends(varn.param.value, watch=True)
 def _update_kx_valuesn(select_varn):
@@ -75,8 +78,8 @@ def _update_kx_valuesn(select_varn):
     kxn.options = kx_valuesn
     kxn.value = kx_valuesn
 
-vars = pn.widgets.Select(name='Variable', value=variable_list[0], options=variable_list)
-kxs = pn.widgets.MultiChoice(name='kx', value=_kx_values[vars.value], options=_kx_values[vars.value], solid=False)
+vars = pn.widgets.Select(name='Variable', value=variable_list[0], options=variable_list, width=230)
+kxs = pn.widgets.MultiChoice(name='kx', value=_kx_values[vars.value], options=_kx_values[vars.value], solid=False, width=230)
 
 @pn.depends(vars.param.value, watch=True)
 def _update_kx_valuess(select_vars):
@@ -84,11 +87,11 @@ def _update_kx_valuess(select_vars):
     kxs.options = kx_valuess
     kxs.value = kx_valuess
 
-level = pn.widgets.Select(name='Level', value=zlevs[0], options=zlevs)
-iuse = pn.widgets.Select(name='iuse', value=1, options=[-1, 1])
+level = pn.widgets.Select(name='Level', value=zlevs[0], options=zlevs, width=230)
+iuse = pn.widgets.Select(name='iuse', value=1, options=[-1, 1], width=230)
 
-by_level = pn.widgets.Toggle(name='by Level', value=False, button_type='success')
-by_kx = pn.widgets.Toggle(name='by kx', value=False, button_type='success')
+by_level = pn.widgets.Toggle(name='by Level', value=False, button_type='success', width=230)
+by_kx = pn.widgets.Toggle(name='by kx', value=False, button_type='success', width=230)
 
 @pn.cache
 def loadData(lfname, loop):
@@ -104,7 +107,7 @@ def loadData(lfname, loop):
 @pn.depends(vars, kxs, level, iuse, date, loop, tile)
 def plotPtmap(vars, kxs, level, iuse, date, loop, tile):
     try:
-        lfname = str(vars) + '_diag_conv_' + str(loop) + '_' + str(date)
+        lfname = str(vars) + '-diag_conv_' + str(loop) + '_' + str(date)
         #print(lfname)
         obsInfo = loadData(lfname, loop)
         df = obsInfo
@@ -130,7 +133,7 @@ def plotPtmap(vars, kxs, level, iuse, date, loop, tile):
 @pn.depends(vars, kxs, level, iuse, date, loop, tile)
 def plotPtmapMulti(vars, kxs, level, iuse, date, loop, tile):
     try:
-        lfname = str(vars) + '_diag_conv_' + str(loop) + '_' + str(date)
+        lfname = str(vars) + '-diag_conv_' + str(loop) + '_' + str(date)
         #print(lfname)
         obsInfo = loadData(lfname, loop)
         df = obsInfo.loc[kxs]
@@ -171,7 +174,7 @@ def plotPtmapMulti(vars, kxs, level, iuse, date, loop, tile):
 @pn.depends(varn, kxn, by_level, date, loop)
 def plotPcount(varn, kxn, by_level, date, loop):
     try:
-        lfname = str(varn) + '_diag_conv_' + str(loop) + '_' + str(date)
+        lfname = str(varn) + '-diag_conv_' + str(loop) + '_' + str(date)
         obsInfo = loadData(lfname, loop)
         if by_level:
             df = obsInfo.loc[kxn].groupby('press').size()
@@ -198,7 +201,7 @@ def plotPcount(varn, kxn, by_level, date, loop):
 @pn.depends(varn, kxn, by_level, by_kx, date, loop)
 def plotPcount2(varn, kxn, by_level, by_kx, date, loop):
     try:
-        lfname = str(varn) + '_diag_conv_' + str(loop) + '_' + str(date)
+        lfname = str(varn) + '-diag_conv_' + str(loop) + '_' + str(date)
         #print(lfname)
         obsInfo = loadData(lfname, loop)
         if by_level:
@@ -240,7 +243,7 @@ def plotPcount2(varn, kxn, by_level, by_kx, date, loop):
 @pn.depends(varn, kxn, by_level, date, loop)
 def getTable(varn, kxn, by_level, date, loop):
     try:
-        lfname = str(varn) + '_diag_conv_' + str(loop) + '_' + str(date)
+        lfname = str(varn) + '-diag_conv_' + str(loop) + '_' + str(date)
         #print(lfname)
         obsInfo = loadData(lfname, loop)
         if by_level:
@@ -253,12 +256,39 @@ def getTable(varn, kxn, by_level, date, loop):
         ax = monitor_app_texts.warnings_rdiag(lfname + ' (getTable)')
     return pn.Column(ax)
 
-def LayoutSidebarRdiag():   
-    card_parameters = pn.Card(date,
-                              pn.Card(varn, loop, by_level, kxn, by_kx, title='Number of Observations', collapsed=False),
-                              #pn.Card(varn, by_level, kxn, title='Table', collapsed=True),
-                              pn.Card(vars, loop, tile, kxs, level, iuse, title='Spatial Distribution', collapsed=True),
-                              title='Parameters', collapsed=False)
+def LayoutSidebarRdiag(): 
+
+    card1 = pn.Card(pn.Row(varn, pn.widgets.TooltipIcon(value='Choose a variable', align='start')), 
+                    pn.Row(loop, pn.widgets.TooltipIcon(value='Choose a loop', align='start')), 
+                    pn.Row(by_level, pn.widgets.TooltipIcon(value='Whether to plot by level', align='start')), 
+                    pn.Row(kxn, pn.widgets.TooltipIcon(value='Choose a variable type', align='start')), 
+                    pn.Row(by_kx, pn.widgets.TooltipIcon(value='Whether to plot by variable type', align='start')), 
+                    title='Number of Observations', collapsed=False)
+    #pn.Card(varn, by_level, kxn, title='Table', collapsed=True)
+    card2 = pn.Card(pn.Row(vars, pn.widgets.TooltipIcon(value='Choose a variable', align='start')), 
+                    pn.Row(loop, pn.widgets.TooltipIcon(value='Choose a loop', align='start')), 
+                    pn.Row(tile, pn.widgets.TooltipIcon(value='Choose a tile type', align='start')), 
+                    pn.Row(kxs, pn.widgets.TooltipIcon(value='Choose a variable type', align='start')), 
+                    pn.Row(level, pn.widgets.TooltipIcon(value='Choose a level', align='start')), 
+                    pn.Row(iuse, pn.widgets.TooltipIcon(value='Choose a use flag (1 = used; -1 = not used)', align='start')), 
+                    title='Spatial Distribution', collapsed=True)
+
+    # Função para alternar os estados dos cards
+    def toggle_cards(event):
+        if event.new == False:  # Se um card foi aberto, fecha o outro
+            if event.obj is card1:
+                card2.collapsed = True
+            elif event.obj is card2:
+                card1.collapsed = True 
+
+    # Monitorando mudanças no estado `collapsed`
+    card1.param.watch(toggle_cards, 'collapsed')
+    card2.param.watch(toggle_cards, 'collapsed')
+
+    global cards_rdiag
+    cards_rdiag = [card1, card2]
+
+    card_parameters = pn.Card(pn.Row(date, pn.widgets.TooltipIcon(value='Choose a date', align='start')), card1, card2, title='Parameters', collapsed=False)
 
     return pn.Column(card_parameters)
 
@@ -268,7 +298,18 @@ def LayoutMainRdiag():
 
     Set the parameters on the left to update the map below and explore our analysis features.
     """)
-    return pn.Column(main_text, pn.Tabs(('NUMBER OF OBSERVATIONS', pn.Column('Number of Observations for a variable by level and type (kx).', plotPcount2)), 
+
+    tabs_rdiag = pn.Tabs(('NUMBER OF OBSERVATIONS', pn.Column('Number of Observations for a variable by level and type (kx).', plotPcount2)), 
                                         #('Table', pn.Column('Table.', getTable)),
-                                        ('SPATIAL DISTRIBUTION', pn.Column('Spatial distribution of observations by level and type (kx).', plotPtmapMulti)), dynamic=True), 
-                                        sizing_mode="stretch_both")
+                                        ('SPATIAL DISTRIBUTION', pn.Column('Spatial distribution of observations by level and type (kx).', plotPtmapMulti)), dynamic=True)
+
+    # Função para abrir o card correspondente e fechar os outros
+    def on_tab_change(event):
+        index = event.new  # Obtém o índice da aba selecionada
+        for i, card in enumerate(cards_rdiag):
+            card.collapsed = i != index  # Abre o card correspondente e fecha os outros
+
+    # Monitorando mudanças na aba selecionada
+    tabs_rdiag.param.watch(on_tab_change, "active")
+
+    return pn.Column(main_text, tabs_rdiag,  monitor_warning_bottom_main, sizing_mode="stretch_both")

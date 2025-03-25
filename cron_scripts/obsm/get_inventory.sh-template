@@ -1,21 +1,23 @@
-#! /bin/bash -x 
+#! /bin/bash -x
 
 # Script para recuperar e organizar as informações sobre os dados de
 # observaçao armazenadas e disponíveis para a assimilação de dados
 
-# @cfbastarz (01/09/2023)
-
-inctime=/home/carlos.bastarz/bin/inctime
+# @cfbastarz (25/03/2025)
 
 lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp/obsm
 dataloggsi=/share/das/dist/carlos.bastarz/SMNAMonitoringApp/logs/gsi
+dataloggsioper=/lustre_xc50/ioper/models/SMNA-Oper/SMG/datainout/gsi/dataout
 
 datai=#DATAI#
 dataf=#DATAF#
 
 data=${datai}
 
-mkdir txt csv
+rm -rf txt csv
+
+if [ ! -d txt ]; then mkdir -v txt; fi
+if [ ! -d csv ]; then mkdir -v csv; fi
 
 while [ ${data} -le ${dataf} ]
 do
@@ -24,79 +26,80 @@ do
 
   dataobs=/lustre_xc50/ioper/data/external/${data}/dataout/NCEP
 
-  ssh carlos_bastarz@login-xc50.cptec.inpe.br ls -l --full-time ${dataobs} > ${lpath}/txt/obs_${data}.txt 
+  ssh carlos_bastarz@login-xc50.cptec.inpe.br ls -l --full-time ${dataobs} > ${lpath}/txt/obs-tmp_${data}.txt
 
+  # Remove a primeira linha
+  sed -i '1d' ${lpath}/txt/obs-tmp_${data}.txt
+
+  # Remove linhas cujos nomes dos arquivos de observação não iniciam com "gdas" ou "gfs",
+  # que contém as strings html, sfcanl, atmanl e rtgssthr
+  grep -vE '\.gdas\b' ${lpath}/txt/obs-tmp_${data}.txt > ${lpath}/txt/obs-tmp1_${data}.txt
+  grep -vE '\.gblav\b' ${lpath}/txt/obs-tmp1_${data}.txt > ${lpath}/txt/obs-tmp2_${data}.txt
+  grep -vE '\html\b' ${lpath}/txt/obs-tmp2_${data}.txt > ${lpath}/txt/obs-tmp3_${data}.txt
+  grep -vE '\.sfcanl.\b' ${lpath}/txt/obs-tmp3_${data}.txt > ${lpath}/txt/obs-tmp4_${data}.txt
+  grep -vE '\.atmanl.\b' ${lpath}/txt/obs-tmp4_${data}.txt > ${lpath}/txt/obs-tmp5_${data}.txt
+  grep -vE '\rtgssthr_grb_0.083\b' ${lpath}/txt/obs-tmp5_${data}.txt > ${lpath}/txt/obs-tmp6_${data}.txt
+  grep -vE '\rtgssthr_grb_0.5\b' ${lpath}/txt/obs-tmp6_${data}.txt > ${lpath}/txt/obs-tmp7_${data}.txt
+
+  sed -i '/GDAS_/d' ${lpath}/txt/obs-tmp7_${data}.txt
+  cat ${lpath}/txt/obs-tmp7_${data}.txt | sed '/oisst/d' > ${lpath}/txt/obs_${data}.txt
+
+  # Conta quantas observações estão disponíveis no arquivo
+  nobs=$(cat ${lpath}/txt/obs_${data}.txt | wc -l)
+
+  # Primeira coluna (Tamanho do Download (KB)) - c1
+  cat ${lpath}/txt/obs_${data}.txt | awk -F " " '{print $5}' > ${lpath}/txt/obs-c1_${data}.txt
+
+  # Segunda coluna (Data do Download) - c2
+  cat ${lpath}/txt/obs_${data}.txt | awk -F " " '{print $6" "$7}' | awk -F "." '{print $1}' > ${lpath}/txt/obs-c2_${data}.txt
+
+  # Terceira coluna (Fuso Horário) - c3
+  cat ${lpath}/txt/obs_${data}.txt | awk -F " " '{print $8}' > ${lpath}/txt/obs-c3_${data}.txt
+
+  # Quarta coluna (Nome do Arquivo) - c4
+  cat ${lpath}/txt/obs_${data}.txt | awk -F " " '{print $9}' > ${lpath}/txt/obs-c4_${data}.txt
+
+  # Quinta coluna (Início do Ciclo AD) - c5
   loggsi=${dataloggsi}/gsi_${data}.log
+
+  if [ ! -s ${loggsi} ]
+  then
+    ssh carlos_bastarz@login-xc50.cptec.inpe.br cat ${dataloggsioper}/${data}/gsiStdout_${data}.runTime*.log > ${loggsi}
+  fi 
 
   # Recupera a hora em que o programa principal do GSI iniciou
   if [ -s ${loggsi} ]
   then
-    cat ${loggsi} | grep "STARTING DATE-TIME" | awk -F " " '{print $5}' | awk -F "." '{print $1}' > ${lpath}/txt/gsilog_${data}.txt
+    yyyy=$(grep -a "STARTING DATE-TIME" ${loggsi} | awk '{printf $4}' | awk -F "," '{print $2}')
+    mm=$(grep -a "STARTING DATE-TIME" ${loggsi} | awk '{printf $3}' | awk 'BEGIN {split("JAN FEB MAR APR MAY JUN JUL AUG SEP OCT NOV DEC", m, " "); for (i=1; i<=12; i++) mm[m[i]]=sprintf("%02d", i);} {for (i in mm) gsub(i, mm[i]); print}')
+    dd=$(grep -a "STARTING DATE-TIME" ${loggsi} | awk '{printf $4}' | awk -F "," '{print $1}')
+    hh=$(grep -a "STARTING DATE-TIME" ${loggsi} | awk '{printf $5}' | awk -F "." '{print $1}')
+    for i in $(seq 1 $nobs); do echo "${yyyy}-${mm}-${dd} ${hh}" >> ${lpath}/txt/obs-c5_${data}.txt; done
   else
-    echo "NaT" > ${lpath}/txt/gsilog_${data}.txt
+    for i in $(seq 1 $nobs); do echo "NaT" >> ${lpath}/txt/obs-c5_${data}.txt; done
   fi
 
-  # Adiciona a data ao horário de início do ciclo
-  datafmt=${data:0:4}-${data:4:2}-${data:6:2}
-  cat ${lpath}/txt/gsilog_${data}.txt | awk -v var="${datafmt}" -F " " '{print var" "$0}' > ${lpath}/csv/gsilog_${data}.csv
+  # Sexta coluna (Tipo de Arquivo) - c6
+  cat ${lpath}/txt/obs_${data}.txt | awk -F " " '{print $9}' | awk -F "." '{print $1}' > ${lpath}/txt/obs-c6_${data}.txt
 
-  # Remove a primeira linha
-  sed -i '1d' ${lpath}/txt/obs_${data}.txt
+  # Sétima coluna (Horário sinótico) - c7
+  cat ${lpath}/txt/obs_${data}.txt | awk -F " " '{print $9}' | awk -F "." '{print $2}' | cut -c2-3 > ${lpath}/txt/obs-c7_${data}.txt
 
-  # Remove linhas cujos nomes dos arquivos de observação não iniciam com "gdas" ou "gfs",
-  # que contém as strings html, sfcanl, atmanl e rtgssthr
-  grep -vE '\.gdas\b' ${lpath}/txt/obs_${data}.txt > ${lpath}/txt/obs_${data}-1.txt
-  grep -vE '\.gblav\b' ${lpath}/txt/obs_${data}-1.txt > ${lpath}/txt/obs_${data}-2.txt
-  grep -vE '\html\b' ${lpath}/txt/obs_${data}-2.txt > ${lpath}/txt/obs_${data}-3.txt
-  grep -vE '\.sfcanl.\b' ${lpath}/txt/obs_${data}-3.txt > ${lpath}/txt/obs_${data}-4.txt
-  grep -vE '\.atmanl.\b' ${lpath}/txt/obs_${data}-4.txt > ${lpath}/txt/obs_${data}-5.txt
-  grep -vE '\rtgssthr_grb_0.083\b' ${lpath}/txt/obs_${data}-5.txt > ${lpath}/txt/obs_${data}-6.txt
-  grep -vE '\rtgssthr_grb_0.5\b' ${lpath}/txt/obs_${data}-6.txt > ${lpath}/txt/obs_${data}-7.txt
+  # Oitava coluna (Tipo de Observação) - c8
+  cat ${lpath}/txt/obs_${data}.txt | awk -F " " '{print $9}' | awk -F "." '{print $3}' > ${lpath}/txt/obs-c8_${data}.txt
 
-  sed -i '/GDAS_/d' ${lpath}/txt/obs_${data}-7.txt
-  sed -i '/oisst/d' ${lpath}/txt/obs_${data}-7.txt
+  # Nona coluna (Data da Observação) - c9
+  cat ${lpath}/txt/obs_${data}.txt | awk -F " " '{print $9}' | awk -F "." '{print $NF""$2}' | tr -d 'tz' | awk '{print substr($0,1,4) "-" substr($0,5,2) "-" substr($0,7,2) " " substr($0,9,2) ":00:00"}' > ${lpath}/txt/obs-c9_${data}.txt
 
-  # Formata o arquivo CSV
-  cat ${lpath}/txt/obs_${data}-7.txt | awk -F ' ' '{print $5","$6" "$7","sprintf("%1.3s", $8)","$9}' > ${lpath}/csv/obs_${data}.csv
-  
-  # Remove a primeira linha
-  sed -i '1d' ${lpath}/csv/obs_${data}.csv
+  # Concatena todos os arquivos
+  paste -d "," ${lpath}/txt/obs-c{1..9}_${data}.txt > ${lpath}/csv/mon_rec_obs_${data}.csv
 
-  # Adiciona uma coluna com a data de início do ciclo de assimilação de dados
-  gsi_start=$(cat ${lpath}/csv/gsilog_${data}.csv)
-  cat ${lpath}/csv/obs_${data}.csv | awk -v var="${gsi_start}" -F " " '{print $0","var}' > ${lpath}/csv/obs_${data}-1.csv
-
-  data=$(${inctime} ${data} +6hr %y4%m2%d2%h2)
+  data=$(date -d "${data:0:8} ${data:8:2}00 +6 hours" +"%Y%m%d%H")
 
 done
 
-# Concatena todos os arquivos CSV
-cat ${lpath}/csv/obs_*-1.csv > ${lpath}/mon_rec_obs.csv
+cat $(ls ${lpath}/csv/mon_rec_obs_*.csv | sort) > ${lpath}/mon_rec_obs_final.csv
 
-# Inclui uma coluna para o tipo de arquivo (gdas, gfs)
-cat ${lpath}/mon_rec_obs.csv | awk -F "," '{print $4}' | awk -F "." '{printf ("%s\n", $1)}' > ${lpath}/ftype.txt
-
-# Inclui uma coluna para o horário sinótico
-cat ${lpath}/mon_rec_obs.csv | awk -F "," '{print $4}' | awk -F "." '{printf ("%s\n", $2)}' | sed 's/^.\(.*\).$/\1/' > ${lpath}/hsin.txt
-
-# Inclui uma coluna para o tipo de observação
-cat ${lpath}/mon_rec_obs.csv | awk -F "," '{print $4}' | awk -F "." '{printf ("%s\n", $3)}' > ${lpath}/otype.txt
-
-# Inclui uma coluna para as datas dos arquivos
-#cat ./mon_rec_obs.csv | awk -F "," '{print $4}' | awk -F "." '{print $NF}' | sed 's/^\(.\{4\}\)\(.\{2\}\)/\1-\2-/' > dates.txt
-cat ${lpath}//mon_rec_obs.csv | awk -F "," '{print $2}' | awk -F " " '{print $1}' > ${lpath}/dates.txt
-
-# Inclui uma coluna com o horário sinótico formatado (será anexado à data no formato YYYY-HH-DD HH:00:00)
-cat ${lpath}/mon_rec_obs.csv | awk -F "," '{print $4}' | awk -F "." '{print $2}' | sed 's/t\([0-9][0-9]\)z/\1:00:00/' > ${lpath}/hsin2.txt
-
-# Monta o arquivo dates2.txt colando os arquivos dates.txt e hsin2.txt
-paste -d " " ${lpath}/dates.txt ${lpath}/hsin2.txt > ${lpath}/dates2.txt
-
-# Adiciona as colunas ao arquivo final
-#paste -d "," mon_rec_obs.csv ftype.txt hsin.txt otype.txt dates2.txt gsilog.csv > mon_rec_obs_final.csv
-paste -d "," ${lpath}/mon_rec_obs.csv ${lpath}/ftype.txt ${lpath}/hsin.txt ${lpath}/otype.txt ${lpath}/dates2.txt > ${lpath}/mon_rec_obs_final.csv
-
-# Insere na primeira linha
 sed -i '1 i\Tamanho do Download (KB),Data do Download,Fuso Horário,Nome do Arquivo,Início do Ciclo AD,Tipo de Arquivo,Horário Sinótico,Tipo de Observação,Data da Observação' ${lpath}/mon_rec_obs_final.csv
 
 exit 0

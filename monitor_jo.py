@@ -32,21 +32,27 @@ from matplotlib import pyplot as plt
 
 from monitor_dates import MonitoringAppDates
 
+from monitor_texts import MonitoringAppTexts
+
+monitor_app_texts = MonitoringAppTexts()
+monitor_warning_bottom_main = monitor_app_texts.warnings()
+
 pn.extension('floatpanel')
 pn.extension(sizing_mode='stretch_width', notifications=True)
 
 #dfs = pd.read_csv('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/jo/jo_table_series.csv', header=[0, 1], parse_dates=[('df_preOper', 'Date'), ('df_preOper_new', 'Date'), ('df_JGerd', 'Date')])
-dfs = pd.read_csv('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/jo/jo_table_series.csv', header=[0, 1], parse_dates=[('df_preOper', 'Date'), ('df_JGerd', 'Date')])
+#dfs = pd.read_csv('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/jo/jo_table_series.csv', header=[0, 1], parse_dates=[('df_preOper', 'Date'), ('df_JGerd', 'Date')])
+dfs = pd.read_csv('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/jo/jo_table_series.csv', header=[0, 1], parse_dates=[('df_preOper', 'Date')])
 
 # Separa os dataframes de interesse
 df_preOper = dfs.df_preOper
 #df_preOper_new = dfs.df_preOper_new
-df_JGerd = dfs.df_JGerd
+#df_JGerd = dfs.df_JGerd
 
 # Atribui nomes aos dataframes
 df_preOper.name = 'df_preOper'
 #df_preOper_new.name = 'df_preOper_new'
-df_JGerd.name = 'df_JGerd'
+#df_JGerd.name = 'df_JGerd'
 
 monitoring_app_dates = MonitoringAppDates()
 sdate = monitoring_app_dates.getDates()[0].strip()
@@ -71,23 +77,25 @@ end_date_fixed = datetime(int(edate[0:4]), int(edate[4:6]), int(edate[6:8]), int
 
 values = (start_date, end_date)
 
-date_range_slider = pn.widgets.DatetimeRangePicker(name='Date Range', value=values, enable_time=False)
+date_range_slider = pn.widgets.DatetimeRangePicker(name='Date Range', value=values, enable_time=False, width=240)
 
 #experiment_list = [df_preOper, df_preOper_new, df_JGerd]
 #experiment_list2 = ['df_preOper', 'df_preOper_new', 'df_JGerd']
-experiment_list = [df_preOper, df_JGerd]
-experiment_list2 = ['df_preOper', 'df_JGerd']
+#experiment_list = [df_preOper, df_JGerd]
+#experiment_list2 = ['df_preOper', 'df_JGerd']
+experiment_list = [df_preOper]
+experiment_list2 = ['df_preOper']
 variable_list = ['surface pressure', 'temperature', 'wind', 'moisture', 'gps', 'radiance'] 
 synoptic_time_list = ['00Z', '06Z', '12Z', '18Z', '00Z e 12Z', '06Z e 18Z', '00Z, 06Z, 12Z e 18Z']
 iter_fcost_list = ['OMF', 'OMF (1st INNER LOOP)', 'OMF (2nd INNER LOOP)', 'OMA (AFTER 1st OUTER LOOP)', 'OMA (1st INNER LOOP)', 'OMA (2nd INNER LOOP)', 'OMA (AFTER 2nd OUTER LOOP)']
 
 date_range = date_range_slider.value
 
-experiment = pn.widgets.MultiChoice(name='Experiments (Plots)', value=[experiment_list[0].name], options=[i.name for i in experiment_list], solid=False)
-experiment2 = pn.widgets.Select(name='Experiment (Table)', value=experiment_list[0].name, options=[i.name for i in experiment_list])
-variable = pn.widgets.Select(name='Variable', value=variable_list[0], options=variable_list)
-synoptic_time = pn.widgets.RadioBoxGroup(name='Synoptic Time', value=synoptic_time_list[-1], options=synoptic_time_list, inline=False)
-iter_fcost = pn.widgets.Select(name='Iteration', value=iter_fcost_list[0], options=iter_fcost_list)
+experiment = pn.widgets.MultiChoice(name='Experiments (Plots)', value=[experiment_list[0].name], options=[i.name for i in experiment_list], solid=False, width=240)
+experiment2 = pn.widgets.Select(name='Experiment (Table)', value=experiment_list[0].name, options=[i.name for i in experiment_list], width=240)
+variable = pn.widgets.Select(name='Variable', value=variable_list[0], options=variable_list, width=240)
+synoptic_time = pn.widgets.RadioBoxGroup(name='Synoptic Time', value=synoptic_time_list[-1], options=synoptic_time_list, inline=False, width=240)
+iter_fcost = pn.widgets.Select(name='Iteration', value=iter_fcost_list[0], options=iter_fcost_list, width=240)
 
 # Considerando que todos os dataframes possuem o mesmo tamanho (i.e, linhas e colunas), 
 # então a função a seguir utiliza apenas um dos dataframes para criar a máscara temporal que será 
@@ -233,8 +241,26 @@ def getTable(variable, experiment2, synoptic_time, iter_fcost, date_range):
     elif synoptic_time == '00Z, 06Z, 12Z e 18Z':
         df_s = df_s.reset_index()                    
                 
+    stylesheet = """
+        .tabulator-cell {
+        font-size: 12px;
+    }
+    """
+
     #return pn.Column(df_s, sizing_mode='stretch_width')
-    return pn.Column(pn.widgets.Tabulator(df_s, selectable=False, disabled=True), sizing_mode='stretch_width')
+    gt_table = pn.widgets.Tabulator(df_s, 
+                                    #selectable=False, 
+                                    show_index=False,
+                                    theme='bootstrap4',
+                                    text_align='center',
+                                    #layout='fit_data_table',
+                                    widths=250,
+                                    selectable='toggle',
+                                    #layout='fit_data_fill', 
+                                    #width=250,
+                                    stylesheets=[stylesheet],
+                                    disabled=True)
+    return pn.Column(gt_table, sizing_mode='stretch_width')
 
 ###
 
@@ -277,13 +303,24 @@ def Layout():
     
     """
   
-    card_parameters = pn.Card(variable, iter_fcost, date_range_slider, synoptic_time, experiment2, pn.Column(experiment, height=240), title='Parameters', collapsed=False)
+    card_parameters = pn.Card(pn.Row(date_range_slider, pn.widgets.TooltipIcon(value='Choose a date range', align='start')), 
+                              pn.Row(variable, pn.widgets.TooltipIcon(value='Choose a variable', align='start')),
+                              pn.Row(iter_fcost, pn.widgets.TooltipIcon(value='Choose the cost function iteration', align='start')), 
+                              pn.Row(synoptic_time, pn.widgets.TooltipIcon(value='Choose one or more synoptic times', align='start')), 
+                              pn.Row(experiment2, pn.widgets.TooltipIcon(value='Choose one or more experiments', align='start')), 
+                              pn.Column(experiment, height=240), title='Parameters', collapsed=False)
     settings = pn.Column(card_parameters)
     tabs_contents = pn.Tabs(('PLOTS', plotCurves), ('TABLE', getTable))
     return pn.Column(settings, tabs_contents)
 
 def monitor_jo_sidebar():
-    card_parameters = pn.Card(variable, iter_fcost, date_range_slider, synoptic_time, experiment2, pn.Column(experiment, height=240), title='Parameters', collapsed=False)
+    #card_parameters = pn.Card(variable, iter_fcost, date_range_slider, synoptic_time, experiment2, pn.Column(experiment, height=240), title='Parameters', collapsed=False)
+    card_parameters = pn.Card(pn.Row(date_range_slider, pn.widgets.TooltipIcon(value='Choose a date range', align='start')), 
+                              pn.Row(variable, pn.widgets.TooltipIcon(value='Choose a variable', align='start')),
+                              pn.Row(iter_fcost, pn.widgets.TooltipIcon(value='Choose the cost function iteration', align='start')), 
+                              pn.Row(synoptic_time, pn.widgets.TooltipIcon(value='Choose one or more synoptic times', align='start')), 
+                              pn.Row(experiment2, pn.widgets.TooltipIcon(value='Choose one or more experiments', align='start')), 
+                              pn.Column(experiment, height=240), title='Parameters', collapsed=False)    
     settings = pn.Column(card_parameters)
     return settings
 
@@ -298,4 +335,4 @@ def monitor_jo_main():
 
     Navigate through the tabs to visualize the minimization results. Set the parameters on the left to update the curves. Click on the `TABLE` tab to visualize the tabular data.
     """)
-    return pn.Column(main_text, tabs_contents)
+    return pn.Column(main_text, tabs_contents, monitor_warning_bottom_main, sizing_mode='stretch_width')

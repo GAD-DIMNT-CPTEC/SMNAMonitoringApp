@@ -20,7 +20,9 @@
 # For more information see the manual pages of crontab(5) and cron(8)
 # 
 # m h  dom mon dow   command
-
+#
+# RUN ON ITAPEMIRIM MACHINE
+#
 # For 00Z 
 00 01 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/startup.sh
 15 01 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/logs/get_logs.sh

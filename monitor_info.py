@@ -11,6 +11,7 @@ class MonitoringAppInfo:
 
     def LogoINPE(self):
         inpe_logo = pn.pane.PNG('img/logo_mcti_vertical_positiva_02.png', width=300)
+        #inpe_logo = pn.pane.WebP('img/img_sidebar1.webp', width=300)
         logo_inpe = pn.Column(
                 pn.Row(
                   pn.layout.HSpacer(),

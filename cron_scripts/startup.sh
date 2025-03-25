@@ -10,8 +10,8 @@ inctime=${HOME}/bin/inctime
 
 lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp
 
-today=$(date '+%Y%m%d%H')
-#today=2024031401
+#today=$(date '+%Y%m%d%H')
+today=2025022501
 #today=2024031407
 #today=2024031413
 #today=2024031419
@@ -21,8 +21,11 @@ then
 else
   todaym1H=${today:0:8}$((${today:8:2}-1))
 fi
-yesterday=$(${inctime} ${todaym1H} -1d %y4%m2%d2%h2)
-aweekbefore=$(${inctime} ${todaym1H} -7d %y4%m2%d2%h2)
+#yesterday=$(${inctime} ${todaym1H} -1d %y4%m2%d2%h2)
+#aweekbefore=$(${inctime} ${todaym1H} -7d %y4%m2%d2%h2)
+
+yesterday=$(date -u +%Y%m%d%H -d "${todaym1H:0:8} ${todaym1H:8:2} -24 hours")
+aweekbefore=$(date -u +%Y%m%d%H -d "${todaym1H:0:8} ${todaym1H:8:2} -168 hours")
 
 echo ${todaym1H} > ${lpath}/todaym1H.txt
 echo ${aweekbefore} > ${lpath}/aweekbefore.txt
@@ -30,6 +33,10 @@ echo ${aweekbefore} > ${lpath}/aweekbefore.txt
 echo "Updating script ${lpath}/logs/get_logs.sh"
 cat ${lpath}/logs/get_logs.sh-template | sed "s,#DATAI#,${aweekbefore},g" > ${lpath}/logs/get_logs.sh
 sed -i "s,#DATAF#,${todaym1H},g" ${lpath}/logs/get_logs.sh
+
+echo "Updating script ${lpath}/mass/run_create_database.sh"
+cat ${lpath}/mass/run_create_database.sh-template | sed "s,#DATAI#,${aweekbefore},g" > ${lpath}/mass/run_create_database.sh
+sed -i "s,#DATAF#,${todaym1H},g" ${lpath}/mass/run_create_database.sh
 
 echo "Updating script ${lpath}/logs/create_log_csv.sh"
 cat ${lpath}/logs/create_log_csv.sh-template | sed "s,#DATAI#,${aweekbefore},g" > ${lpath}/logs/create_log_csv.sh

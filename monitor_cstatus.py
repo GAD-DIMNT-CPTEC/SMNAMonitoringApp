@@ -6,6 +6,11 @@ import pandas as pd
 #from bokeh.models import HTMLTemplateFormatter
 from bokeh.models import ColumnDataSource, HTMLTemplateFormatter
 
+from monitor_texts import MonitoringAppTexts
+
+monitor_app_texts = MonitoringAppTexts()
+monitor_warning_bottom_main = monitor_app_texts.warnings()
+
 class MonitoringAppCStatus:
     def __init__(self):
         pn.extension('floatpanel')
@@ -13,6 +18,7 @@ class MonitoringAppCStatus:
 
     def LogoINPE(self):
         inpe_logo = pn.pane.PNG('img/logo_mcti_vertical_positiva_02.png', width=300)
+        #inpe_logo = pn.pane.WebP('img/img_sidebar1.webp', width=300)
         logo_inpe = pn.Column(
                 pn.Row(
                   pn.layout.HSpacer(),
@@ -77,26 +83,31 @@ class MonitoringAppCStatus:
         """
 
         cs_table = pn.widgets.Tabulator(df, 
-                selectable=False,
+                #selectable=False,
                 show_index=False,
                 disabled=True,
+                #layout='fit_data_table',
                 theme="bootstrap4",
                 #frozen_rows=[-2, -1],
                 text_align='center',
+                selectable='toggle',
                 stylesheets=[stylesheet],
                 formatters=link_formatters)
 
-        welcomeText1 = pn.Column("""
+        welcomeText1 = pn.pane.Markdown("""
         # Current Status
         
         Check the current status from the operational system in the table below.
         """)
 
-        welcomeText2 = pn.Column("""
+        welcomeText2 = pn.pane.Markdown("""
         **Legend:**
 
         * **A** = Awaiting
         * **C** = Completed
         * **P** = Processing
         """)
-        return pn.Column(welcomeText1, cs_table, welcomeText2, sizing_mode='stretch_width')
+
+        #placeholder = pn.Column('####################', height=1300)
+
+        return pn.Column(welcomeText1, cs_table, welcomeText2, monitor_warning_bottom_main, sizing_mode='stretch_width')

@@ -2,6 +2,7 @@
 # coding: utf-8
 
 import os
+import colorcet as cc
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
@@ -12,49 +13,41 @@ import intake
 import geopandas as gpd
 import geoviews as gv
 
+from monitor_texts import MonitoringAppTexts
+
 pn.extension(sizing_mode="stretch_width")
 
-catalog_berror = intake.open_catalog('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror/catalog_berror.yml')
+monitor_app_texts = MonitoringAppTexts()
+monitor_warning_bottom_main = monitor_app_texts.warnings()
+
+#catalog_berror = intake.open_catalog('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror/catalog_berror.yml')
+catalog_berror = intake.open_catalog('/extra2/SMNAMonitoringApp_DATA/berror/catalog_berror.yml')
 
 level_lst = np.arange(0,64, 1).tolist()
-level = pn.widgets.IntSlider(name='Level', value=0, start=level_lst[0], step=1, end=level_lst[-1])
+level = pn.widgets.IntSlider(name='Level', value=0, start=level_lst[0], step=1, end=level_lst[-1], width=230)
 
 balproj_lst = ['agvin', 'bgvin', 'wgvin']
-balproj = pn.widgets.Select(name='Balance Projection Matrix', value=balproj_lst[0], options=balproj_lst)
+balproj = pn.widgets.Select(name='Balance Projection Matrix', value=balproj_lst[0], options=balproj_lst, width=230)
 
 stdevvars_lst = ['sf', 'vp', 't', 'q', 'qin', 'oz', 'ps', 'cw', 'sst']
-stdevvars = pn.widgets.Select(name='Standard Deviation', value=stdevvars_lst[0], options=stdevvars_lst)
+stdevvars = pn.widgets.Select(name='Standard Deviation', value=stdevvars_lst[0], options=stdevvars_lst, width=230)
 
-show_profile = pn.widgets.Checkbox(name='Profile', value=False)
+show_profile = pn.widgets.Checkbox(name='Profile', value=False, width=230)
 
 hscalevars_lst = ['sf', 'vp', 't', 'q', 'oz', 'cw', 'ps', 'sst']
-hscalevars = pn.widgets.Select(name='Horizontal Length Scale', value=hscalevars_lst[0], options=hscalevars_lst)
+hscalevars = pn.widgets.Select(name='Horizontal Length Scale', value=hscalevars_lst[0], options=hscalevars_lst, width=230)
 
 vscalevars_lst = ['sf', 'vp', 't', 'q', 'oz', 'cw']
-vscalevars = pn.widgets.Select(name='Vertical Length Scale', value=vscalevars_lst[0], options=vscalevars_lst)
+vscalevars = pn.widgets.Select(name='Vertical Length Scale', value=vscalevars_lst[0], options=vscalevars_lst, width=230)
 
-colormaps = ['nipy_spectral',  'Blues',  'BrBG',  'BuGn',  'BuPu',  'CMRmap',  'Dark2',  'GnBu', 
-             'Greens',  'Greys',  'OrRd',  'Oranges',  'PRGn',  'Paired',  'Pastel1', 
-             'Pastel2',  'PiYG',  'PuBu', 'PuBuGn',   'PuOr',  'PuRd',  'Purples', 
-             'RdBu',  'RdGy',  'RdPu',  'RdYlBu',  'RdYlGn',  'Reds',  'Set1', 
-             'Set2',  'Set3',  'Spectral',  'Wistia',  'YlGn', 'YlGnBu',   'YlOrBr', 
-             'YlOrRd',  'afmhot',  'autumn',  'binary',  'bone',  'brg',  'bwr', 
-             'cividis',  'cool', 
-             'Accent',  'copper',  'crest',  'cubehelix',  'flag',  'flare',  
-             'gist_earth',  'gist_gray',  'gist_heat',  'gist_ncar',   
-             'gist_stern',  'gist_yarg',  'gnuplot', 'gnuplot2',   'gray',  'hot',  'hsv', 
-             'icefire',  'inferno',  'jet',  'magma',  'mako',  'coolwarm',  
-             'ocean',  'pink',  'plasma',  'prism',  'rainbow',  'rocket',  'seismic', 
-             'spring',  'summer',  'tab10',  'tab20',  'tab20b',  'tab20c',  'terrain',  
-             'turbo',  'twilight',  'twilight_shifted',  'viridis',  'vlag',  'winter']
+   
+colormap = pn.widgets.ColorMap(name='Colormap', options=cc.palette_n, value_name='rainbow4', width=255, margin=(0, 0, 0, 0))
+invert_colors = pn.widgets.Checkbox(name='Invert Colors', value=False, width=235)
 
-colormap = pn.widgets.Select(name='Colormap', value=colormaps[0], options=colormaps)      
-invert_colors = pn.widgets.Checkbox(name='Invert Colors', value=False)
-
-vertical_log_bp = pn.widgets.Checkbox(name='Vertical Log', value=False)
-vertical_log_am = pn.widgets.Checkbox(name='Vertical Log', value=False)
-vertical_log_hs = pn.widgets.Checkbox(name='Vertical Log', value=False)
-vertical_log_vs = pn.widgets.Checkbox(name='Vertical Log', value=False)
+vertical_log_bp = pn.widgets.Checkbox(name='Vertical Log', value=False, width=230)
+vertical_log_am = pn.widgets.Checkbox(name='Vertical Log', value=False, width=230)
+vertical_log_hs = pn.widgets.Checkbox(name='Vertical Log', value=False, width=230)
+vertical_log_vs = pn.widgets.Checkbox(name='Vertical Log', value=False, width=230)
 
 height=400
 height_sst=325
@@ -62,7 +55,7 @@ height_sst=325
 @pn.depends(balproj, level, vertical_log_bp, colormap, invert_colors)
 def plotBalProjs(balproj, level, vertical_log_bp, colormap, invert_colors):
     if invert_colors == True:
-        cmap = colormap + '_r'
+        cmap = colormap[::-1]
     else:
         cmap = colormap
 
@@ -154,7 +147,7 @@ def plotStDev(stdevvars, show_profile, vertical_log_am, colormap, invert_colors)
         clabel = 'K'
 
     if invert_colors == True:
-        cmap = colormap + '_r'
+        cmap = colormap[::-1]
     else:
         cmap = colormap
 
@@ -271,7 +264,7 @@ def plotHScale(hscalevars, vertical_log_hs, colormap, invert_colors):
         logy=False
         
     if invert_colors == True:
-        cmap = colormap + '_r'
+        cmap = colormap[::-1]
     else:
         cmap = colormap
 
@@ -336,7 +329,7 @@ def plotVScale(vscalevars, vertical_log_vs, colormap, invert_colors):
         vfname = 'Sea Surface Temperature'
 
     if invert_colors == True:
-        cmap = colormap + '_r'
+        cmap = colormap[::-1]
     else:
         cmap = colormap
 
@@ -400,13 +393,53 @@ def plotVScale(vscalevars, vertical_log_vs, colormap, invert_colors):
     return ax
 
 def LayoutSidebarBerror():
-    card_parameters = pn.Card('Click to expand cards.',
-            pn.Card(balproj, level, vertical_log_bp, title='Balance Projection Matrices', collapsed=False), 
-            pn.Card(stdevvars, show_profile, vertical_log_am, title='Standard Deviations', collapsed=True),
-            pn.Card(hscalevars, vertical_log_hs, title='Horizontal Length Scales', collapsed=True),
-            pn.Card(vscalevars, vertical_log_vs, title='Vertical Length Scales', collapsed=True),
-            colormap, invert_colors,
+
+    card1 = pn.Card(pn.Row(balproj, pn.widgets.TooltipIcon(value='Choose a variable', align='start')), 
+                    pn.Row(level, pn.widgets.TooltipIcon(value='Choose a level', align='start')), 
+                    pn.Row(vertical_log_bp, pn.widgets.TooltipIcon(value='Log vertical axis', align='start')), 
+                    title='Balance Projection Matrices', collapsed=False) 
+    card2 = pn.Card(pn.Row(stdevvars, pn.widgets.TooltipIcon(value='Choose a variable', align='start')), 
+                    pn.Row(show_profile, pn.widgets.TooltipIcon(value='Whether to show a an average vertical profile', align='start')), 
+                    pn.Row(vertical_log_am, pn.widgets.TooltipIcon(value='Log vertical axis', align='start')), 
+                    title='Standard Deviations', collapsed=True)
+    card3 = pn.Card(pn.Row(hscalevars, pn.widgets.TooltipIcon(value='Choose a variable', align='start')), 
+                    pn.Row(vertical_log_hs, pn.widgets.TooltipIcon(value='Log vertical axis', align='start')), 
+                    title='Horizontal Length Scales', collapsed=True)
+    card4 = pn.Card(pn.Row(vscalevars, pn.widgets.TooltipIcon(value='Choose a variable', align='start')), 
+                    pn.Row(vertical_log_vs, pn.widgets.TooltipIcon(value='Log vertical axis', align='start')), 
+                    title='Vertical Length Scales', collapsed=True)
+
+    # Função para alternar os estados dos cards
+    def toggle_cards(event):
+        if event.new == False:  # Se um card foi aberto, fecha o outro
+            if event.obj is card1:
+                card2.collapsed = True
+                card3.collapsed = True
+                card4.collapsed = True
+            elif event.obj is card2:
+                card1.collapsed = True
+                card3.collapsed = True
+                card4.collapsed = True
+            elif event.obj is card3:
+                card1.collapsed = True
+                card2.collapsed = True
+                card4.collapsed = True
+            elif event.obj is card4:
+                card1.collapsed = True
+                card2.collapsed = True
+                card3.collapsed = True        
+
+    # Monitorando mudanças no estado `collapsed`
+    card1.param.watch(toggle_cards, 'collapsed')
+    card2.param.watch(toggle_cards, 'collapsed')
+    card3.param.watch(toggle_cards, 'collapsed')
+    card4.param.watch(toggle_cards, 'collapsed')
+
+    card_parameters = pn.Card('Click to expand cards.', card1, card2, card3, card4,
+            pn.Row(colormap, pn.widgets.TooltipIcon(value='Choose a colormap', align='start')), 
+            pn.Row(invert_colors, pn.widgets.TooltipIcon(value='Invert the color range in the colormap', align='start')),
             title='Parameters', collapsed=False)
+
     return pn.Column(card_parameters)
 
 def LayoutMainBerror():
@@ -415,4 +448,4 @@ def LayoutMainBerror():
 
     Se the parameters on the left to update the map below.
     """)
-    return pn.Column(main_text, pn.Row(plotBalProjs, plotStDev), pn.Row(plotHScale, plotVScale))
+    return pn.Column(main_text, pn.Row(plotBalProjs, plotStDev), pn.Row(plotHScale, plotVScale), monitor_warning_bottom_main, sizing_mode='stretch_width')

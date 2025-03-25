@@ -8,7 +8,7 @@ inctime=/home/carlos.bastarz/bin/inctime
 
 lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp
 
-Prods=(logs anls obsm rdiag jo)
+Prods=(logs mass anls obsm rdiag jo)
 Logs=(gsi pre model pos)
 
 now=$(date '+%Y%m%d')00
@@ -35,6 +35,9 @@ do
       do
         rm -rf ${lpath}/${prod}/${log}/*${log}_${data:0:8}*
       done
+    elif [ ${prod} == "mass" ]
+    then
+      rm -rf ${lpath}/${prod}/mass_tmp/*
     elif [ ${prod} == "anls" ]
     then
       rm -rf ${lpath}/${prod}/${data:0:8}*

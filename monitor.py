@@ -146,15 +146,15 @@ class MonitoringApp:
             meta_author="CPTEC-INPE",
 #            meta_refresh="10",
 #            site_url="https://gad-dimnt-cptec.github.io/SMNAMonitoringApp/monitor.html",
-#            sidebar_footer="CPTEC-INPE, 2024.",
+#            sidebar_footer="CPTEC-INPE, 2025.",
         )
     
         self.app.main.append(tabs)
         self.app.main.append(monitor_float_panel)
-        self.app.main.append(monitor_warning_bottom_main)
+        #self.app.main.append(monitor_warning_bottom_main)
         self.app.main.append(placeholder)
         self.app.sidebar.append(col)
-        self.app.sidebar.append(pn.Row(pn.layout.HSpacer(), '##### CPTEC-INPE, 2024.', pn.layout.HSpacer()))
+        self.app.sidebar.append(pn.Row(pn.layout.HSpacer(), '##### CPTEC-INPE, 2025.', pn.layout.HSpacer()))
         self.app.modal.append(pn.Column())
         self.app.sidebar.append(pn.layout.Divider())
         self.app.sidebar.append(self.modal_geninfo())
@@ -179,7 +179,7 @@ class MonitoringApp:
 
         ---
 
-        ##### CPTEC-INPE, 2024.
+        ##### CPTEC-INPE, 2025.
         """
         self.modal_btn = pn.widgets.Button(name='📊 About', button_type='success')
         self.text_about_logs = pn.Column(text_logs_txt)
@@ -244,7 +244,7 @@ class MonitoringApp:
         
         ---
 
-        ##### CPTEC-INPE, 2024.
+        ##### CPTEC-INPE, 2025.
         """
         self.modal_btn = pn.widgets.Button(name='📊 About', button_type='success')
         self.text_about_jo = pn.Column(text_jo_txt)
@@ -266,7 +266,7 @@ class MonitoringApp:
 
         ---
 
-        ##### CPTEC-INPE, 2024.
+        ##### CPTEC-INPE, 2025.
         """
         self.modal_btn = pn.widgets.Button(name='📊 About', button_type='success')
         self.text_about_mass = pn.Column(text_mass_txt)
@@ -290,7 +290,7 @@ class MonitoringApp:
 
         ---
 
-        ##### CPTEC-INPE, 2024.
+        ##### CPTEC-INPE, 2025.
         """
         self.modal_btn = pn.widgets.Button(name='📊 About', button_type='success')
         self.text_about_berror = pn.Column(text_berror_txt)
@@ -314,7 +314,7 @@ class MonitoringApp:
 
         ---
 
-        ##### CPTEC-INPE, 2024.
+        ##### CPTEC-INPE, 2025.
         """
         self.modal_btn = pn.widgets.Button(name='📊 About', button_type='success')
         self.text_about_objeval = pn.Column(text_objeval_txt)
@@ -336,7 +336,7 @@ class MonitoringApp:
 
         ---
 
-        ##### CPTEC-INPE, 2024.
+        ##### CPTEC-INPE, 2025.
         """
         self.modal_btn = pn.widgets.Button(name='📊 About', button_type='success')
         self.text_about_obsstorage = pn.Column(text_obsstorage_txt)
@@ -366,7 +366,7 @@ class MonitoringApp:
 
         ---
 
-        ##### CPTEC-INPE, 2024.
+        ##### CPTEC-INPE, 2025.
         """
         self.modal_btn = pn.widgets.Button(name='📊 About', button_type='success')
         self.text_about_anl = pn.Column(text_anl_txt)
@@ -388,7 +388,7 @@ class MonitoringApp:
 
         ---
 
-        ##### CPTEC-INPE, 2024.
+        ##### CPTEC-INPE, 2025.
         """
         self.modal_btn = pn.widgets.Button(name='🛟 Help', button_type='primary')
         self.text_help = pn.Column(text_help_txt)
@@ -412,13 +412,13 @@ class MonitoringApp:
 
         Besides the Panel library, all data are displayed with the help of [Intake](https://intake-xarray.readthedocs.io/en/latest/), [Zarr](https://zarr.readthedocs.io/en/stable/), [Xarray](https://xarray.dev/), [Matplotlib](https://matplotlib.org/) and [Pandas](https://pandas.pydata.org/) libraries. We greatly appreciate the effort from developers out there that enables us to make apps that powers our work.
 
-        The SMNA Monitoring App is also partially powered by the [readDiag](https://github.com/GAD-DIMNT-CPTEC/readDiag), [GSIBerror](https://github.com/GAD-DIMNT-CPTEC/GSIBerror), [SCANTEC]() and [SCANPLOT](https://github.com/GAM-DIMNT-CPTEC/SCANPLOT) projects all developed by the CPTEC staff in the [GAD-DIMNT-CPTEC](https://github.com/GAD-DIMNT-CPTEC) and [GAM-DIMNT-CPTEC](https://github.com/GAM-DIMNT-CPTEC) organizations.
+        The SMNA Monitoring App is also partially powered by the [readDiag](https://github.com/GAD-DIMNT-CPTEC/readDiag), [GSIBerror](https://github.com/GAD-DIMNT-CPTEC/GSIBerror), [SCANTEC](https://github.com/GAD-DIMNT-CPTEC/SCANTEC) and [SCANPLOT](https://github.com/GAD-DIMNT-CPTEC/SCANPLOT) projects all developed by the CPTEC staff in the [GAD-DIMNT-CPTEC](https://github.com/GAD-DIMNT-CPTEC) and [GAM-DIMNT-CPTEC](https://github.com/GAM-DIMNT-CPTEC) organizations.
 
         If you find this content interesting, please drop us a line at the [discussion page in the SMNA Monitoring App repository](https://github.com/GAD-DIMNT-CPTEC/SMNAMonitoringApp/discussions).
 
         ---
 
-        ##### CPTEC-INPE, 2024.
+        ##### CPTEC-INPE, 2025.
         """
         self.modal_btn = pn.widgets.Button(name='📖 General Info', button_type='primary')
         self.text_geninfo = pn.Column(text_geninfo_txt)
@@ -440,7 +440,7 @@ class MonitoringApp:
 
         ---
 
-        ##### CPTEC-INPE, 2024.
+        ##### CPTEC-INPE, 2025.
         """
         self.modal_btn = pn.widgets.Button(name='📊 About', button_type='success')
         self.text_about_rdiag = pn.Column(text_rdiag_txt)

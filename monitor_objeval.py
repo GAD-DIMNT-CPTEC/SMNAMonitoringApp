@@ -8,6 +8,7 @@ import os
 import io
 import intake
 import requests
+import colorcet as cc
 import xarray as xr
 import numpy as np
 import pandas as pd
@@ -39,9 +40,12 @@ pn.extension(sizing_mode='stretch_width')
 # SCANPLOT_V2.0.0a1
 # @cfbastarz, Jun/2023 (carlos.bastarz@inpe.br)
 
-monitor_app_texts = MonitoringAppTexts()
 
-data_catalog = intake.open_catalog('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/objeval/catalog-scantec-s0.yml')
+monitor_app_texts = MonitoringAppTexts()
+monitor_warning_bottom_main = monitor_app_texts.warnings()
+
+#data_catalog = intake.open_catalog('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/objeval/catalog-scantec-s0.yml')
+data_catalog = intake.open_catalog('/extra2/SMNAMonitoringApp_DATA/objeval/catalog-scantec-s0.yml')
 
 monitoring_app_dates = MonitoringAppDates()
 sdate = monitoring_app_dates.getDates()[0].strip()
@@ -50,7 +54,7 @@ edate = monitoring_app_dates.getDates()[1].strip()
 start_date = datetime(int(sdate[0:4]), int(sdate[4:6]), int(sdate[6:8]), int(sdate[8:10]))
 end_date = datetime(int(edate[0:4]), int(edate[4:6]), int(edate[6:8]), int(edate[8:10]))
 date_range = [d.strftime('%Y%m%d%H') for d in pd.date_range(start_date, end_date, freq='6h')][::-1]
-date = pn.widgets.Select(name='Date', value=date_range[0], options=date_range)
+date = pn.widgets.Select(name='Date', value=date_range[0], options=date_range, width=230)
 
 Vars = [
 ('VTMP:925', 'Virtual Temperature @ 925 hPa [K]'),
@@ -101,21 +105,6 @@ list_var = [ltuple[0].lower() for ltuple in Vars]
 
 date_range = '20191115122020020100'
 
-colormaps = ['Accent',  'Blues',  'BrBG',  'BuGn',  'BuPu',  'CMRmap',  'Dark2',  'GnBu', 
-             'Greens',  'Greys',  'OrRd',  'Oranges',  'PRGn',  'Paired',  'Pastel1', 
-             'Pastel2',  'PiYG',  'PuBu', 'PuBuGn',   'PuOr',  'PuRd',  'Purples', 
-             'RdBu',  'RdGy',  'RdPu',  'RdYlBu',  'RdYlGn',  'Reds',  'Set1', 
-             'Set2',  'Set3',  'Spectral',  'Wistia',  'YlGn', 'YlGnBu',   'YlOrBr', 
-             'YlOrRd',  'afmhot',  'autumn',  'binary',  'bone',  'brg',  'bwr', 
-             'cividis',  'cool', 
-             'coolwarm',  'copper',  'crest',  'cubehelix',  'flag',  'flare',  
-             'gist_earth',  'gist_gray',  'gist_heat',  'gist_ncar',   
-             'gist_stern',  'gist_yarg',  'gnuplot', 'gnuplot2',   'gray',  'hot',  'hsv', 
-             'icefire',  'inferno',  'jet',  'magma',  'mako',  'nipy_spectral',  
-             'ocean',  'pink',  'plasma',  'prism',  'rainbow',  'rocket',  'seismic', 
-             'spring',  'summer',  'tab10',  'tab20',  'tab20b',  'tab20c',  'terrain',  
-             'turbo',  'twilight',  'twilight_shifted',  'viridis',  'vlag',  'winter']
-
 Regs = ['gl', 'hn', 'tr', 'hs', 'as']
 Refs = ['ref_gfs_no_clim.new',
         'ref_era5_no_clim.new', 
@@ -131,8 +120,8 @@ Tstats = ['Mudança Fracional', 'Ganho Percentual']
 datei = datetime.strptime('2019-11-15', '%Y-%m-%d')
 datef = datetime.strptime('2019-11-26', '%Y-%m-%d')
 
-date = pn.widgets.DateSlider(name='Data', start=datei, end=datef, value=datei, format='%Y-%m-%d')
-#fcts = pn.widgets.IntSlider(name='Previsão (horas)', start=0, end=264, step=24, value=0)
+date = pn.widgets.DateSlider(name='Data', start=datei, end=datef, value=datei, format='%Y-%m-%d', width=230)
+#fcts = pn.widgets.IntSlider(name='Previsão (horas)', start=0, end=264, step=24, value=0, width=230)
        
 # Widget de Notificações
 silence = pn.widgets.Toggle(name='🔔 Silenciar Notificações', button_type='primary', button_style='outline', value=False)
@@ -141,55 +130,58 @@ read_catalog = pn.widgets.Button(name='🎲 Ler Catálogo de Dados', button_type
 file_input = pn.widgets.FileInput(name='Escolher Catálogo de Dados', accept='yml', mime_type='text/yml', multiple=False)
 
 # Widgets Série Temporal (_st)    
-varlev_st = pn.widgets.Select(name='Variável', options=[i[0] for i in Vars], value=[i[0] for i in Vars][0], disabled=False)
-reg_st = pn.widgets.Select(name='Região', options=Regs, value=Regs[0], disabled=False)
-ref_st = pn.widgets.Select(name='Referência', options=Refs, value=Refs[0], disabled=False)
-expt_st = pn.widgets.MultiChoice(name='Experimentos', options=Exps, value=[Exps[0]], disabled=False, solid=False)
+varlev_st = pn.widgets.Select(name='Variable', options=[i[0] for i in Vars], value=[i[0] for i in Vars][0], disabled=False, width=230)
+reg_st = pn.widgets.Select(name='Region', options=Regs, value=Regs[0], disabled=False, width=230)
+ref_st = pn.widgets.Select(name='Reference', options=Refs, value=Refs[0], disabled=False, width=230)
+expt_st = pn.widgets.MultiChoice(name='Experiments', options=Exps, value=[Exps[0]], disabled=False, solid=False, width=230)
 
 # Widgets Scorecard (_sc)
-Tstats = ['Ganho Percentual', 'Mudança Fracional']
-colormap_sc = pn.widgets.Select(name='Cor do Preenchimento', value=colormaps[74], options=colormaps)
-invert_colors_sc = pn.widgets.Checkbox(name='Inverter Cores', value=True)
+Tstats = ['Percentual Gain', 'Fractional Change']
+#colormap_sc = pn.widgets.Select(name='Cor do Preenchimento', value=colormaps[74], options=colormaps, width=230)
+colormap_sc = pn.widgets.ColorMap(name='Colormap', options=cc.palette_n, value_name='coolwarm', width=250, margin=(0, 0, 0, 0))
+invert_colors_sc = pn.widgets.Checkbox(name='Invert Colors', value=True, width=230)
 
-statt_sc = pn.widgets.Select(name='Estatística', options=Stats, value=Stats[0], disabled=False)
-tstat = pn.widgets.Select(name='Tipo', options=Tstats, value=Tstats[0], disabled=False)
-reg_sc = pn.widgets.Select(name='Região', options=Regs, value=Regs[0], disabled=False)
-ref_sc = pn.widgets.Select(name='Referência', options=Refs, value=Refs[0], disabled=False)
-expt1 = pn.widgets.Select(name='Experimento 1', options=Exps, value=Exps[0], disabled=False)
-expt2 = pn.widgets.Select(name='Experimento 2', options=Exps, value=Exps[0], disabled=False)
+statt_sc = pn.widgets.Select(name='Statistic', options=Stats, value=Stats[0], disabled=False, width=230)
+tstat = pn.widgets.Select(name='Type', options=Tstats, value=Tstats[0], disabled=False, width=230)
+reg_sc = pn.widgets.Select(name='Region', options=Regs, value=Regs[0], disabled=False, width=230)
+ref_sc = pn.widgets.Select(name='Reference', options=Refs, value=Refs[0], disabled=False, width=230)
+expt1 = pn.widgets.Select(name='Experiment 1', options=Exps, value=Exps[0], disabled=False, width=230)
+expt2 = pn.widgets.Select(name='Experiment 2', options=Exps, value=Exps[0], disabled=False, width=230)
 
 # Widgets Distribuição Espacial (_de) 
 Fills = ['image', 'contour']
-fill_de = pn.widgets.Select(name='Preenchimento', options=Fills)     
-colormap_de = pn.widgets.Select(name='Cor do Preenchimento', value=colormaps[0], options=colormaps)      
-invert_colors_de = pn.widgets.Checkbox(name='Inverter Cores', value=True) 
-interval = pn.widgets.IntInput(name='Intervalos', value=10, step=1, start=5, end=20)     
+fill_de = pn.widgets.Select(name='Fill', options=Fills, width=230)     
+#colormap_de = pn.widgets.Select(name='Cor do Preenchimento', value=colormaps[0], options=colormaps, width=230)      
+colormap_de = pn.widgets.ColorMap(name='Colormap', options=cc.palette_n, value_name='coolwarm', width=250, margin=(0, 0, 0, 0))
+invert_colors_de = pn.widgets.Checkbox(name='Invert Colors', value=True, width=230) 
+interval = pn.widgets.IntInput(name='Intervals', value=10, step=1, start=5, end=20, width=230)     
     
-state = pn.widgets.Select(name='Estatística', options=Stats, value=Stats[0], disabled=False)    
-varlev_de = pn.widgets.Select(name='Variável', options=[i[0] for i in Vars], value=[i[0] for i in Vars][0], disabled=False)   
-reg_de = pn.widgets.Select(name='Região', options=Regs, value=Regs[0], disabled=False)  
-ref_de = pn.widgets.Select(name='Referência', options=Refs, value=Refs[0], disabled=False)     
-expe_de = pn.widgets.MultiChoice(name='Experimentos', options=Exps, value=[Exps[0]], disabled=False, solid=False)    
+state = pn.widgets.Select(name='Statistic', options=Stats, value=Stats[0], disabled=False, width=230)    
+varlev_de = pn.widgets.Select(name='Variable', options=[i[0] for i in Vars], value=[i[0] for i in Vars][0], disabled=False, width=230)   
+reg_de = pn.widgets.Select(name='Region', options=Regs, value=Regs[0], disabled=False, width=230)  
+ref_de = pn.widgets.Select(name='Reference', options=Refs, value=Refs[0], disabled=False, width=230)     
+expe_de = pn.widgets.MultiChoice(name='Experiments', options=Exps, value=[Exps[0]], disabled=False, solid=False, width=230)    
       
 # Widgets Distribuição Espacial Double (_ded) 
-fill_ded = pn.widgets.Select(name='Preenchimento', value=Fills[0], options=Fills) 
-colormap_ded = pn.widgets.Select(name='Cor do Preenchimento', value=colormaps[80], options=colormaps)      
-invert_colors_ded = pn.widgets.Checkbox(name='Inverter Cores', value=True) 
-swipe_ded = pn.widgets.Checkbox(name='Juntar Figuras', value=False) 
-show_diff_ded = pn.widgets.Checkbox(name='Mostrar Diferença', value=False) 
+fill_ded = pn.widgets.Select(name='Fill', value=Fills[0], options=Fills, width=230) 
+#colormap_ded = pn.widgets.Select(name='Cor do Preenchimento', value=colormaps[80], options=colormaps, width=230)      
+colormap_ded = pn.widgets.ColorMap(name='Colormap', options=cc.palette_n, value_name='coolwarm', width=250, margin=(0, 0, 0, 0))
+invert_colors_ded = pn.widgets.Checkbox(name='Invert Colors', value=True, width=230) 
+swipe_ded = pn.widgets.Checkbox(name='Join Figures', value=False, width=230) 
+show_diff_ded = pn.widgets.Checkbox(name='Show Difference', value=False, width=230) 
 
-varlev_ded = pn.widgets.Select(name='Variável', disabled=False)    
-reg_ded = pn.widgets.Select(name='Região', disabled=False)    
-ref_ded = pn.widgets.Select(name='Referência', disabled=False)    
-expe_ded = pn.widgets.MultiChoice(name='Experimentos', disabled=False, solid=False)  
-exp1_ded = pn.widgets.Select(name='Experimento 1', disabled=False)
-exp2_ded = pn.widgets.Select(name='Experimento 2', disabled=False)
+varlev_ded = pn.widgets.Select(name='Variable', disabled=False, width=230)    
+reg_ded = pn.widgets.Select(name='Region', disabled=False, width=230)    
+ref_ded = pn.widgets.Select(name='Reference', disabled=False, width=230)    
+expe_ded = pn.widgets.MultiChoice(name='Experiments', disabled=False, solid=False, width=230)  
+exp1_ded = pn.widgets.Select(name='Experiment 1', disabled=False, width=230)
+exp2_ded = pn.widgets.Select(name='Experiment 2', disabled=False, width=230)
 
 # Variável lógica para determinar se o arquivo de catálogo já foi lido (True) ou não (False)
 loaded = pn.widgets.Checkbox(name='Catálogo Carregado', value=True, disabled=True)
 
 ## Botão da paleta de cores
-show_color_pallete = pn.widgets.Button(name='🎨 Paletas de Cores...', button_type='default')
+#show_color_pallete = pn.widgets.Button(name='🎨 Paletas de Cores...', button_type='default')
 
 #
 # Funções de plotagem
@@ -371,11 +363,11 @@ def plotScorecard(statt_sc, tstat, reg_sc, ref_sc, expt1, expt2, colormap_sc, in
         p_table2 = pd.pivot_table(df2, index='%Previsao', values=list_var)
  
         if invert_colors_sc == True:
-            cmap = colormap_sc + '_r'
+            cmap = colormap_sc[::-1]
         else:
             cmap = colormap_sc
     
-        if tstat == 'Ganho Percentual':
+        if tstat == 'Percentual Gain':
             # Porcentagem de ganho
             if statt_sc == 'ACOR':
                 #score_table = ((p_table2[1:].T - p_table1[1:].T) / (1.0 - p_table1[1:].T)) * 100
@@ -383,7 +375,7 @@ def plotScorecard(statt_sc, tstat, reg_sc, ref_sc, expt1, expt2, colormap_sc, in
             elif statt_sc == 'RMSE' or statt_sc == 'VIES':
                 #score_table = ((p_table2[1:].T - p_table1[1:].T) / (0.0 - p_table1[1:].T)) * 100
                 score_table = ((p_table2.T - p_table1.T) / (0.0 - p_table1.T)) * 100
-        elif tstat == 'Mudança Fracional':
+        elif tstat == 'Fractional Change':
             # Mudança fracional
             #score_table = (1.0 - (p_table2[1:].T / p_table1[1:].T))
             score_table = (1.0 - (p_table2.T / p_table1.T))
@@ -398,7 +390,7 @@ def plotScorecard(statt_sc, tstat, reg_sc, ref_sc, expt1, expt2, colormap_sc, in
             # Tentativa de substituir valores -inf por um número não muito grande
             score_table.replace([np.inf, -np.inf], 1000000, inplace=True)
 
-            if silence.value is False: pn.state.notifications.info('Valores como NaN ou Inf podem ter sido substituídos por outros valores.', duration=5000) 
+            if silence.value is False: pn.state.notifications.info('NaN or Inf values may have been replaced by other values.', duration=5000) 
 
         ## Figura
         plt.figure(figsize = (9,6))
@@ -411,7 +403,7 @@ def plotScorecard(statt_sc, tstat, reg_sc, ref_sc, expt1, expt2, colormap_sc, in
                             'xtick.minor.pad':   0.05,  'ytick.minor.pad': 0.05,
                             'xtick.minor.width': 0.5, 'ytick.minor.width': 0.5})
 
-        if tstat == 'Ganho Percentual':
+        if tstat == 'Percentual Gain':
             ax = sns.heatmap(score_table, annot=True, fmt='.3f', cmap=cmap, 
                              vmin=-100, vmax=100, center=0, linewidths=0.25, square=False,
                              cbar_kws={'shrink': 1.0, 
@@ -426,7 +418,7 @@ def plotScorecard(statt_sc, tstat, reg_sc, ref_sc, expt1, expt2, colormap_sc, in
 
             plt.title('Ganho ' + str(statt_sc) + ' (%) - ' + expt1 + ' Vs. ' + expt2, fontsize=8)
 
-        elif tstat == 'Mudança Fracional':
+        elif tstat == 'Fractional Change':
             ax = sns.heatmap(score_table, annot=True, fmt='.3f', cmap=cmap, 
                              vmin=-1, vmax=1, center=0, linewidths=0.25, square=False,
                              cbar_kws={'shrink': 1.0, 
@@ -439,9 +431,9 @@ def plotScorecard(statt_sc, tstat, reg_sc, ref_sc, expt1, expt2, colormap_sc, in
             cbar.set_ticklabels(['pior', '-0.5', '0', '0.5', 'melhor'])
             cbar.ax.tick_params(labelsize=7)    
 
-            plt.title('Mudança Fracional ' + str(statt_sc) + " - " + expt1 + ' Vs. ' + expt2, fontsize=8)
+            plt.title('Fractional Change ' + str(statt_sc) + " - " + expt1 + ' Vs. ' + expt2, fontsize=8)
 
-        plt.xlabel('Horas de Integração')
+        plt.xlabel('Forecast Length')
         plt.yticks(fontsize=7)
         #plt.xticks(rotation=90, fontsize=6)    
         plt.xticks(fontsize=7)  
@@ -478,7 +470,7 @@ def plotFields(state, varlev_de, reg_de, ref_de, date, colormap_de, invert_color
             nexp_ext = i[1]
     
     if invert_colors_de == True:
-        cmap = colormap_de + '_r'
+        cmap = colormap_de[::-1]
     else:
         cmap = colormap_de
     
@@ -567,7 +559,7 @@ def plotFieldsDouble(state, varlev_ded, reg_ded, ref_ded, date, colormap_ded, in
                 nexp_ext = i[1]
 
         if invert_colors_ded == True:
-            cmap = colormap_ded + '_r'
+            cmap = colormap_ded[::-1]
         else:
             cmap = colormap_ded
 
@@ -791,27 +783,75 @@ def plotFieldsDouble(state, varlev_ded, reg_ded, ref_ded, date, colormap_ded, in
                 else:
                     layout = hvs.Layout(ax1 + ax2).cols(1)
 
-        if silence.value is False: pn.state.notifications.info('As cores nos gráficos podem representar intervalos de valores diferentes.', duration=5000)
+        if silence.value is False: pn.state.notifications.info('Colors may represent different values ranges.', duration=5000)
 
     else:
         
         layout = pn.Column(
                     pn.pane.Markdown("""
-                    # Distribuição Espacial
+                    # Spatial Distribution
                     
-                    A avaliação por meio da distribuição espacial permite verificar o comportamento de parêmetros (variáveis) do modelo ao longo do tempo, seja por meio da verificação dos erros aleatórios, sistemáticos e habilidade de previsão.
+                    This evaluation is made by looking at the statistics spatial distribution, which allows to check the skill of model parameters (variables) along the forecast length.
                     """),
-                    pn.pane.Alert('⛔ **Atenção:** Nada para mostrar! Para começar, selecione um catálogo de dados ou aguarde a execução da função de plotagem.', alert_type='danger')
+                    pn.pane.Alert('⛔ **Error:** Nothing to show! To start, choose a data catalog or wait the plotting to finish.', alert_type='danger')
                 )          
         
     return layout
     
 def LayoutSidebarObjEval():
-    card_parameters = pn.Card('Click to expand cards.',
-                              pn.Card(date, varlev_st, reg_st, ref_st, expt_st, title='Time Series', collapsed=False), 
-                              pn.Card(statt_sc, tstat, reg_sc, ref_sc, expt1, expt2, colormap_sc, invert_colors_sc, title='Scorecard', collapsed=True), 
-                              pn.Card(state, varlev_de, reg_de, ref_de, date, colormap_de, invert_colors_de, interval, expe_de, fill_de, title='Spatial Distribution', collapsed=True), 
-                              title='Parameters', collapsed=False)
+
+    card1 = pn.Card(pn.Row(date, pn.widgets.TooltipIcon(value='Choose a date', align='start')), 
+                    pn.Row(varlev_st, pn.widgets.TooltipIcon(value='Choose a variable and level', align='start')), 
+                    pn.Row(reg_st, pn.widgets.TooltipIcon(value='Choose a region', align='start')), 
+                    pn.Row(ref_st, pn.widgets.TooltipIcon(value='Choose a reference', align='start')), 
+                    pn.Row(expt_st, pn.widgets.TooltipIcon(value='Choose one or more experiments', align='start')), 
+                    title='Time Series', collapsed=False)
+    
+    card2 = pn.Card(pn.Row(statt_sc, pn.widgets.TooltipIcon(value='Choose a statistic', align='start')), 
+                    pn.Row(tstat, pn.widgets.TooltipIcon(value='Choose a score', align='start')), 
+                    pn.Row(reg_sc, pn.widgets.TooltipIcon(value='Choose a region', align='start')), 
+                    pn.Row(ref_sc, pn.widgets.TooltipIcon(value='Choose a reference', align='start')), 
+                    pn.Row(expt1, pn.widgets.TooltipIcon(value='Choose a experiment', align='start')), 
+                    pn.Row(expt2, pn.widgets.TooltipIcon(value='Choose a experiment', align='start')), 
+                    pn.Row(colormap_sc, pn.widgets.TooltipIcon(value='Choose a colormap', align='start')), 
+                    pn.Row(invert_colors_sc, pn.widgets.TooltipIcon(value='Invert the color range in the colormap', align='start')), 
+                    title='Scorecard', collapsed=True)
+    
+    card3 = pn.Card(pn.Row(state, pn.widgets.TooltipIcon(value='Choose a statistic', align='start')), 
+                    pn.Row(varlev_de, pn.widgets.TooltipIcon(value='Choose a variable and level', align='start')), 
+                    pn.Row(reg_de, pn.widgets.TooltipIcon(value='Choose a region', align='start')), 
+                    pn.Row(ref_de, pn.widgets.TooltipIcon(value='Choose a reference', align='start')), 
+                    pn.Row(date, pn.widgets.TooltipIcon(value='Choose a date', align='start')), 
+                    pn.Row(colormap_de, pn.widgets.TooltipIcon(value='Choose a colormap', align='start')), 
+                    pn.Row(invert_colors_de, pn.widgets.TooltipIcon(value='Invert the color range in the colormap', align='start')), 
+                    pn.Row(interval, pn.widgets.TooltipIcon(value='Choose the contour invervals', align='start')), 
+                    pn.Row(expe_de, pn.widgets.TooltipIcon(value='Choose a experiment', align='start')), 
+                    pn.Row(fill_de, pn.widgets.TooltipIcon(value='Choose a experiment', align='start')), 
+                    title='Spatial Distribution', collapsed=True)
+
+    # Função para alternar os estados dos cards
+    def toggle_cards(event):
+        if event.new == False:  # Se um card foi aberto, fecha o outro
+            if event.obj is card1:
+                card2.collapsed = True
+                card3.collapsed = True
+            elif event.obj is card2:
+                card1.collapsed = True 
+                card3.collapsed = True
+            elif event.obj is card3:
+                card1.collapsed = True
+                card2.collapsed = True
+
+    # Monitorando mudanças no estado `collapsed`
+    card1.param.watch(toggle_cards, 'collapsed')
+    card2.param.watch(toggle_cards, 'collapsed')
+    card3.param.watch(toggle_cards, 'collapsed')
+
+    global cards_objeval
+    cards_objeval = [card1, card2, card3]
+
+    card_parameters = pn.Card('Click to expand cards.', card1, card2, card3, title='Parameters', collapsed=False)
+
     return pn.Column(card_parameters)
 
 def LayoutMainObjEval():
@@ -820,9 +860,19 @@ def LayoutMainObjEval():
 
     Set the parameters on the left to update the map below and explore our analysis features.
     """)
-    return pn.Column(main_text, 
-                     pn.Tabs(('TIME SERIES', pn.Column('Time series of bias, root mean square error and anomaly correlation for a variable and level for a particular region with respect to a climatology.', plotCurves)), 
-                             ('SCORECARD', pn.Column('Scorecard of bias, root mean square error and anomaly correlation fo all variables and levels for a time range for a particular region with respect to a climatology.', plotScorecard)),
+
+    tabs_objeval = pn.Tabs(('TIME SERIES', pn.Column('Time series of bias, root mean square error and anomaly correlation for a variable and level for a particular region with respect to a climatology.', plotCurves)), 
+                             ('SCORECARD', pn.Column('Scorecard of bias, root mean square error and anomaly correlation for all variables and levels for a time range over a particular region with respect to a climatology.', plotScorecard)),
                              ('SPATIAL DISTRIBUTION', pn.Column('Spatial distribution of bias and root square error for a variable and level for a particular region with respect to a climatology.', plotFields)),
-                             dynamic=True), 
-                     sizing_mode="stretch_both")
+                             dynamic=True)
+    
+    # Função para abrir o card correspondente e fechar os outros
+    def on_tab_change(event):
+        index = event.new  # Obtém o índice da aba selecionada
+        for i, card in enumerate(cards_objeval):
+            card.collapsed = i != index  # Abre o card correspondente e fecha os outros
+
+    # Monitorando mudanças na aba selecionada
+    tabs_objeval.param.watch(on_tab_change, "active")    
+
+    return pn.Column(main_text, tabs_objeval,  monitor_warning_bottom_main, sizing_mode="stretch_both")
