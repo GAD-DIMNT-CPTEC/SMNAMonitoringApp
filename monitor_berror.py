@@ -20,8 +20,7 @@ pn.extension(sizing_mode="stretch_width")
 monitor_app_texts = MonitoringAppTexts()
 monitor_warning_bottom_main = monitor_app_texts.warnings()
 
-#catalog_berror = intake.open_catalog('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror/catalog_berror.yml')
-catalog_berror = intake.open_catalog('/extra2/SMNAMonitoringApp_DATA/berror/catalog_berror.yml')
+catalog_berror = intake.open_catalog('https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror/catalog_berror.yml')
 
 level_lst = np.arange(0,64, 1).tolist()
 level = pn.widgets.IntSlider(name='Level', value=0, start=level_lst[0], step=1, end=level_lst[-1], width=230)

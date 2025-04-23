@@ -24,7 +24,7 @@ start_date = datetime(int(sdate[0:4]), int(sdate[4:6]), int(sdate[6:8]), int(sda
 end_date = datetime(int(edate[0:4]), int(edate[4:6]), int(edate[6:8]), int(edate[8:10]))
 
 date_range = [d.strftime('%Y%m%d%H') for d in pd.date_range(start_date, end_date, freq='6h')][::-1]
-date = pn.widgets.Select(name='Date', value=date_range[3], options=date_range, width=240)
+date = pn.widgets.Select(name='Date', value=date_range[0], options=date_range, width=240)
       
 def openFile(log):
     open_log = urlopen(log)
@@ -103,7 +103,7 @@ def showLogs(date):
             #                          readonly=True))
             download_button = create_download_button(log_url)
         else:
-            log_display = pn.pane.Alert(f"🛑 File `{log_local}` not available.", alert_type='danger')
+            log_display = pn.pane.Alert(f"🛑 **Error:** Log file is not available. File name is **`{log_local}` (check_url_exists)**.", alert_type='danger')
             download_button = None
 
         tabs.append((name, pn.Column(f"Log from {name} run.", log_display, download_button)))
@@ -114,7 +114,7 @@ def showLogs(date):
     Navigate trough the tabs below to visualize the logs from the latest run.
     """)
 
-    return pn.Column(main_text, pn.Tabs(*tabs), monitor_warning_bottom_main, sizing_mode='stretch_width')
+    return pn.Column(main_text, pn.Tabs(*tabs, dynamic=True), monitor_warning_bottom_main, sizing_mode='stretch_width')
 
 def LayoutSidebar():
     card_parameters = pn.Card(pn.Row(date, pn.widgets.TooltipIcon(value='Choose a date', align='start')), title='Parameters', collapsed=False)

@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+import io
 import panel as pn
 import pandas as pd
 
@@ -94,6 +95,20 @@ class MonitoringAppCStatus:
                 stylesheets=[stylesheet],
                 formatters=link_formatters)
 
+        def get_csv():
+          io_buffer = io.BytesIO()
+          df.to_csv(io_buffer, index=False)
+          io_buffer.seek(0)  # Retorna ao início do buffer
+          return io_buffer
+
+        file_download = pn.widgets.FileDownload(
+          icon='download',
+          callback=get_csv, 
+          filename='current_status.csv',
+          button_type='success',
+          width=310
+        )
+
         welcomeText1 = pn.pane.Markdown("""
         # Current Status
         
@@ -110,4 +125,4 @@ class MonitoringAppCStatus:
 
         #placeholder = pn.Column('####################', height=1300)
 
-        return pn.Column(welcomeText1, cs_table, welcomeText2, monitor_warning_bottom_main, sizing_mode='stretch_width')
+        return pn.Column(welcomeText1, cs_table, file_download, welcomeText2, monitor_warning_bottom_main, sizing_mode='stretch_width')

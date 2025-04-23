@@ -28,32 +28,39 @@ monitor_info_main = monitoring_app_info.LayoutMain()
 monitoring_app_cstatus = MonitoringAppCStatus()
 monitor_cstatus_sidebar = monitoring_app_cstatus.LayoutSidebar()
 monitor_cstatus_main = monitoring_app_cstatus.LayoutMain()
+#use_monitor_cstatus = True
 
 # Anl
 monitor_anl_main = LayoutMainAnl
 monitor_anl_sidebar = LayoutSidebarAnl
+#use_monitor_anl = False
 
 # Rdiag
 monitor_rdiag_main = LayoutMainRdiag
 monitor_rdiag_sidebar = LayoutSidebarRdiag
+#use_monitor_rdiag = True
 
 # Berror
 monitor_berror_main = LayoutMainBerror
 monitor_berror_sidebar = LayoutSidebarBerror
+#use_monitor_berror = False
 
 # About
 monitoring_app_about = MonitoringAppAbout()
 monitor_about_sidebar = monitoring_app_about.LayoutSidebar()
 monitor_about_main = monitoring_app_about.LayoutMain()
+#use_monitor_about = False
 
 # Mass
 monitoring_app_mass = MonitoringAppMass()
 monitor_mass_sidebar = monitoring_app_mass.LayoutSidebar()
 monitor_mass_main = monitoring_app_mass.LayoutMain()
+#use_monitor_mass = False
 
 # ObjEval
 monitor_objeval_main = LayoutMainObjEval
 monitor_objeval_sidebar = LayoutSidebarObjEval
+#use_monitor_objeval = True
 
 # Texts
 monitor_app_texts = MonitoringAppTexts()
@@ -62,10 +69,18 @@ monitor_warning_bottom_main = monitor_app_texts.warnings()
 # Logs 
 monitor_logs_main = showLogs
 monitor_logs_sidebar = LayoutSidebar
+#use_monitor_logs = False
 
 # Float Panel
 monitor_app_float_panel = MonitoringAppFloatPanel()
 monitor_float_panel = monitor_app_float_panel.floatPanel()
+#use_monitor_float_panel = False
+
+# Jo
+#use_monitor_jo = False
+
+# OBS storage
+#use_monitor_armobs = False
 
 class MonitoringApp:
     def __init__(self):
@@ -112,6 +127,41 @@ class MonitoringApp:
         sidebar_logs    = pn.Column(monitor_logs_sidebar,    self.modal_about_logs(),       monitor_info_sidebar_logocptec)
         sidebar_about   = pn.Column(monitor_info_sidebar_logoinpe,                          monitor_info_sidebar_logocptec)
         
+        #tabs_and_sidebars = {
+        #    "◾CURRENT STATUS": (monitor_cstatus_main, sidebar_info),
+        #    "◾ANALYSIS PLOTS": (monitor_anl_main, sidebar_anl),
+        #    "◾MASS CONSTRAINS PLOTS": (monitor_mass_main, sidebar_mass),
+        #    "◾MINIMIZATION PLOTS": (monitor_jo_main(), sidebar_jo),
+        #    "◾ANALYSIS DIAG": (monitor_rdiag_main, sidebar_rdiag),
+        #    "◾B ERROR COVARIANCE": (monitor_berror_main, sidebar_berror),
+        #    "◾OBJ EVALUATION": (monitor_objeval_main, sidebar_objeval),
+        #    "◾OBS STORAGE": (monitor_armobs_main, sidebar_armobs),
+        #    "◾FULL LOGS": (monitor_logs_main, sidebar_logs),
+        #    "◾ABOUT": (monitor_about_main, sidebar_about),
+        #}
+
+        #tabs = pn.Tabs(*[(name, contents) for name, (contents, _) in tabs_and_sidebars.items()])
+
+        #if not use_monitor_cstatus: tabs_and_sidebars.pop("◾CURRENT STATUS")
+        #if not use_monitor_anl: tabs_and_sidebars.pop("◾ANALYSIS PLOTS")
+        #if not use_monitor_mass: tabs_and_sidebars.pop("◾MASS CONSTRAINS PLOTS")
+        #if not use_monitor_jo: tabs_and_sidebars.pop("◾MINIMIZATION PLOTS")
+        #if not use_monitor_rdiag: tabs_and_sidebars.pop("◾ANALYSIS DIAG")
+        #if not use_monitor_berror: tabs_and_sidebars.pop("◾B ERROR COVARIANCE")
+        #if not use_monitor_objeval: tabs_and_sidebars.pop("◾OBJ EVALUATION")
+        #if not use_monitor_armobs: tabs_and_sidebars.pop("◾OBS STORAGE")
+        #if not use_monitor_logs: tabs_and_sidebars.pop("◾FULL LOGS")
+        #if not use_monitor_about: tabs_and_sidebars.pop("◾ABOUT")
+
+        #sidebar_col = pn.Column()
+
+        #@pn.depends(tabs.param.active, watch=True)
+        #def update_sidebar(active_index):
+        #    tab_name = tabs[active_index][0]
+        #    sidebar_col[:] = [tabs_and_sidebars[tab_name][1]]
+        #
+        #update_sidebar(0)
+
         col = pn.Column(sidebar_info)
         
         @pn.depends(tabs.param.active, watch=True)
@@ -332,7 +382,7 @@ class MonitoringApp:
 
         ## What to check?
 
-        Check for the sizes of the different data types used in the assimilation process and the total amount of space used.
+        Check for the sizes of the different data types used in the assimilation process and the total amount of storage used.
 
         ---
 

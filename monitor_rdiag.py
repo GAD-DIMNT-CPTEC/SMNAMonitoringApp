@@ -36,10 +36,8 @@ pn.extension()
 monitor_app_texts = MonitoringAppTexts()
 monitor_warning_bottom_main = monitor_app_texts.warnings()
 
-#catalog_diag_conv_01 = intake.open_catalog('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/rdiag/catalog_diag_conv_01.yml')
-#catalog_diag_conv_03 = intake.open_catalog('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/rdiag/catalog_diag_conv_03.yml')
-catalog_diag_conv_01 = intake.open_catalog('/extra2/SMNAMonitoringApp_DATA/rdiag/catalog_diag_conv_01.yml')
-catalog_diag_conv_03 = intake.open_catalog('/extra2/SMNAMonitoringApp_DATA/rdiag/catalog_diag_conv_03.yml')
+catalog_diag_conv_01 = intake.open_catalog('https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/rdiag/catalog_diag_conv_01.yml')
+catalog_diag_conv_03 = intake.open_catalog('https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/rdiag/catalog_diag_conv_03.yml')
 
 monitoring_app_dates = MonitoringAppDates()
 sdate = monitoring_app_dates.getDates()[0].strip()
@@ -48,7 +46,7 @@ edate = monitoring_app_dates.getDates()[1].strip()
 start_date = datetime(int(sdate[0:4]), int(sdate[4:6]), int(sdate[6:8]), int(sdate[8:10]))
 end_date = datetime(int(edate[0:4]), int(edate[4:6]), int(edate[6:8]), int(edate[8:10]))
 date_range = [d.strftime('%Y%m%d%H') for d in pd.date_range(start_date, end_date, freq='6h')][::-1]
-date = pn.widgets.Select(name='Date', value=date_range[3], options=date_range, width=235)
+date = pn.widgets.Select(name='Date', value=date_range[0], options=date_range, width=235)
 
 loop = pn.widgets.Select(name='Loop', value='01', options=['01', '03'], width=230)
 
@@ -57,7 +55,17 @@ Tiles = ['CartoDark', 'CartoLight', 'EsriImagery', 'EsriNatGeo', 'EsriUSATopo',
 tile = pn.widgets.Select(name='Tiles', value=Tiles[8], options=Tiles, width=230)
 
 # From the catalogs, assemble a dictionary with all the kx values:
-variable_list = ['q', 'ps', 't', 'uv', 'gps']
+#variable_list = ['q', 'ps', 't', 'uv', 'gps']
+variable_list_tmp = []
+for source in catalog_diag_conv_01:
+    var = source.split('_')[0]
+    variable_list_tmp.append(var)
+
+variable_set = set(variable_list_tmp)  
+variable_list = list(variable_set)
+
+print(variable_list)
+
 zlevs = [1000.0, 900.0, 800.0, 700.0, 600.0, 500.0, 400.0, 300.0, 250.0, 200.0, 150.0, 100.0, 50.0, 0.0]
 
 _kx_values = {'q':   [181, 120, 187, 180, 183],
@@ -95,6 +103,7 @@ by_kx = pn.widgets.Toggle(name='by kx', value=False, button_type='success', widt
 
 @pn.cache
 def loadData(lfname, loop):
+    print(lfname)
     try:
         if loop == '01':
             ax = catalog_diag_conv_01[lfname].read()
@@ -107,8 +116,8 @@ def loadData(lfname, loop):
 @pn.depends(vars, kxs, level, iuse, date, loop, tile)
 def plotPtmap(vars, kxs, level, iuse, date, loop, tile):
     try:
-        lfname = str(vars) + '-diag_conv_' + str(loop) + '_' + str(date)
-        #print(lfname)
+        lfname = str(vars) + '_diag_conv_' + str(loop) + '_' + str(date)
+        print(lfname)
         obsInfo = loadData(lfname, loop)
         df = obsInfo
 
@@ -133,7 +142,7 @@ def plotPtmap(vars, kxs, level, iuse, date, loop, tile):
 @pn.depends(vars, kxs, level, iuse, date, loop, tile)
 def plotPtmapMulti(vars, kxs, level, iuse, date, loop, tile):
     try:
-        lfname = str(vars) + '-diag_conv_' + str(loop) + '_' + str(date)
+        lfname = str(vars) + '_diag_conv_' + str(loop) + '_' + str(date)
         #print(lfname)
         obsInfo = loadData(lfname, loop)
         df = obsInfo.loc[kxs]
@@ -174,7 +183,7 @@ def plotPtmapMulti(vars, kxs, level, iuse, date, loop, tile):
 @pn.depends(varn, kxn, by_level, date, loop)
 def plotPcount(varn, kxn, by_level, date, loop):
     try:
-        lfname = str(varn) + '-diag_conv_' + str(loop) + '_' + str(date)
+        lfname = str(varn) + '_diag_conv_' + str(loop) + '_' + str(date)
         obsInfo = loadData(lfname, loop)
         if by_level:
             df = obsInfo.loc[kxn].groupby('press').size()
@@ -201,8 +210,8 @@ def plotPcount(varn, kxn, by_level, date, loop):
 @pn.depends(varn, kxn, by_level, by_kx, date, loop)
 def plotPcount2(varn, kxn, by_level, by_kx, date, loop):
     try:
-        lfname = str(varn) + '-diag_conv_' + str(loop) + '_' + str(date)
-        #print(lfname)
+        lfname = str(varn) + '_diag_conv_' + str(loop) + '_' + str(date)
+        print(lfname)
         obsInfo = loadData(lfname, loop)
         if by_level:
             df = obsInfo.loc[kxn].groupby('press').size()
@@ -243,7 +252,7 @@ def plotPcount2(varn, kxn, by_level, by_kx, date, loop):
 @pn.depends(varn, kxn, by_level, date, loop)
 def getTable(varn, kxn, by_level, date, loop):
     try:
-        lfname = str(varn) + '-diag_conv_' + str(loop) + '_' + str(date)
+        lfname = str(varn) + '_diag_conv_' + str(loop) + '_' + str(date)
         #print(lfname)
         obsInfo = loadData(lfname, loop)
         if by_level:

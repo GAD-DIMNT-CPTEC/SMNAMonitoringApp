@@ -226,7 +226,7 @@ class MonitoringAppMass:
         # Adicione as séries temporais para as últimas datas
         last_dates = pd.date_range(end=date_time,periods=num_last_dates,freq='6H')
         for date in last_dates:
-            print(date)
+            #print(date)
             if date != date_time:
                 data_subset = self.dc[self.dc.index == date]
                 data_subset = data_subset.reset_index(drop=True)
@@ -241,12 +241,15 @@ class MonitoringAppMass:
     
         # Crie o gráfico HoloViews com todas as séries temporais
         plot = all_data.hvplot.line(xlabel='Inner Loops', ylabel=column_name,
-                                title=f'{column_name} ( {date_time} ) and Last {num_last_dates} Cycles',
-                                responsive=True)
-        plot_mean = mean.hvplot.line(y=column_name, color='black', line_width=3, label=f"Mean {column_name} (Last {num_last_days} Days)",
-                                responsive=True)
+                                title=f'{column_name} ( {date_time} ) and Last {num_last_dates} Cycles', responsive=True)
+        #plot_s = all_data.hvplot.scatter(y=column_name, shared_axes=False, persist=True, responsive=True).opts(size=5, marker='o') 
+
+        plot_mean = mean.hvplot.line(y=column_name, color='black', line_width=3, label=f"Mean {column_name} (Last {num_last_days} Days)", responsive=True)
+        #plot_mean_s = mean.hvplot.scatter(y=column_name, shared_axes=False, persist=True, responsive=True).opts(size=5, marker='o') 
+
         plot_std_band = hv.Area((X, std_upper, std_lower),vdims=['y', 'y2'], label=f'std {column_name} (Last {num_last_days} Days)')
-        return (plot_std_band.options(alpha=0.25) * plot * plot_mean  )
+        #return (plot_std_band.options(alpha=0.25) * (plot*plot_s) * (plot_mean*plot_mean_s))
+        return (plot_std_band.options(alpha=0.25) * plot * plot_mean)
 
     def LayoutSidebar(self):
         return pn.Card(pn.Column(self.app.sidebar[0]), title='Parameters', collapsed=False)

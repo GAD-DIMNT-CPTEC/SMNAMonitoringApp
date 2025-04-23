@@ -22,6 +22,7 @@
 # ---
 # Carlos Frederico Bastarz (carlos.bastarz@inpe.br), Setembro de 2023.
 
+import io
 import os
 import glob
 import pandas as pd
@@ -76,11 +77,10 @@ end_date = datetime(int(edate[0:4]), int(edate[4:6]), int(edate[6:8]), int(edate
 #)
 
 values = (start_date, end_date)
-print(values)
 date_range_slider = pn.widgets.DatetimeRangePicker(name='Date Range', value=values, enable_time=False, width=240)
 
 units = ['KB', 'MB', 'GB', 'TB', 'PB']
-otype = ['1bamua', '1bhrs4', 'airsev', 'atms', 'crisf4', 'eshrs3', 'esmhs', 'gome', 'gpsipw', 'gpsro', 'mtiasi', 'osbuv8', 'prepbufr', 'satwnd', 'sevcsr']
+otype = list(dfs['Tipo de Observação'].unique())
 ftype = ['gdas', 'gfs']
 synoptic_time_list = ['00Z', '06Z', '12Z', '18Z', '00Z e 12Z', '06Z e 18Z', '00Z, 06Z, 12Z e 18Z']
 
@@ -91,16 +91,20 @@ synoptic_time = pn.widgets.RadioBoxGroup(name='Synopit time', value=synoptic_tim
 
 date_range = date_range_slider.value
 
+#print(date_range)
+
 dic_size = {}
 def getSizeDic(dfsp, otype_w):
+    #print('dfsp = ', dfsp)
+    #print('otype_w = ', otype_w)
     dfsp_tot_down_otype = dfsp['Tamanho do Download (KB)'].loc[dfsp['Tipo de Observação'] == otype_w[-1]].sum(axis=0)
+    #print('dfsp_tot_down_otype = ', dfsp_tot_down_otype)
     dic_size[otype_w[-1]] = dfsp_tot_down_otype
+    print('dic_size = ', dic_size)
     return dic_size    
     
 def subDataframe(df, start_date, end_date):
-    #print('subdataframe', df, start_date, end_date)
     mask = (df['Data da Observação'] >= start_date) & (df['Data da Observação'] <= end_date)
-    #print('mask', df.loc[mask])
     return df.loc[mask]
 
 def subTimeDataFrame(synoptic_time):
@@ -183,8 +187,6 @@ def getTable(otype_w, ftype_w, synoptic_time, date_range, units_w):
     start_date, end_date = date_range
     dfs_tmp = dfs.copy()
     dfs2 = subDataframe(dfs_tmp, start_date, end_date)    
-   
-    print(date_range)
 
     factor, n1factor, n2factor, n3factor = unitConvert(units_w)
 
@@ -193,8 +195,6 @@ def getTable(otype_w, ftype_w, synoptic_time, date_range, units_w):
     #dfs2.loc[:,'Tamanho do Download (KB)'] *= factor
     
     time_fmt0, time_fmt1 = subTimeDataFrame(synoptic_time)
-    
-    #print('teste', dfs_tmp)
 
     if time_fmt0 == time_fmt1:
         dfsp = dfs2.loc[dfs2['Tipo de Observação'].isin(otype_w)].loc[dfs2['Tipo de Arquivo'].isin(ftype_w)].set_index('Data da Observação').at_time(str(time_fmt0)).reset_index()
@@ -264,9 +264,22 @@ def getTable(otype_w, ftype_w, synoptic_time, date_range, units_w):
                                  formatters=bokeh_formatters,
                                 )
     
-    #print(df_tb)
+    def get_csv():
+        io_buffer = io.BytesIO()
+        dfsp.to_csv(io_buffer, index=False)
+        io_buffer.seek(0)  # Retorna ao início do buffer
+        return io_buffer
 
-    return pn.Column(df_tb, height=800, sizing_mode="stretch_width")
+    file_download = pn.widgets.FileDownload(
+        icon='download',
+        callback=get_csv, 
+        filename='obs_storage.csv', 
+        #filename=lambda: f"dados_{date_range.value[0].strftime('%Y%m%d')}_{date_range.value[1].strftime('%Y%m%d')}.csv",
+        button_type='success',
+        width=310
+    )
+
+    return pn.Column(pn.Column(df_tb, file_download), height=800, sizing_mode="stretch_width")
        
 @pn.depends(otype_w, ftype_w, synoptic_time, date_range_slider.param.value, units_w)
 def plotLine(otype_w, ftype_w, synoptic_time, date_range, units_w):
@@ -299,8 +312,10 @@ def plotLine(otype_w, ftype_w, synoptic_time, date_range, units_w):
             
                 df_pl = dfsp.hvplot.line(x='Data da Observação', xlabel='Date', y=n1factor, 
                                      ylabel=str(n2factor), label=str(notype), rot=90, grid=True, 
-                                     line_width=2, height=550, responsive=True)
+                                     line_width=3, height=550, responsive=True)
             
+                df_pl_s = dfsp.hvplot.scatter(x='Data da Observação', y=n1factor, label=str(notype), persist=True, responsive=True).opts(size=5, marker='o') 
+
             else:
                 
                 start_date, end_date = date_range
@@ -329,23 +344,25 @@ def plotLine(otype_w, ftype_w, synoptic_time, date_range, units_w):
                     
                 df_pl *= dfsp.hvplot.line(x='Data da Observação', xlabel='Date', y=n1factor, 
                                       ylabel=n2factor, label=str(notype), rot=90, grid=True, 
-                                      line_width=2, height=550, responsive=True)
+                                      line_width=3, height=550, responsive=True)
     
-    return pn.Column(df_pl, sizing_mode='stretch_width')
+                df_pl_s *= dfsp.hvplot.scatter(x='Data da Observação', y=n1factor, label=str(notype), persist=True, responsive=True).opts(size=5, marker='o') 
+
+    return pn.Column(df_pl * df_pl_s, sizing_mode='stretch_width')
 
 @pn.depends(otype_w, ftype_w, synoptic_time, date_range_slider.param.value, units_w)
 def plotSelSize(otype_w, ftype_w, synoptic_time, date_range, units_w):
     start_date, end_date = date_range
     dfs_tmp = dfs.copy()
-    dfs2 = subDataframe(dfs_tmp, start_date, end_date)    
-    
-    time_fmt0, time_fmt1 = subTimeDataFrame(synoptic_time)    
-        
+    dfs2 = subDataframe(dfs_tmp, start_date, end_date)
+
+    time_fmt0, time_fmt1 = subTimeDataFrame(synoptic_time)  
+
     if time_fmt0 == time_fmt1:
         dfsp = dfs2.loc[dfs2['Tipo de Observação'].isin(otype_w)].loc[dfs2['Tipo de Arquivo'].isin(ftype_w)].set_index('Data da Observação').at_time(str(time_fmt0)).reset_index()
     else:
         dfsp = dfs2.loc[dfs2['Tipo de Observação'].isin(otype_w)].loc[dfs2['Tipo de Arquivo'].isin(ftype_w)].set_index('Data da Observação').between_time(str(time_fmt0), str(time_fmt1), inclusive='both')
-            
+
         if synoptic_time == '00Z e 12Z':
             dfsp = dfsp.drop(dfsp.at_time('06:00:00').index).reset_index()
         elif synoptic_time == '06Z e 18Z':    
@@ -354,13 +371,16 @@ def plotSelSize(otype_w, ftype_w, synoptic_time, date_range, units_w):
             dfsp = dfsp.reset_index()      
     
     factor, n1factor, n2factor, n3factor = unitConvert(units_w)
-    
+
     # Tamanho do download (ou do espaço ocupado), de acordo com a seleção da tabela
     dfsp_tot_down = dfsp['Tamanho do Download (KB)'].sum(axis=0)
-    
+
     dfsp_dic_down = getSizeDic(dfsp, otype_w)
-    
-    data = pd.Series(dfsp_dic_down).reset_index(name='Tamanho do Download (KB)').rename(columns={'index':'Tipo de Observação'})  
+
+    #print('dfsp_tot_down_otype = '), dfsp_tot_down_otype
+    print('dfsp_dic_down = '), dfsp_dic_down
+
+    data = pd.Series(dfsp_dic_down).reset_index(name='Tamanho do Download (KB)').rename(columns={'index':'Tipo de Observação'}) 
     
     # Acrescenta uma nova coluna 'Tamanho Relativo' à série data
     data['Tamanho Relativo (%)'] = (data['Tamanho do Download (KB)'] / dfsp_tot_down) * 100
@@ -405,7 +425,8 @@ card_parameters = pn.Card(pn.Row(date_range_slider, pn.widgets.TooltipIcon(value
                           title='Parameters', collapsed=False)
 
 #tabs_contents = pn.Tabs(('PLOTS', pn.Row(plotLine, pn.Row(plotSelSize, width=600))), ('TABLE', getTable))
-tabs_contents = pn.Tabs(('PLOTS', pn.Column('Time series for the observation storage.', plotLine)), ('TABLE', pn.Column('Summary table for the observation storage.', getTable)))
+tabs_contents = pn.Tabs(('PLOTS', plotLine), ('TABLE', getTable), dynamic=True)
+#tabs_contents = pn.Tabs(('PLOTS', pn.Row(pn.Column('Time series for the observation storage.', plotLine), pn.Column('Pie chart for the observation storage relative to the chosen date range.', plotSelSize))), ('TABLE', pn.Column('Summary table for the observation storage.', getTable)))
 
 def monitor_armobs_sidebar():
     return card_parameters

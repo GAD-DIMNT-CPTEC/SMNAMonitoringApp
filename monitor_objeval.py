@@ -22,6 +22,7 @@ import hvplot as hv
 import holoviews as hvs
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
+import xyzservices.providers as xyz
 
 from datetime import datetime
 from matplotlib import pyplot as plt
@@ -40,21 +41,10 @@ pn.extension(sizing_mode='stretch_width')
 # SCANPLOT_V2.0.0a1
 # @cfbastarz, Jun/2023 (carlos.bastarz@inpe.br)
 
-
 monitor_app_texts = MonitoringAppTexts()
 monitor_warning_bottom_main = monitor_app_texts.warnings()
 
-#data_catalog = intake.open_catalog('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/objeval/catalog-scantec-s0.yml')
-data_catalog = intake.open_catalog('/extra2/SMNAMonitoringApp_DATA/objeval/catalog-scantec-s0.yml')
-
-monitoring_app_dates = MonitoringAppDates()
-sdate = monitoring_app_dates.getDates()[0].strip()
-edate = monitoring_app_dates.getDates()[1].strip()
-
-start_date = datetime(int(sdate[0:4]), int(sdate[4:6]), int(sdate[6:8]), int(sdate[8:10]))
-end_date = datetime(int(edate[0:4]), int(edate[4:6]), int(edate[6:8]), int(edate[8:10]))
-date_range = [d.strftime('%Y%m%d%H') for d in pd.date_range(start_date, end_date, freq='6h')][::-1]
-date = pn.widgets.Select(name='Date', value=date_range[0], options=date_range, width=230)
+data_catalog = intake.open_catalog('https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/objeval/catalog-scantec-s0.yml')
 
 Vars = [
 ('VTMP:925', 'Virtual Temperature @ 925 hPa [K]'),
@@ -103,85 +93,74 @@ Vars = [
 
 list_var = [ltuple[0].lower() for ltuple in Vars]
 
-date_range = '20191115122020020100'
+tmp_list = list(data_catalog)
+Regs = list(set(item.split('-')[1] for item in tmp_list))
+Stats = list(set(item.split('-')[2].upper() for item in tmp_list))
+Exps = list(set(item.split('-')[3].upper() for item in tmp_list))
+Refs = list(set(item.split('-')[4] for item in tmp_list))
 
-Regs = ['gl', 'hn', 'tr', 'hs', 'as']
-Refs = ['ref_gfs_no_clim.new',
-        'ref_era5_no_clim.new', 
-        'ref_panl_agcm_clim.new', 'ref_panl_cfsr_clim.new', 'ref_panl_no_clim.new', ]
-Exps = ['EXP15', 'EXP18', 'X666']
-Stats = ['RMSE', 'VIES', 'ACOR']
-Tstats = ['Mudança Fracional', 'Ganho Percentual']
+#print(Regs)
+#print(Stats)
+#print(Exps)
+#print(Refs)
+
 #
 # Widgets
 #
 
 # Widgets Datas (das distribuições espaciais)
-datei = datetime.strptime('2019-11-15', '%Y-%m-%d')
-datef = datetime.strptime('2019-11-26', '%Y-%m-%d')
+tmp = list(data_catalog)[0]
+ds = data_catalog[tmp].read()
+ti = ds.time.values[0]
+tf = ds.time.values[-1]
+
+datei = pd.Timestamp(ti).to_pydatetime()
+datef = pd.Timestamp(tf).to_pydatetime()
 
 date = pn.widgets.DateSlider(name='Data', start=datei, end=datef, value=datei, format='%Y-%m-%d', width=230)
 #fcts = pn.widgets.IntSlider(name='Previsão (horas)', start=0, end=264, step=24, value=0, width=230)
        
 # Widget de Notificações
-silence = pn.widgets.Toggle(name='🔔 Silenciar Notificações', button_type='primary', button_style='outline', value=False)
+#silence = pn.widgets.Toggle(name='🔔 Silenciar Notificações', button_type='primary', button_style='outline', value=False)
 
-read_catalog = pn.widgets.Button(name='🎲 Ler Catálogo de Dados', button_type='primary')
-file_input = pn.widgets.FileInput(name='Escolher Catálogo de Dados', accept='yml', mime_type='text/yml', multiple=False)
+#read_catalog = pn.widgets.Button(name='🎲 Ler Catálogo de Dados', button_type='primary')
+#file_input = pn.widgets.FileInput(name='Escolher Catálogo de Dados', accept='yml', mime_type='text/yml', multiple=False)
 
 # Widgets Série Temporal (_st)    
 varlev_st = pn.widgets.Select(name='Variable', options=[i[0] for i in Vars], value=[i[0] for i in Vars][0], disabled=False, width=230)
-reg_st = pn.widgets.Select(name='Region', options=Regs, value=Regs[0], disabled=False, width=230)
-ref_st = pn.widgets.Select(name='Reference', options=Refs, value=Refs[0], disabled=False, width=230)
-expt_st = pn.widgets.MultiChoice(name='Experiments', options=Exps, value=[Exps[0]], disabled=False, solid=False, width=230)
+reg_st = pn.widgets.Select(name='Region', options=Regs, value=Regs[3], disabled=False, width=230)
+ref_st = pn.widgets.Select(name='Reference', options=Refs, value=Refs[1], disabled=False, width=230)
+expt_st_tb = pn.widgets.Select(name='Experiment (Table)', options=Exps, value=Exps[0], disabled=True, width=230)
+expt_st = pn.widgets.MultiChoice(name='Experiments (Plots)', options=Exps, value=[Exps[0]], disabled=False, solid=False, width=230)
 
 # Widgets Scorecard (_sc)
 Tstats = ['Percentual Gain', 'Fractional Change']
-#colormap_sc = pn.widgets.Select(name='Cor do Preenchimento', value=colormaps[74], options=colormaps, width=230)
 colormap_sc = pn.widgets.ColorMap(name='Colormap', options=cc.palette_n, value_name='coolwarm', width=250, margin=(0, 0, 0, 0))
 invert_colors_sc = pn.widgets.Checkbox(name='Invert Colors', value=True, width=230)
 
 statt_sc = pn.widgets.Select(name='Statistic', options=Stats, value=Stats[0], disabled=False, width=230)
-tstat = pn.widgets.Select(name='Type', options=Tstats, value=Tstats[0], disabled=False, width=230)
-reg_sc = pn.widgets.Select(name='Region', options=Regs, value=Regs[0], disabled=False, width=230)
-ref_sc = pn.widgets.Select(name='Reference', options=Refs, value=Refs[0], disabled=False, width=230)
+tstat = pn.widgets.Select(name='Type', options=Tstats, value=Tstats[1], disabled=False, width=230)
+reg_sc = pn.widgets.Select(name='Region', options=Regs, value=Regs[3], disabled=False, width=230)
+ref_sc = pn.widgets.Select(name='Reference', options=Refs, value=Refs[1], disabled=False, width=230)
 expt1 = pn.widgets.Select(name='Experiment 1', options=Exps, value=Exps[0], disabled=False, width=230)
-expt2 = pn.widgets.Select(name='Experiment 2', options=Exps, value=Exps[0], disabled=False, width=230)
+expt2 = pn.widgets.Select(name='Experiment 2', options=Exps, value=Exps[-1], disabled=False, width=230)
 
 # Widgets Distribuição Espacial (_de) 
 Fills = ['image', 'contour']
-fill_de = pn.widgets.Select(name='Fill', options=Fills, width=230)     
-#colormap_de = pn.widgets.Select(name='Cor do Preenchimento', value=colormaps[0], options=colormaps, width=230)      
+fill_de = pn.widgets.Select(name='Fill', options=Fills, width=230)   
 colormap_de = pn.widgets.ColorMap(name='Colormap', options=cc.palette_n, value_name='coolwarm', width=250, margin=(0, 0, 0, 0))
 invert_colors_de = pn.widgets.Checkbox(name='Invert Colors', value=True, width=230) 
-interval = pn.widgets.IntInput(name='Intervals', value=10, step=1, start=5, end=20, width=230)     
+interval = pn.widgets.IntInput(name='Intervals', value=10, step=1, start=5, end=30, width=230, disabled=True)     
     
 state = pn.widgets.Select(name='Statistic', options=Stats, value=Stats[0], disabled=False, width=230)    
+stat_de = pn.widgets.Select(name='Statistic', options=Stats, value=Stats[0], disabled=False, width=230) 
 varlev_de = pn.widgets.Select(name='Variable', options=[i[0] for i in Vars], value=[i[0] for i in Vars][0], disabled=False, width=230)   
-reg_de = pn.widgets.Select(name='Region', options=Regs, value=Regs[0], disabled=False, width=230)  
-ref_de = pn.widgets.Select(name='Reference', options=Refs, value=Refs[0], disabled=False, width=230)     
+reg_de = pn.widgets.Select(name='Region', options=Regs, value=Regs[3], disabled=False, width=230)  
+ref_de = pn.widgets.Select(name='Reference', options=Refs, value=Refs[1], disabled=False, width=230)     
 expe_de = pn.widgets.MultiChoice(name='Experiments', options=Exps, value=[Exps[0]], disabled=False, solid=False, width=230)    
       
-# Widgets Distribuição Espacial Double (_ded) 
-fill_ded = pn.widgets.Select(name='Fill', value=Fills[0], options=Fills, width=230) 
-#colormap_ded = pn.widgets.Select(name='Cor do Preenchimento', value=colormaps[80], options=colormaps, width=230)      
-colormap_ded = pn.widgets.ColorMap(name='Colormap', options=cc.palette_n, value_name='coolwarm', width=250, margin=(0, 0, 0, 0))
-invert_colors_ded = pn.widgets.Checkbox(name='Invert Colors', value=True, width=230) 
-swipe_ded = pn.widgets.Checkbox(name='Join Figures', value=False, width=230) 
-show_diff_ded = pn.widgets.Checkbox(name='Show Difference', value=False, width=230) 
-
-varlev_ded = pn.widgets.Select(name='Variable', disabled=False, width=230)    
-reg_ded = pn.widgets.Select(name='Region', disabled=False, width=230)    
-ref_ded = pn.widgets.Select(name='Reference', disabled=False, width=230)    
-expe_ded = pn.widgets.MultiChoice(name='Experiments', disabled=False, solid=False, width=230)  
-exp1_ded = pn.widgets.Select(name='Experiment 1', disabled=False, width=230)
-exp2_ded = pn.widgets.Select(name='Experiment 2', disabled=False, width=230)
-
 # Variável lógica para determinar se o arquivo de catálogo já foi lido (True) ou não (False)
 loaded = pn.widgets.Checkbox(name='Catálogo Carregado', value=True, disabled=True)
-
-## Botão da paleta de cores
-#show_color_pallete = pn.widgets.Button(name='🎨 Paletas de Cores...', button_type='default')
 
 #
 # Funções de plotagem
@@ -190,7 +169,7 @@ loaded = pn.widgets.Checkbox(name='Catálogo Carregado', value=True, disabled=Tr
 def get_min_max_ds(ds):
     return ds.compute().min().item(), ds.compute().max().item()
 
-def get_df(reg, exp, stat, ref, varlev):
+def get_df(reg, exp, stat, ref, varlev): 
     kname = 'scantec-' + reg + '-' + stat + '-' + exp.lower() + '-' + ref + '-table'
     #print(kname)
     #if data_catalog is not None:
@@ -199,9 +178,17 @@ def get_df(reg, exp, stat, ref, varlev):
     df.index.name = '' 
     return df
 
-@pn.depends(varlev_st, reg_st, ref_st, expt_st, loaded)
-def plotCurves(varlev_st, reg_st, ref_st, expt_st, loaded):
-    
+#def colorbar_bounds(vmin, vmax, n_levels):
+#    vals = np.linspace(vmin, vmax, n_levels)
+#    vals_int = np.round(vals).astype(int)
+#    print(np.unique(vals_int))
+#    return np.unique(vals_int)
+
+tabs_layout = None
+
+@pn.depends(varlev_st, reg_st, ref_st, expt_st, expt_st_tb, loaded)
+def plotCurves(varlev_st, reg_st, ref_st, expt_st, expt_st_tb, loaded):
+    global tabs_layout
     if loaded and varlev_st and reg_st and ref_st and expt_st:       
         
         for i in Vars:
@@ -215,6 +202,7 @@ def plotCurves(varlev_st, reg_st, ref_st, expt_st, loaded):
         for count, i in enumerate(expt_st):
             if count == 0:
                 exp = expt_st[count] 
+                exp_tb = expt_st_tb
                 #print(reg_st, exp, 'vies', ref_st, varlev_st)
                 df_vies = get_df(reg_st, exp, 'vies', ref_st, varlev_st)
             
@@ -233,6 +221,8 @@ def plotCurves(varlev_st, reg_st, ref_st, expt_st, loaded):
                                           height=height,
                                           title='VIES' + ' - ' + str(nexp_ext))
             
+                    ax_vies_s = df_vies.hvplot.scatter(x='%Previsao', y=varlev_st, label=str(exp), height=height, shared_axes=False, persist=True, responsive=True).opts(size=5, marker='o') 
+
                     df_rmse = get_df(reg_st, exp, 'rmse', ref_st, varlev_st)
         
                     ax_rmse = df_rmse.hvplot.line(x='%Previsao',
@@ -248,6 +238,8 @@ def plotCurves(varlev_st, reg_st, ref_st, expt_st, loaded):
                                           height=height,
                                           title='RMSE' + ' - ' + str(nexp_ext))            
                         
+                    ax_rmse_s = df_rmse.hvplot.scatter(x='%Previsao', y=varlev_st, label=str(exp), height=height, shared_axes=False, persist=True, responsive=True).opts(size=5, marker='o') 
+
                     df_acor = get_df(reg_st, exp, 'acor', ref_st, varlev_st)
             
                     ax_acor = df_acor.hvplot.line(x='%Previsao', 
@@ -263,6 +255,8 @@ def plotCurves(varlev_st, reg_st, ref_st, expt_st, loaded):
                                           height=height,
                                           title='ACOR' + ' - ' + str(nexp_ext))  
             
+                    ax_acor_s = df_acor.hvplot.scatter(x='%Previsao', y=varlev_st, label=str(exp), height=height, shared_axes=False, persist=True, responsive=True).opts(size=5, marker='o') 
+
             else:
             
                 exp = expt_st[count]
@@ -284,6 +278,8 @@ def plotCurves(varlev_st, reg_st, ref_st, expt_st, loaded):
                                            height=height,
                                            title='VIES' + ' - ' + str(nexp_ext))
             
+                    ax_vies_s *= df_vies.hvplot.scatter(x='%Previsao', y=varlev_st, label=str(exp), height=height, shared_axes=False, persist=True, responsive=True).opts(size=5, marker='o') 
+
                     df_rmse = get_df(reg_st, exp, 'rmse', ref_st, varlev_st)
             
                     ax_rmse *= df_rmse.hvplot.line(x='%Previsao',
@@ -299,6 +295,8 @@ def plotCurves(varlev_st, reg_st, ref_st, expt_st, loaded):
                                            height=height,
                                            title='RMSE' + ' - ' + str(nexp_ext))       
 
+                    ax_rmse_s *= df_rmse.hvplot.scatter(x='%Previsao', y=varlev_st, label=str(exp), height=height, shared_axes=False, persist=True, responsive=True).opts(size=5, marker='o') 
+
                     df_acor = get_df(reg_st, exp, 'acor', ref_st, varlev_st)
             
                     ax_acor *= df_acor.hvplot.line(x='%Previsao',
@@ -312,24 +310,137 @@ def plotCurves(varlev_st, reg_st, ref_st, expt_st, loaded):
                                            fontsize={'ylabel': '12px', 'ticks': 10},
                                            responsive=True,
                                            height=height,
-                                           title='ACOR' + ' - ' + str(nexp_ext))             
+                                           title='ACOR' + ' - ' + str(nexp_ext))     
+
+                    ax_acor_s *= df_acor.hvplot.scatter(x='%Previsao', y=varlev_st, label=str(exp), height=height, shared_axes=False, persist=True, responsive=True).opts(size=5, marker='o')        
        
             if ax_vies is not None:
                 ax_vies *= hvs.HLine(0).opts(line_width=1, shared_axes=False, responsive=True, height=height, line_color='black', line_dash='dashed')
                 ax_rmse *= hvs.HLine(0).opts(line_width=1, shared_axes=False, responsive=True, height=height, line_color='black', line_dash='dashed')
                 ax_acor *= hvs.HLine(0.6).opts(line_width=1, shared_axes=False, responsive=True, height=height, line_color='black', line_dash='dashed')    
             
+            stylesheet = """
+                .tabulator-cell {
+                font-size: 12px;
+            }
+            """
+            
+            df_vies = get_df(reg_st, exp_tb, 'vies', ref_st, varlev_st)
+
+            df_vies_table = pn.widgets.Tabulator(df_vies, 
+                                    #selectable=False, 
+                                    show_index=False,
+                                    theme='bootstrap4',
+                                    text_align='center',
+                                    layout='fit_data_table',
+                                    #widths=250,
+                                    selectable='toggle',
+                                    #layout='fit_data_fill', 
+                                    #width=250,
+                                    stylesheets=[stylesheet],
+                                    disabled=True)
+
+            df_rmse = get_df(reg_st, exp_tb, 'rmse', ref_st, varlev_st)
+
+            df_rmse_table = pn.widgets.Tabulator(df_rmse, 
+                                    #selectable=False, 
+                                    show_index=False,
+                                    theme='bootstrap4',
+                                    text_align='center',
+                                    layout='fit_data_table',
+                                    #widths=250,
+                                    selectable='toggle',
+                                    #layout='fit_data_fill', 
+                                    #width=250,
+                                    stylesheets=[stylesheet],
+                                    disabled=True)
+        
+            df_acor = get_df(reg_st, exp_tb, 'acor', ref_st, varlev_st)
+
+            df_acor_table = pn.widgets.Tabulator(df_acor, 
+                                    #selectable=False, 
+                                    show_index=False,
+                                    theme='bootstrap4',
+                                    text_align='center',
+                                    layout='fit_data_table',
+                                    #widths=250,
+                                    selectable='toggle',
+                                    #layout='fit_data_fill', 
+                                    #width=250,
+                                    stylesheets=[stylesheet],
+                                    disabled=True)
 
         if ax_vies is not None:
             ax_vies.opts(axiswise=True, legend_position='bottom_left')
             ax_rmse.opts(axiswise=True, legend_position='top_left')
             ax_acor.opts(axiswise=True, legend_position='bottom_left')
+
+        def get_csv_vies():
+            io_buffer = io.BytesIO()
+            df_vies.to_csv(io_buffer, index=False)
+            io_buffer.seek(0)  
+            return io_buffer
+
+        file_download_vies = pn.widgets.FileDownload(
+            icon='download',
+            callback=get_csv_vies, 
+            filename=f'vies_table_{exp_tb}.csv',
+            button_type='success',
+            width=310
+            )
+
+        def get_csv_rmse():
+            io_buffer = io.BytesIO()
+            df_rmse.to_csv(io_buffer, index=False)
+            io_buffer.seek(0)  
+            return io_buffer
+
+        file_download_rmse = pn.widgets.FileDownload(
+            icon='download',
+            callback=get_csv_rmse, 
+            filename=f'rmse_table_{exp_tb}.csv',
+            button_type='success',
+            width=310
+            )
+        
+        def get_csv_acor():
+            io_buffer = io.BytesIO()
+            df_acor.to_csv(io_buffer, index=False)
+            io_buffer.seek(0)
+            return io_buffer
+
+        file_download_acor = pn.widgets.FileDownload(
+            icon='download',
+            callback=get_csv_acor, 
+            filename=f'acor_table_{exp_tb}.csv',
+            button_type='success',
+            width=310
+            )
+
+        tabulators = pn.Tabs(('VIES', pn.Column(df_vies_table, file_download_vies)), 
+                             ('RMSE', pn.Column(df_rmse_table, file_download_rmse)), 
+                             ('ACOR', pn.Column(df_acor_table, file_download_acor)), tabs_location='left')#, dynamic=True)
+
+        #layout = hvs.Layout(ax_vies*ax_vies_s + ax_rmse*ax_rmse_s + ax_acor*ax_acor_s).cols(3)
+        tabs_layout = pn.Tabs(('PLOTS', hvs.Layout(ax_vies*ax_vies_s + ax_rmse*ax_rmse_s + ax_acor*ax_acor_s).cols(3)), 
+                              ('TABLES', pn.Column('Statistics tables from the SCANTEC objective evaluation.', tabulators)))#, dynamic=True)      
+
+
+        # Callback to enable/disable the expt_st_tb widget based on the active tab
+        def update_expt_st_tb_widget(event):
+            global expt_st_tb
+            #print(f"Tab changed to: {event.new}")  # Debug
+            if event.new == 1:  # Tab index for "TABLES"
+                expt_st_tb.disabled = False
+            else:
+                expt_st_tb.disabled = True
     
-        layout = hvs.Layout(ax_vies + ax_rmse + ax_acor).cols(3)
-    
+        # Attach the callback to the active parameter of the tabs
+        tabs_layout.param.watch(update_expt_st_tb_widget, 'active') 
+
     else:
         
-        layout = pn.Column(
+        tabs_layout = pn.Column(
                     pn.pane.Markdown("""
                     # Série Temporal
                     
@@ -337,8 +448,8 @@ def plotCurves(varlev_st, reg_st, ref_st, expt_st, loaded):
                     """),
                     pn.pane.Alert('⛔ **Atenção:** Nada para mostrar! Para começar, selecione um catálogo de dados ou aguarde a execução da função de plotagem.', alert_type='danger')
                 )
-    
-    return layout
+
+    return tabs_layout
     
 @pn.depends(statt_sc, tstat, reg_sc, ref_sc, expt1, expt2, colormap_sc, invert_colors_sc, loaded)    
 def plotScorecard(statt_sc, tstat, reg_sc, ref_sc, expt1, expt2, colormap_sc, invert_colors_sc, loaded):
@@ -349,7 +460,7 @@ def plotScorecard(statt_sc, tstat, reg_sc, ref_sc, expt1, expt2, colormap_sc, in
     
         kname1 = 'scantec-' + reg_sc + '-' + statt_sc.lower() + '-' + expt1.lower() + '-' + ref_sc + '-table'
         kname2 = 'scantec-' + reg_sc + '-' + statt_sc.lower() + '-' + expt2.lower() + '-' + ref_sc + '-table'
-    
+
         df1 = dfs[kname1].read()
         df2 = dfs[kname2].read()
         
@@ -390,7 +501,7 @@ def plotScorecard(statt_sc, tstat, reg_sc, ref_sc, expt1, expt2, colormap_sc, in
             # Tentativa de substituir valores -inf por um número não muito grande
             score_table.replace([np.inf, -np.inf], 1000000, inplace=True)
 
-            if silence.value is False: pn.state.notifications.info('NaN or Inf values may have been replaced by other values.', duration=5000) 
+            #if silence.value is False: pn.state.notifications.info('NaN or Inf values may have been replaced by other values.', duration=5000) 
 
         ## Figura
         plt.figure(figsize = (9,6))
@@ -456,12 +567,10 @@ def plotScorecard(statt_sc, tstat, reg_sc, ref_sc, expt1, expt2, colormap_sc, in
         
     return layout
 
-@pn.depends(state, varlev_de, reg_de, ref_de, date, colormap_de, invert_colors_de, interval, expe_de, fill_de)
-def plotFields(state, varlev_de, reg_de, ref_de, date, colormap_de, invert_colors_de, interval, expe_de, fill_de):
+@pn.depends(stat_de, varlev_de, reg_de, ref_de, date, colormap_de, invert_colors_de, interval, expe_de, fill_de)
+def plotFields(stat_de, varlev_de, reg_de, ref_de, date, colormap_de, invert_colors_de, interval, expe_de, fill_de):
     
     date = str(date) + ' 12:00' # consertar...
-
-    #print(varlev_de)
 
     var = varlev_de.replace(':', '').lower()
     
@@ -476,7 +585,7 @@ def plotFields(state, varlev_de, reg_de, ref_de, date, colormap_de, invert_color
     
     if reg_de == 'as':
         data_aspect=1
-        frame_height=700
+        frame_height=600
     elif (reg_de == 'hn') or (reg_de == 'hs'):
         data_aspect=1
         frame_height=225        
@@ -488,16 +597,19 @@ def plotFields(state, varlev_de, reg_de, ref_de, date, colormap_de, invert_color
         frame_height=590
   
     for count, i in enumerate(expe_de):
-        if count == 0:
-            exp = expe_de[count]
-            kname = 'scantec-' + reg_de + '-' + state.lower() + '-' + exp.lower() + '-' + ref_de + '-field'
-            if data_catalog is not None:
-                ds = data_catalog[kname].to_dask()
+        exp = expe_de[count]
+
+        kname = 'scantec-' + reg_de + '-' + stat_de.lower() + '-' + exp.lower() + '-' + ref_de + '-field'
+        if data_catalog is not None:
+            ds = data_catalog[kname].to_dask()
             
-            vmin, vmax = get_min_max_ds(ds[var])
-                       
-            if fill_de == 'image':
+        vmin, vmax = get_min_max_ds(ds[var])
+        #colorbar_bounds = (vmin, vmax, interval) 
+
+        if fill_de == 'image':
             
+            if count == 0:
+
                 ax = ds.sel(time=date).hvplot.image(x='lon',
                                                     y='lat',
                                                     z=var,
@@ -508,10 +620,26 @@ def plotFields(state, varlev_de, reg_de, ref_de, date, colormap_de, invert_color
                                                     coastline=True,
                                                     rasterize=True,
                                                     clim=(vmin,vmax),
-                                                    title=str(state) + ' - ' + str(nexp_ext) + ' (' + str(date) + ')')    
+                                                    title=str(stat_de) + ' (' + str(exp) + ') - ' + str(nexp_ext) + ' (' + str(date) + ')')    
                 
-            elif fill_de == 'contour':
+            else:
+
+                ax += ds.sel(time=date).hvplot.image(x='lon',
+                                                    y='lat',
+                                                    z=var,
+                                                    data_aspect=data_aspect,
+                                                    frame_height=frame_height, 
+                                                    cmap=cmap, 
+                                                    projection=ccrs.PlateCarree(), 
+                                                    coastline=True,
+                                                    rasterize=True,
+                                                    clim=(vmin,vmax),
+                                                    title=str(stat_de) + ' (' + str(exp) + ') - ' + str(nexp_ext) + ' (' + str(date) + ')')    
                 
+        elif fill_de == 'contour':
+                
+            if count == 0:
+
                 ax = ds.sel(time=date).hvplot.contour(x='lon',
                                                       y='lat',
                                                       z=var,
@@ -524,286 +652,40 @@ def plotFields(state, varlev_de, reg_de, ref_de, date, colormap_de, invert_color
                                                       clim=(vmin,vmax),
                                                       levels=interval,
                                                       line_width=2,
-                                                      title=str(state) + ' - ' + str(nexp_ext) + ' (' + str(date) + ')')  
-             
-        else:  
-            
-            ax *= ds.sel(time=date).hvplot.contour(x='lon',
-                                                   y='lat',
-                                                   z=var,
-                                                   data_aspect=data_aspect,
-                                                   frame_height=frame_height, 
-                                                   cmap=cmap, 
-                                                   projection=ccrs.PlateCarree(), 
-                                                   coastline=True,
-                                                   clim=(vmin,vmax),
-                                                   colorbar=True,
-                                                   levels=interval,
-                                                   line_width=4,
-                                                   line_dash='dashed',
-                                                   title=str(state) + ' - ' + str(nexp_ext) + ' (' + str(date) + ')') 
-   
-    return ax
-
-@pn.depends(state, varlev_ded, reg_ded, ref_ded, date, colormap_ded, invert_colors_ded, interval, fill_ded, swipe_ded, show_diff_ded, exp1_ded, exp2_ded)
-def plotFieldsDouble(state, varlev_ded, reg_ded, ref_ded, date, colormap_ded, invert_colors_ded, interval, fill_ded, swipe_ded, show_diff_ded, exp1_ded, exp2_ded):
-    
-    if loaded and state and varlev_ded and reg_ded and ref_ded and date and colormap_ded and interval and fill_ded and exp1_ded and exp2_ded:
-    
-        datefmt = str(date) + ' 12:00' # consertar...
-
-        var = varlev_ded.replace(':', '').lower()
-
-        for i in Vars:
-            if i[0] == varlev_ded:
-                nexp_ext = i[1]
-
-        if invert_colors_ded == True:
-            cmap = colormap_ded[::-1]
-        else:
-            cmap = colormap_ded
-
-        if reg_ded == 'as':
-            data_aspect=1
-            frame_height=800
-        elif (reg_ded == 'hn') or (reg_ded == 'hs'):
-            data_aspect=1
-            frame_height=235        
-        elif reg_ded == 'tr':
-            data_aspect=1
-            frame_height=155         
-        elif reg_ded == 'gl': 
-            data_aspect=1
-            frame_height=340
-            frame_height=390
-
-        exp1 = exp1_ded
-        kname1 = 'scantec-' + reg_ded + '-' + state.lower() + '-' + exp1.lower() + '-' + ref_ded + '-field'
-        if data_catalog is not None:
-            ds1 = data_catalog[kname1].to_dask()
-
-        exp2 = exp2_ded
-        kname2 = 'scantec-' + reg_ded + '-' + state.lower() + '-' + exp2.lower() + '-' + ref_ded + '-field'
-        if data_catalog is not None:
-            ds2 = data_catalog[kname2].to_dask()
-
-        #vmin, vmax = get_min_max_ds(ds1[var])
-
-        if show_diff_ded:
-
-            #ds_diff = ds1[var].sel(time=datefmt) - ds2[var].sel(time=datefmt)
-            ds_diff = ds1[var].isel(time=0) - ds2[var].isel(time=0)
-
-            vmin, vmax = get_min_max_ds(ds_diff)
-
-            if fill_ded == 'image':
-
-                ax1 = ds1.sel(time=datefmt).hvplot.image(x='lon',
-                                                      y='lat',
-                                                      z=var,
-                                                      data_aspect=data_aspect,
-                                                      frame_height=frame_height, 
-                                                      #frame_width=650,
-                                                      cmap=cmap, 
-                                                      projection=ccrs.PlateCarree(), 
-                                                      coastline=True,
-                                                      rasterize=True,
-                                                      #datashade=True,
-                                                      colorbar=True,
-                                                      #features=['borders', 'coastline', 'lakes', 'land', 'ocean', 'rivers', 'states'],   
-                                                      clim=(vmin,vmax),
-                                                      title=str(state) + ' - ' + str(exp1) + ' - ' + str(nexp_ext) + ' (' + str(datefmt) + ')')    
-
-                ax2 = ds2.sel(time=datefmt).hvplot.image(x='lon',
-                                                      y='lat',
-                                                      z=var,
-                                                      data_aspect=data_aspect,
-                                                      frame_height=frame_height, 
-                                                      #frame_width=650,
-                                                      cmap=cmap, 
-                                                      projection=ccrs.PlateCarree(), 
-                                                      coastline=True,
-                                                      rasterize=True,
-                                                      #features=['borders', 'coastline', 'lakes', 'land', 'ocean', 'rivers', 'states'],
-                                                      #datashade=True,  
-                                                      colorbar=True,   
-                                                      clim=(vmin,vmax),
-                                                      title=str(state) + ' - ' + str(exp2) + ' - ' + str(nexp_ext) + ' (' + str(datefmt) + ')')         
-
-                axd = (ds1.sel(time=datefmt) - ds2.sel(time=datefmt)).hvplot.image(x='lon',
-                                                                                  y='lat',
-                                                                                  z=var,
-                                                                                  data_aspect=data_aspect,
-                                                                                  frame_height=frame_height, 
-                                                                                  #frame_width=650,
-                                                                                  cmap=cmap, 
-                                                                                  projection=ccrs.PlateCarree(), 
-                                                                                  coastline=True,
-                                                                                  rasterize=True,
-                                                                                  #features=['borders', 'coastline', 'lakes', 'land', 'ocean', 'rivers', 'states'], 
-                                                                                  #datashade=True,
-                                                                                  colorbar=True,
-                                                                                  clim=(vmin,vmax),
-                                                                                  title=str(state) + ' - ' + 'Dif. (' + str(exp1) + '-' + str(exp2) + ') - ' + str(nexp_ext) + ' (' + str(datefmt) + ')')    
-
-            elif fill_ded == 'contour':
-
-                ax1 = ds1.sel(time=datefmt).hvplot.contour(x='lon',
-                                                        y='lat',
-                                                        z=var,
-                                                        data_aspect=data_aspect,
-                                                        frame_height=frame_height, 
-                                                        #frame_width=650,
-                                                        cmap=cmap, 
-                                                        projection=ccrs.PlateCarree(), 
-                                                        coastline=True,
-                                                        rasterize=True,
-                                                        #features=['borders', 'coastline', 'lakes', 'land', 'ocean', 'rivers', 'states'],
-                                                        clim=(vmin,vmax),
-                                                        levels=interval,
-                                                        line_width=1,
-                                                        title=str(state) + ' - ' + str(exp1) + ' - ' + str(nexp_ext) + ' (' + str(datefmt) + ')')    
-
-                ax2 = ds2.sel(time=datefmt).hvplot.contour(x='lon',
-                                                        y='lat',
-                                                        z=var,
-                                                        data_aspect=data_aspect,
-                                                        frame_height=frame_height, 
-                                                        #frame_width=650,
-                                                        cmap=cmap, 
-                                                        projection=ccrs.PlateCarree(), 
-                                                        coastline=True,
-                                                        rasterize=True,
-                                                        #features=['borders', 'coastline', 'lakes', 'land', 'ocean', 'rivers', 'states'],
-                                                        clim=(vmin,vmax),
-                                                        levels=interval,
-                                                        line_width=1,
-                                                        title=str(state) + ' - ' + str(exp2) + ' - ' + str(nexp_ext) + ' (' + str(datefmt) + ')')                  
-
-                axd = (ds1.sel(time=datefmt) - ds2.sel(time=datefmt)).hvplot.contour(x='lon',
-                                                                                    y='lat',
-                                                                                    z=var,
-                                                                                    data_aspect=data_aspect,
-                                                                                    frame_height=frame_height, 
-                                                                                    #frame_width=650,
-                                                                                    cmap=cmap, 
-                                                                                    projection=ccrs.PlateCarree(), 
-                                                                                    coastline=True,
-                                                                                    rasterize=True,
-                                                                                    #features=['borders', 'coastline', 'lakes', 'land', 'ocean', 'rivers', 'states'],
-                                                                                    #clim=(vmin,vmax),
-                                                                                    levels=interval,
-                                                                                    line_width=1,
-                                                                                    title=str(state) + ' - ' + str(exp1) + ' - ' + str(nexp_ext) + ' (' + str(datefmt) + ')')          
-        else:
-
-            vmin, vmax = get_min_max_ds(ds1[var])
-
-            if fill_ded == 'image':
-
-                ax1 = ds1.sel(time=datefmt).hvplot.image(x='lon',
-                                                      y='lat',
-                                                      z=var,
-                                                      data_aspect=data_aspect,
-                                                      frame_height=frame_height, 
-                                                      #frame_width=650,
-                                                      cmap=cmap, 
-                                                      projection=ccrs.PlateCarree(), 
-                                                      coastline=True,
-                                                      rasterize=True,
-                                                      #datashade=True,
-                                                      colorbar=True,
-                                                      #features=['borders', 'coastline', 'lakes', 'land', 'ocean', 'rivers', 'states'],   
-                                                      clim=(vmin,vmax),
-                                                      title=str(state) + ' - ' + str(exp1) + ' - ' + str(nexp_ext) + ' (' + str(datefmt) + ')')    
-
-                ax2 = ds2.sel(time=datefmt).hvplot.image(x='lon',
-                                                      y='lat',
-                                                      z=var,
-                                                      data_aspect=data_aspect,
-                                                      frame_height=frame_height, 
-                                                      #frame_width=650,
-                                                      cmap=cmap, 
-                                                      projection=ccrs.PlateCarree(), 
-                                                      coastline=True,
-                                                      rasterize=True,
-                                                      #features=['borders', 'coastline', 'lakes', 'land', 'ocean', 'rivers', 'states'],
-                                                      #datashade=True,  
-                                                      colorbar=True,   
-                                                      clim=(vmin,vmax),
-                                                      title=str(state) + ' - ' + str(exp2) + ' - ' + str(nexp_ext) + ' (' + str(datefmt) + ')')       
-
-            elif fill_ded == 'contour':
-
-                ax1 = ds1.sel(time=datefmt).hvplot.contour(x='lon',
-                                                        y='lat',
-                                                        z=var,
-                                                        data_aspect=data_aspect,
-                                                        frame_height=frame_height, 
-                                                        #frame_width=650,
-                                                        cmap=cmap, 
-                                                        projection=ccrs.PlateCarree(), 
-                                                        coastline=True,
-                                                        rasterize=True,
-                                                        #features=['borders', 'coastline', 'lakes', 'land', 'ocean', 'rivers', 'states'],
-                                                        clim=(vmin,vmax),
-                                                        levels=interval,
-                                                        line_width=1,
-                                                        title=str(state) + ' - ' + str(exp1) + ' - ' + str(nexp_ext) + ' (' + str(datefmt) + ')')    
-
-                ax2 = ds2.sel(time=datefmt).hvplot.contour(x='lon',
-                                                        y='lat',
-                                                        z=var,
-                                                        data_aspect=data_aspect,
-                                                        frame_height=frame_height, 
-                                                        #frame_width=650,
-                                                        cmap=cmap, 
-                                                        projection=ccrs.PlateCarree(), 
-                                                        coastline=True,
-                                                        rasterize=True,
-                                                        #features=['borders', 'coastline', 'lakes', 'land', 'ocean', 'rivers', 'states'],
-                                                        clim=(vmin,vmax),
-                                                        levels=interval,
-                                                        line_width=1,
-                                                        title=str(state) + ' - ' + str(exp2) + ' - ' + str(nexp_ext) + ' (' + str(datefmt) + ')')  
-
-        if show_diff_ded:    
-            #layout = pn.Column(ax1, ax2, axd, sizing_mode='stretch_width')
-            layout = pn.Column(axd, sizing_mode='stretch_width')
-            #if reg_ded == 'as':
-            #    layout = hvs.Layout(ax1 + ax2 + axd).cols(3)
-            #else:
-            #    layout = hvs.Layout(ax1 + ax2 + axd).cols(1)
-        else:
-            if swipe_ded:
-                layout = pn.Swipe(ax1, ax2, value=5)
+                                                      title=str(stat_de) + ' (' + str(exp) + ') - ' + str(nexp_ext) + ' (' + str(date) + ')')  
+                
             else:
-                if reg_ded == 'as':# or reg_ded == 'gl':
-                    layout = hvs.Layout(ax1 + ax2).cols(2)
-                else:
-                    layout = hvs.Layout(ax1 + ax2).cols(1)
 
-        if silence.value is False: pn.state.notifications.info('Colors may represent different values ranges.', duration=5000)
+                ax += ds.sel(time=date).hvplot.contour(x='lon',
+                                                      y='lat',
+                                                      z=var,
+                                                      data_aspect=data_aspect,
+                                                      frame_height=frame_height, 
+                                                      cmap=cmap, 
+                                                      projection=ccrs.PlateCarree(), 
+                                                      coastline=True,
+                                                      rasterize=True,
+                                                      clim=(vmin,vmax),
+                                                      levels=interval,
+                                                      line_width=2,
+                                                      title=str(stat_de) + ' (' + str(exp) + ') - ' + str(nexp_ext) + ' (' + str(date) + ')')  
 
-    else:
-        
-        layout = pn.Column(
-                    pn.pane.Markdown("""
-                    # Spatial Distribution
-                    
-                    This evaluation is made by looking at the statistics spatial distribution, which allows to check the skill of model parameters (variables) along the forecast length.
-                    """),
-                    pn.pane.Alert('⛔ **Error:** Nothing to show! To start, choose a data catalog or wait the plotting to finish.', alert_type='danger')
-                )          
-        
+        if reg_de == 'as':
+            if count > 0:
+                layout = hvs.Layout([ax]).cols(count+1)
+            else:
+                layout = hvs.Layout([ax]).cols(1)
+        else:
+            layout = hvs.Layout([ax]).cols(1)
+
     return layout
-    
+
 def LayoutSidebarObjEval():
 
-    card1 = pn.Card(pn.Row(date, pn.widgets.TooltipIcon(value='Choose a date', align='start')), 
-                    pn.Row(varlev_st, pn.widgets.TooltipIcon(value='Choose a variable and level', align='start')), 
+    card1 = pn.Card(pn.Row(varlev_st, pn.widgets.TooltipIcon(value='Choose a variable and level', align='start')), 
                     pn.Row(reg_st, pn.widgets.TooltipIcon(value='Choose a region', align='start')), 
                     pn.Row(ref_st, pn.widgets.TooltipIcon(value='Choose a reference', align='start')), 
+                    pn.Row(expt_st_tb, pn.widgets.TooltipIcon(value='Choose one experiment', align='start')),                     
                     pn.Row(expt_st, pn.widgets.TooltipIcon(value='Choose one or more experiments', align='start')), 
                     title='Time Series', collapsed=False)
     
@@ -817,21 +699,29 @@ def LayoutSidebarObjEval():
                     pn.Row(invert_colors_sc, pn.widgets.TooltipIcon(value='Invert the color range in the colormap', align='start')), 
                     title='Scorecard', collapsed=True)
     
-    card3 = pn.Card(pn.Row(state, pn.widgets.TooltipIcon(value='Choose a statistic', align='start')), 
+    card3 = pn.Card(pn.Row(date, pn.widgets.TooltipIcon(value='Choose a date', align='start')), 
+                    pn.Row(state, pn.widgets.TooltipIcon(value='Choose a statistic', align='start')), 
                     pn.Row(varlev_de, pn.widgets.TooltipIcon(value='Choose a variable and level', align='start')), 
                     pn.Row(reg_de, pn.widgets.TooltipIcon(value='Choose a region', align='start')), 
                     pn.Row(ref_de, pn.widgets.TooltipIcon(value='Choose a reference', align='start')), 
-                    pn.Row(date, pn.widgets.TooltipIcon(value='Choose a date', align='start')), 
+                    pn.Row(fill_de, pn.widgets.TooltipIcon(value='Choose a experiment', align='start')), 
+                    pn.Row(interval, pn.widgets.TooltipIcon(value='Choose the contour invervals (min=5, max=30)', align='start')), 
                     pn.Row(colormap_de, pn.widgets.TooltipIcon(value='Choose a colormap', align='start')), 
                     pn.Row(invert_colors_de, pn.widgets.TooltipIcon(value='Invert the color range in the colormap', align='start')), 
-                    pn.Row(interval, pn.widgets.TooltipIcon(value='Choose the contour invervals', align='start')), 
                     pn.Row(expe_de, pn.widgets.TooltipIcon(value='Choose a experiment', align='start')), 
-                    pn.Row(fill_de, pn.widgets.TooltipIcon(value='Choose a experiment', align='start')), 
                     title='Spatial Distribution', collapsed=True)
 
-    # Função para alternar os estados dos cards
+
+    def toggle_widgets(event):
+        if event.new == 'contour':
+            interval.disabled = False
+        elif event.new == 'image':
+            interval.disabled = True
+
+    fill_de.param.watch(toggle_widgets, 'value')
+
     def toggle_cards(event):
-        if event.new == False:  # Se um card foi aberto, fecha o outro
+        if event.new == False:  
             if event.obj is card1:
                 card2.collapsed = True
                 card3.collapsed = True
@@ -842,7 +732,6 @@ def LayoutSidebarObjEval():
                 card1.collapsed = True
                 card2.collapsed = True
 
-    # Monitorando mudanças no estado `collapsed`
     card1.param.watch(toggle_cards, 'collapsed')
     card2.param.watch(toggle_cards, 'collapsed')
     card3.param.watch(toggle_cards, 'collapsed')
@@ -858,7 +747,7 @@ def LayoutMainObjEval():
     main_text = pn.Column("""
     # Objective Evaluation
 
-    Set the parameters on the left to update the map below and explore our analysis features.
+    Set the parameters on the left to update the map below and explore our analysis features. Click on the `TABLE` tab to get an overview of the calculated statistics.
     """)
 
     tabs_objeval = pn.Tabs(('TIME SERIES', pn.Column('Time series of bias, root mean square error and anomaly correlation for a variable and level for a particular region with respect to a climatology.', plotCurves)), 

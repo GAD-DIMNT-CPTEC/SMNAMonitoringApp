@@ -7,12 +7,12 @@ class MonitoringAppTexts:
         pn.extension('floatpanel')
 
     def warnings(self):
-        warning_bottom_main = pn.pane.Alert('⚠️ **Warning:** The information shown here does not represent official information and should not be used for decision making.', alert_type='warning')
+        warning_bottom_main = pn.pane.Alert('⚠️ **Warning:** The information shown here does not represent official information and should not be regarded for decision making.', alert_type='warning')
         return warning_bottom_main
     
     def warnings_anl(self, fname):
         text = (
-            "🛑 **Error:** The analysis field is not available for the selected date. File name is **{fname}**."
+            "🛑 **Error:** The analysis field is not available for the selected date. Analysis date is **{fname}**."
         )
         message = pn.pane.Alert(text.format(fname=fname), alert_type='danger')
         return message

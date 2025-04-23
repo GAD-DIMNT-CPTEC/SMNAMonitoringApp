@@ -20,6 +20,7 @@
 # ---
 # Carlos Frederico Bastarz (carlos.bastarz@inpe.br), Abril de 2023.
 
+import io
 import os
 import re
 import numpy as np
@@ -92,7 +93,7 @@ iter_fcost_list = ['OMF', 'OMF (1st INNER LOOP)', 'OMF (2nd INNER LOOP)', 'OMA (
 date_range = date_range_slider.value
 
 experiment = pn.widgets.MultiChoice(name='Experiments (Plots)', value=[experiment_list[0].name], options=[i.name for i in experiment_list], solid=False, width=240)
-experiment2 = pn.widgets.Select(name='Experiment (Table)', value=experiment_list[0].name, options=[i.name for i in experiment_list], width=240)
+experiment2 = pn.widgets.Select(name='Experiment (Table)', value=experiment_list[0].name, options=[i.name for i in experiment_list], disabled=True, width=240)
 variable = pn.widgets.Select(name='Variable', value=variable_list[0], options=variable_list, width=240)
 synoptic_time = pn.widgets.RadioBoxGroup(name='Synoptic Time', value=synoptic_time_list[-1], options=synoptic_time_list, inline=False, width=240)
 iter_fcost = pn.widgets.Select(name='Iteration', value=iter_fcost_list[0], options=iter_fcost_list, width=240)
@@ -260,79 +261,113 @@ def getTable(variable, experiment2, synoptic_time, iter_fcost, date_range):
                                     #width=250,
                                     stylesheets=[stylesheet],
                                     disabled=True)
-    return pn.Column(gt_table, sizing_mode='stretch_width')
+    
+    def get_csv():
+        io_buffer = io.BytesIO()
+        df_s.to_csv(io_buffer, index=False)
+        io_buffer.seek(0)  # Retorna ao início do buffer
+        return io_buffer
+
+    file_download = pn.widgets.FileDownload(
+        icon='download',
+        callback=get_csv, 
+        filename='jo_table.csv',
+        button_type='success',
+        width=310
+        )
+
+    return pn.Column(gt_table, file_download, sizing_mode='stretch_width')
 
 ###
 
-def Layout():
+# def Layout():
 
-    text_info = """
-    # SMNA Dashboard - Função Custo
+#     text_info = """
+#     # SMNA Dashboard - Função Custo
     
-    ## Curvas
+#     ## Curvas
     
-    A depender da quantidade de outer e inner loops, o GSI registra um número diferente de informações sobre o número de observações consideradas (`Nobs`), o custo da minimização (`Jo`) e o custo da minimização normalizado pelo número de observações (`Jo/n`). A configuração do GSI/3DVar aplicado ao SMNA (válido para a data de escrita deste notebook), considera `miter=2` e `niter=3`, ou seja, 2 outer loops com 3 inner loops cada. Nesse sentido, as informações obtidas a partir das iterações do processo de minimização da função custo, consideram o seguinte:
+#     A depender da quantidade de outer e inner loops, o GSI registra um número diferente de informações sobre o número de observações consideradas (`Nobs`), o custo da minimização (`Jo`) e o custo da minimização normalizado pelo número de observações (`Jo/n`). A configuração do GSI/3DVar aplicado ao SMNA (válido para a data de escrita deste notebook), considera `miter=2` e `niter=3`, ou seja, 2 outer loops com 3 inner loops cada. Nesse sentido, as informações obtidas a partir das iterações do processo de minimização da função custo, consideram o seguinte:
     
-    * `OMF`: início do primeiro outer loop, onde o estado do sistema é dado pelo background;
-    * `OMF (1st INNER LOOP)`: final do primeiro inner loop do primeiro outer loop, onde o estado do sistema ainda é dado pelo background;
-    * `OMF (2nd INNER LOOP)`: final do segundo inner loop do primeiro outer loop, onde o estado do sistema ainda é dado pelo background;
-    * `OMA (AFTER 1st OUTER LOOP)`: início do segundo outer loop, onde o estado do sistema é dado pela análise;
-    * `OMA (1st INNER LOOP)`: final do primeiro inner loop do segundo outer loop, onde o estado do sistema é dado pela análise;
-    * `OMA (2nd INNER LOOP)`: final do segundo inner loop do segundo outer loop, onde o estado do sistema é dado pela análise;
-    * `OMA (AFTER 2nd OUTER LOOP)`: final do segundo outer loop, análise final.
+#     * `OMF`: início do primeiro outer loop, onde o estado do sistema é dado pelo background;
+#     * `OMF (1st INNER LOOP)`: final do primeiro inner loop do primeiro outer loop, onde o estado do sistema ainda é dado pelo background;
+#     * `OMF (2nd INNER LOOP)`: final do segundo inner loop do primeiro outer loop, onde o estado do sistema ainda é dado pelo background;
+#     * `OMA (AFTER 1st OUTER LOOP)`: início do segundo outer loop, onde o estado do sistema é dado pela análise;
+#     * `OMA (1st INNER LOOP)`: final do primeiro inner loop do segundo outer loop, onde o estado do sistema é dado pela análise;
+#     * `OMA (2nd INNER LOOP)`: final do segundo inner loop do segundo outer loop, onde o estado do sistema é dado pela análise;
+#     * `OMA (AFTER 2nd OUTER LOOP)`: final do segundo outer loop, análise final.
     
-    **Nota:** as informações das iterações `OMF` e `OMF (1st INNER LOOP)` são iguais, assim como as informações das iterações `OMA (AFTER 1st OUTER LOOP)` e `OMA (1st INNER LOOP)`.
+#     **Nota:** as informações das iterações `OMF` e `OMF (1st INNER LOOP)` são iguais, assim como as informações das iterações `OMA (AFTER 1st OUTER LOOP)` e `OMA (1st INNER LOOP)`.
     
-    ## Experimentos
+#     ## Experimentos
     
-    * `df_dtc`: experimento controle SMNA-Oper, com a matriz **B** do DTC, realizado pelo DIMNT;
-    * `df_dtc_alex`: experimento SMNA-Oper, com a matriz **B** do DTC, realizado pela DIPTC;
-    * `df_bamh_T0`: experimento controle SMNA-Oper, com a matriz **B** do BAMH (exp. T0), realizado pelo DIMNT;
-    * `df_bamh_T4`: experimento controle SMNA-Oper, com a matriz **B** do BAMH (exp. T4), realizado pelo DIMNT;
-    * `df_bamh_GT4AT2`: experimento controle SMNA-Oper, com a matriz **B** do BAMH (exp. GT4AT2), realizado pelo DIMNT;
+#     * `df_dtc`: experimento controle SMNA-Oper, com a matriz **B** do DTC, realizado pelo DIMNT;
+#     * `df_dtc_alex`: experimento SMNA-Oper, com a matriz **B** do DTC, realizado pela DIPTC;
+#     * `df_bamh_T0`: experimento controle SMNA-Oper, com a matriz **B** do BAMH (exp. T0), realizado pelo DIMNT;
+#     * `df_bamh_T4`: experimento controle SMNA-Oper, com a matriz **B** do BAMH (exp. T4), realizado pelo DIMNT;
+#     * `df_bamh_GT4AT2`: experimento controle SMNA-Oper, com a matriz **B** do BAMH (exp. GT4AT2), realizado pelo DIMNT;
     
-    **Nota:** a descrição dos experimentos T0, T4 e GT4AT2 podem ser encontradas em [https://projetos.cptec.inpe.br/issues/11766](https://projetos.cptec.inpe.br/issues/11766).        
+#     **Nota:** a descrição dos experimentos T0, T4 e GT4AT2 podem ser encontradas em [https://projetos.cptec.inpe.br/issues/11766](https://projetos.cptec.inpe.br/issues/11766).        
     
-    ## Período
+#     ## Período
     
-    O período considerado para a apresentação dos resultados é 2023021600 a 2023031600.
+#     O período considerado para a apresentação dos resultados é 2023021600 a 2023031600.
     
-    ---
+#     ---
     
-    Atualizado em: 09/05/2023 ([carlos.bastarz@inpe.br](mailto:carlos.bastarz@inpe.br))
+#     Atualizado em: 09/05/2023 ([carlos.bastarz@inpe.br](mailto:carlos.bastarz@inpe.br))
     
-    """
+#     """
   
-    card_parameters = pn.Card(pn.Row(date_range_slider, pn.widgets.TooltipIcon(value='Choose a date range', align='start')), 
-                              pn.Row(variable, pn.widgets.TooltipIcon(value='Choose a variable', align='start')),
-                              pn.Row(iter_fcost, pn.widgets.TooltipIcon(value='Choose the cost function iteration', align='start')), 
-                              pn.Row(synoptic_time, pn.widgets.TooltipIcon(value='Choose one or more synoptic times', align='start')), 
-                              pn.Row(experiment2, pn.widgets.TooltipIcon(value='Choose one or more experiments', align='start')), 
-                              pn.Column(experiment, height=240), title='Parameters', collapsed=False)
-    settings = pn.Column(card_parameters)
-    tabs_contents = pn.Tabs(('PLOTS', plotCurves), ('TABLE', getTable))
-    return pn.Column(settings, tabs_contents)
+#     card_parameters = pn.Card(pn.Row(date_range_slider, pn.widgets.TooltipIcon(value='Choose a date range', align='start')), 
+#                               pn.Row(variable, pn.widgets.TooltipIcon(value='Choose a variable', align='start')),
+#                               pn.Row(iter_fcost, pn.widgets.TooltipIcon(value='Choose the cost function iteration', align='start')), 
+#                               pn.Row(synoptic_time, pn.widgets.TooltipIcon(value='Choose one or more synoptic times', align='start')), 
+#                               pn.Row(experiment2, pn.widgets.TooltipIcon(value='Choose one experiment', align='start')), 
+#                               pn.Column(pn.Row(experiment, pn.widgets.TooltipIcon(value='Choose one or more experiments', align='start')), height=240),  
+#                               title='Parameters', collapsed=False)
+    
+#     settings = pn.Column(card_parameters)
+
+#     tabs_contents = pn.Tabs(('PLOTS', plotCurves), ('TABLE', getTable), active=0)
+
+#     return pn.Column(settings, tabs_contents)
 
 def monitor_jo_sidebar():
-    #card_parameters = pn.Card(variable, iter_fcost, date_range_slider, synoptic_time, experiment2, pn.Column(experiment, height=240), title='Parameters', collapsed=False)
     card_parameters = pn.Card(pn.Row(date_range_slider, pn.widgets.TooltipIcon(value='Choose a date range', align='start')), 
                               pn.Row(variable, pn.widgets.TooltipIcon(value='Choose a variable', align='start')),
                               pn.Row(iter_fcost, pn.widgets.TooltipIcon(value='Choose the cost function iteration', align='start')), 
                               pn.Row(synoptic_time, pn.widgets.TooltipIcon(value='Choose one or more synoptic times', align='start')), 
-                              pn.Row(experiment2, pn.widgets.TooltipIcon(value='Choose one or more experiments', align='start')), 
-                              pn.Column(experiment, height=240), title='Parameters', collapsed=False)    
+                              pn.Row(experiment2, pn.widgets.TooltipIcon(value='Choose one experiment', align='start')), 
+                              pn.Column(pn.Row(experiment, pn.widgets.TooltipIcon(value='Choose one or more experiments', align='start')), height=240), 
+                              title='Parameters', collapsed=False)    
+
+
+
+
     settings = pn.Column(card_parameters)
     return settings
 
 def monitor_jo_main():
-    tabs_contents_jb = pn.Tabs(('PLOTS', plotCurves), ('TABLE', getTable))
-    tabs_contents_jo = pn.Tabs(('PLOTS', plotCurves), ('TABLE', getTable))
-    tabs_contents = pn.Tabs(('Jo', pn.Column('Jo minimization.', tabs_contents_jo)))#, 
-                            #('Jb', pn.Column('Jb minimization.', tabs_contents_jb)),
-                            #('Jc', pn.Column('Jc minimization.', tabs_contents_jo)), active=1)
+    #tabs_contents_jb = pn.Tabs(('PLOTS', plotCurves), ('TABLE', getTable), active=0)
+    tabs_contents_jo = pn.Tabs(('PLOTS', plotCurves), ('TABLE', getTable), dynamic=True, active=0)
+    tabs_contents = pn.Tabs(('Jo', pn.Column('Jo minimization diagnostics.', tabs_contents_jo)), dynamic=True)#, 
+                            #('Jb', pn.Column('Jb minimization diagnostics.', tabs_contents_jb)),
+                            #('Jc', pn.Column('Jc minimization diagnostics.', tabs_contents_jo)), active=1)
     main_text = pn.Column("""
     # Minimization Plots
 
     Navigate through the tabs to visualize the minimization results. Set the parameters on the left to update the curves. Click on the `TABLE` tab to visualize the tabular data.
     """)
+
+    # Callback to enable/disable the experiment2 widget based on the active tab
+    def update_experiment2_widget(event):
+        if event.new == 1:  # Tab index for "TABLE"
+            experiment2.disabled = False
+        else:
+            experiment2.disabled = True
+
+    # Attach the callback to the active parameter of the tabs
+    tabs_contents_jo.param.watch(update_experiment2_widget, 'active')
+
     return pn.Column(main_text, tabs_contents, monitor_warning_bottom_main, sizing_mode='stretch_width')
