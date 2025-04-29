@@ -8,24 +8,6 @@ import hvplot.pandas
 import pandas as pd
 import panel as pn
 
-
-
-#import os
-#import xarray as xr
-#import hvplot.xarray
-#import hvplot.pandas
-#import pandas as pd
-#import panel as pn
-#import intake
-#import cartopy.crs as ccrs
-#import cartopy.feature as cfeature
-#import geoviews as gv
-#import geopandas as gpd
-#import holoviews as hvs
-#from datetime import datetime
-#from holoviews.operation.datashader import rasterize
-#import spatialpandas as spd
-
 from datetime import datetime
 
 from monitor_texts import MonitoringAppTexts
@@ -55,7 +37,6 @@ Tiles = ['CartoDark', 'CartoLight', 'EsriImagery', 'EsriNatGeo', 'EsriUSATopo',
 tile = pn.widgets.Select(name='Tiles', value=Tiles[8], options=Tiles, width=230)
 
 # From the catalogs, assemble a dictionary with all the kx values:
-#variable_list = ['q', 'ps', 't', 'uv', 'gps']
 variable_list_tmp = []
 for source in catalog_diag_conv_01:
     var = source.split('_')[0]
@@ -63,8 +44,6 @@ for source in catalog_diag_conv_01:
 
 variable_set = set(variable_list_tmp)  
 variable_list = list(variable_set)
-
-print(variable_list)
 
 zlevs = [1000.0, 900.0, 800.0, 700.0, 600.0, 500.0, 400.0, 300.0, 250.0, 200.0, 150.0, 100.0, 50.0, 0.0]
 
@@ -103,7 +82,7 @@ by_kx = pn.widgets.Toggle(name='by kx', value=False, button_type='success', widt
 
 @pn.cache
 def loadData(lfname, loop):
-    print(lfname)
+    print(loop)
     try:
         if loop == '01':
             ax = catalog_diag_conv_01[lfname].read()
@@ -117,7 +96,6 @@ def loadData(lfname, loop):
 def plotPtmap(vars, kxs, level, iuse, date, loop, tile):
     try:
         lfname = str(vars) + '_diag_conv_' + str(loop) + '_' + str(date)
-        print(lfname)
         obsInfo = loadData(lfname, loop)
         df = obsInfo
 
@@ -143,7 +121,6 @@ def plotPtmap(vars, kxs, level, iuse, date, loop, tile):
 def plotPtmapMulti(vars, kxs, level, iuse, date, loop, tile):
     try:
         lfname = str(vars) + '_diag_conv_' + str(loop) + '_' + str(date)
-        #print(lfname)
         obsInfo = loadData(lfname, loop)
         df = obsInfo.loc[kxs]
 
@@ -165,7 +142,7 @@ def plotPtmapMulti(vars, kxs, level, iuse, date, loop, tile):
                                        #responsive=True,
                                        frame_height=600,
                                        frame_width=800,
-                                       title=str(vars) + ' | kx = ' + str(kxs) + ' | ' + str(level) + ' hPa | iuse = ' + str(iuse) + ' | loop = ' + str(loop) + ' | valid for ' + str(date))
+                                       title=f'{vars} | kx = {kxs} | {level} hPa | iuse = {iuse} | loop = {loop} | valid for {date}')
             else:
                ax *= dffi.hvplot.points(x='lon',
                                        y='lat',
@@ -175,7 +152,7 @@ def plotPtmapMulti(vars, kxs, level, iuse, date, loop, tile):
                                        #responsive=True,
                                        frame_height=600,
                                        frame_width=800,
-                                       title=str(vars) + ' | kx = ' + str(kxs) + ' | ' + str(level) + ' hPa | iuse = ' + str(iuse) + ' | loop = ' + str(loop) + ' | valid for ' + str(date))
+                                       title=f'{vars} | kx = {kxs} | {level} hPa | iuse = {iuse} | loop = {loop} | valid for {date}')
     except:
         ax = monitor_app_texts.warnings_rdiag(lfname + ' (plotPtmapMulti)')
     return pn.Column(ax) 
@@ -192,8 +169,9 @@ def plotPcount(varn, kxn, by_level, date, loop):
                                rot=45,
                                width=1000,
                                height=600,
+                               bar_width=1,
                                ylabel='Number of Observations',
-                               title=str(varn) + '| kx = ' + str(kxn) + ' | loop = ' + str(loop) + ' | valid for ' + str(date))
+                               title=f'{varn} | kx = {kxn} | loop = {loop} | valid for {date}')
         else:
             df = obsInfo.groupby(level=0).size()
             ax = df.hvplot.bar(x='kx',
@@ -201,8 +179,9 @@ def plotPcount(varn, kxn, by_level, date, loop):
                                rot=45,
                                width=1000,
                                height=600,
+                               bar_width=1,
                                ylabel='Number of Observations',
-                               title=str(varn) + '| all levels | loop = ' + str(loop) + ' | valid for ' + str(date))
+                               title=f'{varn} | all levels | loop {loop} | valid for {date}')
     except:
         ax = monitor_app_texts.warnings_rdiag(lfname + ' (plotPcount)')
     return pn.Column(ax)
@@ -211,40 +190,55 @@ def plotPcount(varn, kxn, by_level, date, loop):
 def plotPcount2(varn, kxn, by_level, by_kx, date, loop):
     try:
         lfname = str(varn) + '_diag_conv_' + str(loop) + '_' + str(date)
-        print(lfname)
         obsInfo = loadData(lfname, loop)
         if by_level:
-            df = obsInfo.loc[kxn].groupby('press').size()
-            #df = obsInfo.groupby(['press', 'kx']).size()
-            ax = df.hvplot.bar(stacked=True,
-                               legend="top_left",
+            df = obsInfo.loc[kxn].groupby('press').size().reset_index(name='counts')
+            df.columns = ['kx', 'counts']  
+            ax = df.hvplot.bar(#stacked=True,
+                               x='kx',
+                               y='counts',
+                               legend='top_left',
                                rot=45,
                                #width=1000,
                                height=600,
+                               #bar_width=1000.0,
+                               line_width=1,                   
+                               responsive=True,            
                                ylabel='Number of Observations',
-                               responsive=True,
-                               title=str(varn) + ' | kx = ' + str(kxn) + ' | loop = ' + str(loop) + ' | valid for ' + str(date))
-        elif by_kx:
-            df = obsInfo.drop(kxn).groupby(['press', 'kx']).size()
-            ax = df.hvplot.barh(stacked=True,
-                               legend="bottom_right",
-                               rot=45,
-                               #width=1000,
-                               height=600,
-                               ylabel='Number of Observations',
-                               responsive=True,
-                               title=str(varn) + ' | loop = ' + str(loop) + ' | valid for ' + str(date))     
-            ax.opts(invert_yaxis=True)       
+                               title=f'{varn} | kx = {kxn} | loop = {loop} | valid for {date}')
+        elif by_kx:    
+            obsInfo = obsInfo.reset_index()
+            if kxn:
+                df = obsInfo[obsInfo['kx'].isin(kxn)].groupby(['press', 'kx']).size()
+            else:
+                df = pd.Series(dtype=int)
+
+            ax = df.hvplot.barh(
+                legend='bottom_right',
+                rot=45,
+                height=900,
+                #bar_width=1.0,
+                line_width=1,
+                responsive=True,
+                ylabel='Number of Observations',
+                title=f'{varn} | loop = {loop} | valid for {date}'
+            )
+            ax.opts(invert_yaxis=True)
         else:
-            df = obsInfo.groupby(level=0).size()
+            #df = obsInfo.groupby(level=0).size()
+            df = obsInfo.groupby(level=0).size().reset_index(name='counts')
+            df.columns = ['kx', 'counts']  
             ax = df.hvplot.bar(x='kx',
+                               y='counts',
                                grid=True, 
                                rot=45,
                                #width=1000,
                                height=600,
-                               ylabel='Number of Observations',
+                               #bar_width=1.0,
+                               line_width=1,                               
                                responsive=True,
-                               title=str(varn) + ' | all levels | loop = ' + str(loop) + ' | valid for ' + str(date))
+                               ylabel='Number of Observations',
+                               title=f'{varn} | all levels | loop {loop} | valid for {date}')
     except:
         ax = monitor_app_texts.warnings_rdiag(lfname + ' (plotPcount2)')
     return pn.Column(ax)
@@ -309,8 +303,8 @@ def LayoutMainRdiag():
     """)
 
     tabs_rdiag = pn.Tabs(('NUMBER OF OBSERVATIONS', pn.Column('Number of Observations for a variable by level and type (kx).', plotPcount2)), 
-                                        #('Table', pn.Column('Table.', getTable)),
-                                        ('SPATIAL DISTRIBUTION', pn.Column('Spatial distribution of observations by level and type (kx).', plotPtmapMulti)), dynamic=True)
+                        #('Table', pn.Column('Table.', getTable)),
+                         ('SPATIAL DISTRIBUTION', pn.Column('Spatial distribution of observations by level and type (kx).', plotPtmapMulti)), dynamic=True)
 
     # Função para abrir o card correspondente e fechar os outros
     def on_tab_change(event):
