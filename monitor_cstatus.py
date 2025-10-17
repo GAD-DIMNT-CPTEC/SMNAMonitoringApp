@@ -1,11 +1,8 @@
-#! /usr/bin/env python3
-
-import io
-import panel as pn
+import requests
 import pandas as pd
-
-#from bokeh.models import HTMLTemplateFormatter
-from bokeh.models import ColumnDataSource, HTMLTemplateFormatter
+import panel as pn
+import io
+from bokeh.models import HTMLTemplateFormatter
 
 from monitor_texts import MonitoringAppTexts
 
@@ -23,7 +20,7 @@ class MonitoringAppCStatus:
         logo_inpe = pn.Column(
                 pn.Row(
                   pn.layout.HSpacer(),
-                  inpe_logo, 
+                  inpe_logo,
                   pn.layout.HSpacer(),
                 ))
         return logo_inpe
@@ -54,7 +51,7 @@ class MonitoringAppCStatus:
         logos = pn.Column(
                 pn.Row(
                   pn.layout.HSpacer(),
-                  inpe_logo, 
+                  inpe_logo,
                   pn.layout.HSpacer(),
                 ),
                 pn.Row(
@@ -66,10 +63,22 @@ class MonitoringAppCStatus:
         return pn.Column(logos)
 
     def LayoutMain(self):
+        self.logs = "https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/logs/logs.csv"
 
-        self.logs = "http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/logs/logs.csv"           
-        df = pd.read_csv(self.logs)
+        # --- Verifica se a URL existe antes de ler ---
+        try:
+            response = requests.head(self.logs, allow_redirects=True, timeout=5)
+            if response.status_code >= 400:
+                print(f"❌ [CURRENT STATUS] Logs não encontrados: {self.logs} (status {response.status_code})")
+                df = pd.DataFrame()  # cria um DataFrame vazio
+            else:
+                print(f"✅ [CURRENT STATUS] Logs acessíveis: {self.logs}")
+                df = pd.read_csv(self.logs)
+        except requests.RequestException as e:
+            print(f"⚠️ [CURRENT STATUS] Erro ao acessar {self.logs}: {e}")
+            df = pd.DataFrame()  # cria um DataFrame vazio
 
+        # --- Configuração do Tabulator ---
         link_formatters = {
             "Action GSI": HTMLTemplateFormatter(template="<code><%= value %></code>"),
             "Action PRE": HTMLTemplateFormatter(template="<code><%= value %></code>"),
@@ -83,27 +92,24 @@ class MonitoringAppCStatus:
         }
         """
 
-        cs_table = pn.widgets.Tabulator(df, 
-                #selectable=False,
+        cs_table = pn.widgets.Tabulator(df,
                 show_index=False,
                 disabled=True,
-                #layout='fit_data_table',
                 theme="bootstrap4",
-                #frozen_rows=[-2, -1],
                 text_align='center',
                 selectable='toggle',
                 stylesheets=[stylesheet],
                 formatters=link_formatters)
 
         def get_csv():
-          io_buffer = io.BytesIO()
-          df.to_csv(io_buffer, index=False)
-          io_buffer.seek(0)  # Retorna ao início do buffer
-          return io_buffer
+            io_buffer = io.BytesIO()
+            df.to_csv(io_buffer, index=False)
+            io_buffer.seek(0)
+            return io_buffer
 
         file_download = pn.widgets.FileDownload(
           icon='download',
-          callback=get_csv, 
+          callback=get_csv,
           filename='current_status.csv',
           button_type='success',
           width=310
@@ -111,18 +117,14 @@ class MonitoringAppCStatus:
 
         welcomeText1 = pn.pane.Markdown("""
         # Current Status
-        
         Check the current status from the operational system in the table below.
         """)
 
         welcomeText2 = pn.pane.Markdown("""
         **Legend:**
-
         * **A** = Awaiting
         * **C** = Completed
         * **P** = Processing
         """)
-
-        #placeholder = pn.Column('####################', height=1300)
 
         return pn.Column(welcomeText1, cs_table, file_download, welcomeText2, monitor_warning_bottom_main, sizing_mode='stretch_width')

@@ -41,9 +41,9 @@ monitor_warning_bottom_main = monitor_app_texts.warnings()
 pn.extension('floatpanel')
 pn.extension(sizing_mode='stretch_width', notifications=True)
 
-#dfs = pd.read_csv('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/jo/jo_table_series.csv', header=[0, 1], parse_dates=[('df_preOper', 'Date'), ('df_preOper_new', 'Date'), ('df_JGerd', 'Date')])
-#dfs = pd.read_csv('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/jo/jo_table_series.csv', header=[0, 1], parse_dates=[('df_preOper', 'Date'), ('df_JGerd', 'Date')])
-dfs = pd.read_csv('http://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/jo/jo_table_series.csv', header=[0, 1], parse_dates=[('df_preOper', 'Date')])
+#dfs = pd.read_csv('https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/jo/jo_table_series.csv', header=[0, 1], parse_dates=[('df_preOper', 'Date'), ('df_preOper_new', 'Date'), ('df_JGerd', 'Date')])
+#dfs = pd.read_csv('https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/jo/jo_table_series.csv', header=[0, 1], parse_dates=[('df_preOper', 'Date'), ('df_JGerd', 'Date')])
+dfs = pd.read_csv('https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/jo/jo_table_series.csv', header=[0, 1], parse_dates=[('df_preOper', 'Date')])
 
 # Separa os dataframes de interesse
 df_preOper = dfs.df_preOper

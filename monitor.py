@@ -17,6 +17,19 @@ from monitor_texts import MonitoringAppTexts
 from monitor_floatpanel import MonitoringAppFloatPanel
 from monitor_logs import showLogs, LayoutSidebar
 
+pn.extension('floatpanel', 'tabulator', sizing_mode="stretch_width")
+
+use_monitor_cstatus  = True
+use_monitor_anl      = True
+use_monitor_mass     = True
+use_monitor_jo       = False
+use_monitor_rdiag    = True
+use_monitor_berror   = True
+use_monitor_objeval  = False
+use_monitor_armobs   = True
+use_monitor_logs     = True
+use_monitor_about    = True
+
 # Info
 monitoring_app_info = MonitoringAppInfo()
 monitor_info_sidebar = monitoring_app_info.LayoutSidebar()
@@ -28,92 +41,61 @@ monitor_info_main = monitoring_app_info.LayoutMain()
 monitoring_app_cstatus = MonitoringAppCStatus()
 monitor_cstatus_sidebar = monitoring_app_cstatus.LayoutSidebar()
 monitor_cstatus_main = monitoring_app_cstatus.LayoutMain()
-#use_monitor_cstatus = True
 
 # Anl
 monitor_anl_main = LayoutMainAnl
 monitor_anl_sidebar = LayoutSidebarAnl
-#use_monitor_anl = False
 
 # Rdiag
 monitor_rdiag_main = LayoutMainRdiag
 monitor_rdiag_sidebar = LayoutSidebarRdiag
-#use_monitor_rdiag = True
 
 # Berror
 monitor_berror_main = LayoutMainBerror
 monitor_berror_sidebar = LayoutSidebarBerror
-#use_monitor_berror = False
 
 # About
 monitoring_app_about = MonitoringAppAbout()
 monitor_about_sidebar = monitoring_app_about.LayoutSidebar()
 monitor_about_main = monitoring_app_about.LayoutMain()
-#use_monitor_about = False
 
 # Mass
 monitoring_app_mass = MonitoringAppMass()
 monitor_mass_sidebar = monitoring_app_mass.LayoutSidebar()
 monitor_mass_main = monitoring_app_mass.LayoutMain()
-#use_monitor_mass = False
 
 # ObjEval
 monitor_objeval_main = LayoutMainObjEval
 monitor_objeval_sidebar = LayoutSidebarObjEval
-#use_monitor_objeval = True
 
 # Texts
 monitor_app_texts = MonitoringAppTexts()
 monitor_warning_bottom_main = monitor_app_texts.warnings()
 
-# Logs 
+# Logs
 monitor_logs_main = showLogs
 monitor_logs_sidebar = LayoutSidebar
-#use_monitor_logs = False
 
 # Float Panel
 monitor_app_float_panel = MonitoringAppFloatPanel()
 monitor_float_panel = monitor_app_float_panel.floatPanel()
-#use_monitor_float_panel = False
-
-# Jo
-#use_monitor_jo = False
-
-# OBS storage
-#use_monitor_armobs = False
 
 class MonitoringApp:
     def __init__(self):
-        pn.extension('floatpanel')
-        pn.extension('tabulator')
-
+        pn.extension('floatpanel', 'tabulator')
         self.create_layout()
 
     def create_layout(self):
 
-        self.tab1 = pn.Column(monitor_cstatus_main, sizing_mode="stretch_both")
-        self.tab2 = pn.Column(monitor_anl_main,     sizing_mode="stretch_both")
-        self.tab3 = pn.Column(monitor_mass_main,    sizing_mode="stretch_both")   
-        self.tab4 = pn.Column(monitor_jo_main(),    sizing_mode="stretch_both")
-        self.tab5 = pn.Column(monitor_rdiag_main,   sizing_mode="stretch_both")
-        self.tab6 = pn.Column(monitor_berror_main,  sizing_mode="stretch_both")
-        self.tab7 = pn.Column(monitor_objeval_main, sizing_mode="stretch_both")
-        self.tab8 = pn.Column(monitor_armobs_main,  sizing_mode="stretch_both")   
-        self.tab9 = pn.Column(monitor_logs_main,    sizing_mode="stretch_both")
-        self.tab10 = pn.Column(monitor_about_main,  sizing_mode="stretch_both")
-                
-        # Conteúdo da aplicação
-        tabs = pn.Tabs(dynamic=True, active=0)
-        tabs.append(("◾CURRENT STATUS",        self.tab1))
-        tabs.append(("◾ANALYSIS PLOTS",        self.tab2))
-        tabs.append(("◾MASS CONSTRAINS PLOTS", self.tab3))
-        tabs.append(("◾MINIMIZATION PLOTS",    self.tab4))
-        tabs.append(("◾ANALYSIS DIAG",         self.tab5))
-        tabs.append(("◾B ERROR COVARIANCE",    self.tab6))
-        tabs.append(("◾OBJ EVALUATION",        self.tab7))
-        tabs.append(("◾OBS STORAGE",           self.tab8))
-        tabs.append(("◾FULL LOGS",             self.tab9))
-        tabs.append(("◾ABOUT",                 self.tab10))
+        # Instancia as classes apenas se a aba for usada
+        monitoring_app_info = MonitoringAppInfo()
+        sidebar_info = pn.Column(
+            monitoring_app_info.LogoINPE(),
+            monitoring_app_info.LogoCPTEC()
+        )
+
+        # Sidebar
+        sidebar_col = pn.Column(sidebar_info)
 
         # Layout da barra lateral
         sidebar_info    = pn.Column(monitor_info_sidebar_logoinpe,                          monitor_info_sidebar_logocptec)
@@ -126,68 +108,62 @@ class MonitoringApp:
         sidebar_armobs  = pn.Column(monitor_armobs_sidebar,  self.modal_about_obsstorage(), monitor_info_sidebar_logocptec)
         sidebar_logs    = pn.Column(monitor_logs_sidebar,    self.modal_about_logs(),       monitor_info_sidebar_logocptec)
         sidebar_about   = pn.Column(monitor_info_sidebar_logoinpe,                          monitor_info_sidebar_logocptec)
-        
-        #tabs_and_sidebars = {
-        #    "◾CURRENT STATUS": (monitor_cstatus_main, sidebar_info),
-        #    "◾ANALYSIS PLOTS": (monitor_anl_main, sidebar_anl),
-        #    "◾MASS CONSTRAINS PLOTS": (monitor_mass_main, sidebar_mass),
-        #    "◾MINIMIZATION PLOTS": (monitor_jo_main(), sidebar_jo),
-        #    "◾ANALYSIS DIAG": (monitor_rdiag_main, sidebar_rdiag),
-        #    "◾B ERROR COVARIANCE": (monitor_berror_main, sidebar_berror),
-        #    "◾OBJ EVALUATION": (monitor_objeval_main, sidebar_objeval),
-        #    "◾OBS STORAGE": (monitor_armobs_main, sidebar_armobs),
-        #    "◾FULL LOGS": (monitor_logs_main, sidebar_logs),
-        #    "◾ABOUT": (monitor_about_main, sidebar_about),
-        #}
 
-        #tabs = pn.Tabs(*[(name, contents) for name, (contents, _) in tabs_and_sidebars.items()])
+        # Tabs dinâmicas
+        tabs = pn.Tabs(dynamic=True)
+        sidebars = []
 
-        #if not use_monitor_cstatus: tabs_and_sidebars.pop("◾CURRENT STATUS")
-        #if not use_monitor_anl: tabs_and_sidebars.pop("◾ANALYSIS PLOTS")
-        #if not use_monitor_mass: tabs_and_sidebars.pop("◾MASS CONSTRAINS PLOTS")
-        #if not use_monitor_jo: tabs_and_sidebars.pop("◾MINIMIZATION PLOTS")
-        #if not use_monitor_rdiag: tabs_and_sidebars.pop("◾ANALYSIS DIAG")
-        #if not use_monitor_berror: tabs_and_sidebars.pop("◾B ERROR COVARIANCE")
-        #if not use_monitor_objeval: tabs_and_sidebars.pop("◾OBJ EVALUATION")
-        #if not use_monitor_armobs: tabs_and_sidebars.pop("◾OBS STORAGE")
-        #if not use_monitor_logs: tabs_and_sidebars.pop("◾FULL LOGS")
-        #if not use_monitor_about: tabs_and_sidebars.pop("◾ABOUT")
+        if use_monitor_cstatus:
+            monitoring_app_cstatus = MonitoringAppCStatus()
+            tabs.append(("◾CURRENT STATUS", pn.Column(monitoring_app_cstatus.LayoutMain(), sizing_mode="stretch_both")))
+            sidebars.append(sidebar_info)
 
-        #sidebar_col = pn.Column()
+        if use_monitor_anl:
+            tabs.append(("◾ANALYSIS PLOTS", pn.Column(LayoutMainAnl, sizing_mode="stretch_both")))
+            sidebars.append(sidebar_anl)
 
-        #@pn.depends(tabs.param.active, watch=True)
-        #def update_sidebar(active_index):
-        #    tab_name = tabs[active_index][0]
-        #    sidebar_col[:] = [tabs_and_sidebars[tab_name][1]]
-        #
-        #update_sidebar(0)
+        if use_monitor_mass:
+            monitoring_app_mass = MonitoringAppMass()
+            tabs.append(("◾MASS CONSTRAINS PLOTS", pn.Column(monitoring_app_mass.LayoutMain(), sizing_mode="stretch_both")))
+            sidebars.append(sidebar_mass)
 
-        col = pn.Column(sidebar_info)
-        
+        if use_monitor_jo:
+            tabs.append(("◾MINIMIZATION PLOTS", pn.Column(monitor_jo_main(), sizing_mode="stretch_both")))
+            sidebars.append(sidebar_jo)
+
+        if use_monitor_rdiag:
+            tabs.append(("◾ANALYSIS DIAG", pn.Column(LayoutMainRdiag, sizing_mode="stretch_both")))
+            sidebars.append(sidebar_rdiag)
+
+        if use_monitor_berror:
+            tabs.append(("◾B ERROR COVARIANCE", pn.Column(LayoutMainBerror, sizing_mode="stretch_both")))
+            sidebars.append(sidebar_berror)
+
+        if use_monitor_objeval:
+            tabs.append(("◾OBJ EVALUATION", pn.Column(LayoutMainObjEval, sizing_mode="stretch_both")))
+            sidebars.append(sidebar_objeval)
+
+        if use_monitor_armobs:
+            tabs.append(("◾OBS STORAGE", pn.Column(monitor_armobs_main, sizing_mode="stretch_both")))
+            sidebars.append(sidebar_armobs)
+
+        if use_monitor_logs:
+            tabs.append(("◾FULL LOGS", pn.Column(showLogs, sizing_mode="stretch_both")))
+            sidebars.append(sidebar_logs)
+
+        if use_monitor_about:
+            monitoring_app_about = MonitoringAppAbout()
+            tabs.append(("◾ABOUT", pn.Column(monitoring_app_about.LayoutMain(), sizing_mode="stretch_both")))
+            sidebars.append(sidebar_about)
+
+
         @pn.depends(tabs.param.active, watch=True)
         def insert_widget(active_tab):
-            if active_tab == 0:
-                col[0] = sidebar_info
-            elif active_tab == 1: 
-                col[0] = sidebar_anl
-            elif active_tab == 2: 
-                col[0] = sidebar_mass
-            elif active_tab == 3:
-                col[0] = sidebar_jo
-            elif active_tab == 4:
-                col[0] = sidebar_rdiag                  
-            elif active_tab == 5:
-                col[0] = sidebar_berror
-            elif active_tab == 6:
-                col[0] = sidebar_objeval                
-            elif active_tab == 7:
-                col[0] = sidebar_armobs
-            elif active_tab == 8:
-                col[0] = sidebar_logs
-            elif active_tab == 9:
-                col[0] = sidebar_about
+            if 0 <= active_tab < len(sidebars):
+                sidebar_col[0] = sidebars[active_tab]
 
-        placeholder = pn.Column(height=0, width=0) 
+
+        placeholder = pn.Column(height=0, width=0)
 
         self.app = pn.template.BootstrapTemplate(
             title="SMNA Monitoring App 📊",
@@ -198,12 +174,12 @@ class MonitoringApp:
 #            site_url="https://gad-dimnt-cptec.github.io/SMNAMonitoringApp/monitor.html",
 #            sidebar_footer="CPTEC-INPE, 2025.",
         )
-    
+
         self.app.main.append(tabs)
         self.app.main.append(monitor_float_panel)
         #self.app.main.append(monitor_warning_bottom_main)
         self.app.main.append(placeholder)
-        self.app.sidebar.append(col)
+        self.app.sidebar.append(sidebar_col)
         self.app.sidebar.append(pn.Row(pn.layout.HSpacer(), '##### CPTEC-INPE, 2025.', pn.layout.HSpacer()))
         self.app.modal.append(pn.Column())
         self.app.sidebar.append(pn.layout.Divider())
@@ -246,7 +222,7 @@ class MonitoringApp:
         # Minimization Plots
 
         The following information obtained from the GSI log file is addressed:
-        
+
         ```
         Begin Jo table outer loop
             Observation Type           Nobs                        Jo        Jo/n
@@ -260,9 +236,9 @@ class MonitoringApp:
                    Jo Global         803831    1.0838792028623789E+06       1.348
         End Jo table outer loop
         ```
-        
+
         Depending on the number of outer and inner loops, GSI records different information about the number of observations considered (`Nobs`), the cost of minimizing the observational term (`Jo`), and the cost of minimizing the observational term normalized by the number of observations (`Jo/n`). The configuration of GSI/3DVar applied to SMNA (valid for the date of writing this notebook) considers `miter=2` and `niter=3`, i.e., 2 outer loops with 3 inner loops each. For the considered experiments, each inner loop (`niter`) is performed with 0, 50, and 100 iterations, respectively. In this sense, the information obtained from the iterations of the observational term minimization process considers the following:
-        
+
         * OMF: beginning of the first outer loop, where the system state is given by the background;
         * OMF (1st INNER LOOP): end of the first inner loop of the first outer loop, where the system state is still given by the background;
         * OMF (2nd INNER LOOP): end of the second inner loop of the first outer loop, where the system state is still given by the background;
@@ -270,11 +246,11 @@ class MonitoringApp:
         * OMA (1st INNER LOOP): end of the first inner loop of the second outer loop, where the system state is given by the analysis;
         * OMA (2nd INNER LOOP): end of the second inner loop of the second outer loop, where the system state is given by the analysis;
         * OMA (AFTER 2nd OUTER LOOP): end of the second outer loop, final analysis.
-        
+
         **Note:** The information from the iterations `OMF` and `OMF (1st INNER LOOP)` is the same, as well as the information from the iterations `OMA (AFTER 1st OUTER LOOP)` and `OMA (1st INNER LOOP)`.
-        
+
         The information from the GSI log is organized into a dataframe with date markings and the inclusion of information about outer and inner loops:
-        
+
         ```
              Date                Observation Type Nobs   Jo            Jo/n  Iter
            0 2023-02-16 06:00:00 surface pressure 104308 32537.652151  0.312 OMF
@@ -288,10 +264,10 @@ class MonitoringApp:
         5401 2023-03-16 00:00:00 gps              264466 392890.280946 1.486 OMA (AFTER 2nd OUTER LOOP)
         5402 2023-03-16 00:00:00 radiance         183884 56169.185410  0.305 OMA (AFTER 2nd OUTER LOOP)
         5403 2023-03-16 00:00:00 Jo
-        
+
          Global        832986 645663.456547 0.775 OMA (AFTER 2nd OUTER LOOP)
         ```
-        
+
         ---
 
         ##### CPTEC-INPE, 2025.
@@ -335,7 +311,7 @@ class MonitoringApp:
         ## What to check?
 
         The background error covariance plots show the spatial distribution of the balance projection matrices, standard deviations, horizontal and vertical length scales.
-        
+
         **Note:** Since the SMNA minimizes a 3DVar cost function, the plots shown will not vary with time.
 
         ---
@@ -409,7 +385,7 @@ class MonitoringApp:
         The analysis plots always will provide information for the last week and is updated once a day.
 
         ## What to check?
-        
+
         With the analysis plots, you can take a first look at the SMNA analysis and background. The analysis is the result of updating the background by making use of the observations. You can also plot the differences between the analysis and the background and check which parts of the globe where updated the most.
 
         **Note:** The vertical levels are given in sigma layers.
@@ -433,7 +409,7 @@ class MonitoringApp:
         # Help
 
         The dashboard is organized in tabs showing different aspects from the data assimilation system. Basic information on each application is provided through buttons on the sidebar.
-        
+
         To use the dashboard, click on the tabs to select between the analysis fields, mass contrains and minimization plots or to check the data assimilation system full logs. Depending on the selection, the user will be given some parameter to ajust and update the information shown.
 
         ---
@@ -453,11 +429,11 @@ class MonitoringApp:
     def modal_geninfo(self):
         text_geninfo_txt = """
         # General Info
-        
+
         This is the **SMNA Monitoring App** - a Python Dashboard based on Panel developed to monitor the status of the global operational data assimilation system from the **Center for Weather Forecasts and Climate Studies ([CPTEC](https://www.cptec.inpe.br))**, a center from the **National Institute for Space Research ([INPE](https://www.gov.br/inpe/))** in Brazil.
-        
-        This dashboard is hosted at GitHub pages and data are loaded from different sources. 
-        
+
+        This dashboard is hosted at GitHub pages and data are loaded from different sources.
+
         This dashboard is build with the Python [Panel](https://panel.holoviz.org/index.html) library. Altought it isn't a typical dashboard (an actual dashboard allows for cross-referencing information and gaining insights about the displayed data), the library has proven to be a perfect fit for our purpouses.
 
         Besides the Panel library, all data are displayed with the help of [Intake](https://intake-xarray.readthedocs.io/en/latest/), [Zarr](https://zarr.readthedocs.io/en/stable/), [Xarray](https://xarray.dev/), [Matplotlib](https://matplotlib.org/) and [Pandas](https://pandas.pydata.org/) libraries. We greatly appreciate the effort from developers out there that enables us to make apps that powers our work.
