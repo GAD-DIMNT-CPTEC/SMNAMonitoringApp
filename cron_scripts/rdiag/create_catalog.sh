@@ -10,8 +10,8 @@ Vars=(ps t q uv)
 for loop  in ${Loops[@]}
 do
 
-  datai=#DATAI#
-  dataf=#DATAF#
+  datai=2025100900
+  dataf=2025101600
   
   data=${datai}
 

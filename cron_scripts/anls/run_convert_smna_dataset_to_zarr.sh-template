@@ -4,7 +4,7 @@
 #
 # @cfbastarz (March, 2024)
 
-inctime=/home/carlos.bastarz/bin/inctime
+#inctime=/home/carlos.bastarz/bin/inctime
 
 lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls
 rpath=/lustre_xc50/ioper/models/SMNA-Oper/SMG/datainout/bam/pos/dataout/TQ0299L064
@@ -25,7 +25,8 @@ do
 
   rsync -arv carlos_bastarz@login-xc50.cptec.inpe.br:${rpath}/${data}/GPOSCPT${data}${data}P.icn.TQ0299L064.grb .
 
-  data=$(${inctime} ${data} +1d %y4%m2%d2%h2)
+  #data=$(${inctime} ${data} +1d %y4%m2%d2%h2)
+  data=$(date -u +%Y%m%d%H -d "${data:0:8} ${data:8:2} +24 hours")
 
 done
 

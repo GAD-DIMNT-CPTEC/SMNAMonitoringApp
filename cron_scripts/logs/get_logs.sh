@@ -6,8 +6,8 @@
 
 #inctime=/home/carlos.bastarz/bin/inctime
 
-datai=#DATAI#
-dataf=#DATAF#
+datai=2025100900
+dataf=2025101600
 
 data=${datai}
 

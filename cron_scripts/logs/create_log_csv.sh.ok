@@ -1,0 +1,160 @@
+#! /bin/bash 
+#
+# Script to organize and create a table with information from the logs of the SMNA data assimilation system.
+#
+# Note: run from virtual machines (e.g., itapemirim)
+#
+# @cfbastarz (March, 2024)
+
+#inctime=/home/carlos.bastarz/bin/inctime
+
+datai=2024030200
+dataf=2024031100
+
+data=${datai}
+
+#lpath=/pesq/share/das/dist/carlos.bastarz/SMNAMonitoringApp/logs
+lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp/logs
+
+if [ -e logs_tmp.csv ]; then rm logs_tmp.csv; fi
+if [ -e logs.csv ]; then rm logs.csv; fi
+
+flag_text() {
+  # 1 = status
+  # 2 = nexp
+  if [ ${1} -eq 0 ]
+  then
+    flag="C"
+  else
+    flag="P"
+  fi
+}        
+
+note_text() {     
+  note="${2} TRIAL(S)"
+}        
+
+action_text() {
+  # 1 = nlog
+  # 2 = nexp
+  # 4 = flag
+  if [ ${1} -gt 1 ]
+  then
+    action="⚠️ CHECK LOGS"
+  elif [ ${1} -eq 0 ]
+  then
+    action="⚙️ WAIT FINISH"
+  elif [ ${1} -eq 1 ]
+  then
+    if [ ${3} == "C" ] 
+    then
+      action="✅ GOOD"
+    elif [ ${3} == "P" ]
+    then
+      action="🕓 WAIT START"
+    fi
+  else
+    action="💩"
+  fi
+}
+
+while [ ${data} -le ${dataf} ]
+do
+
+  if [ ${data:8:2} -eq 00 ]
+  then        
+    Exps=(gsi pre model pos)
+  else
+    Exps=(gsi pre model)
+  fi  
+
+  for exp in ${Exps[@]}
+  do
+    if [ ${exp} == "model" ]
+    then
+      #datafct=$(${inctime} ${data} +9h %y4%m2%d2%h2)
+      datafct=$(data -u +%Y%m%d%H -d "${data:0:8} ${data:8:2} +9 hours")
+      mlog=${lpath}/${exp}/${exp}_${data}.${datafct}.log
+    elif [ ${exp} == "pos" ]
+    then
+      #datafct=$(${inctime} ${data} +11d %y4%m2%d2%h2)
+      datafct=$(data -u +%Y%m%d%H -d "${data:0:8} ${data:8:2} +11 hours")
+      mlog=${lpath}/${exp}/${exp}_${data}.${datafct}.log
+    else        
+      mlog=${lpath}/${exp}/${exp}_${data}.log
+    fi
+ 
+    nlog=$(cat ${lpath}/${exp}/nlog_${exp}_${data}.txt)
+
+    if [ -e ${mlog} ]
+    then
+      if [ ${exp} == "gsi" ]
+      then
+        gsi_message="PROGRAM GSI_ANL HAS ENDED"
+        gsi_status_text=$(cat ${mlog} | grep -a "${gsi_message}")
+        if [[ $? -eq 0 ]]; then gsi_status=0; else gsi_status=1; fi
+        flag_text ${gsi_status} ${exp}
+        gsi_flag=${flag}
+        note_text ${exp} ${nlog}
+        gsi_note=${note}
+        action_text ${nlog} ${exp} ${gsi_flag}
+        gsi_action=${action}
+
+      elif [ ${exp} == "pre" ]
+      then
+        pre_message="Master Processor Received finished signal"
+        pre_status_text=$(cat ${mlog} | grep -a "${pre_message}")
+        if [[ $? -eq 0 ]]; then pre_status=0; else pre_status=1; fi
+        flag_text ${pre_status} ${exp}
+        pre_flag=${flag}
+        note_text ${exp} ${nlog}
+        pre_note=${note}
+        action_text ${nlog} ${exp} ${pre_flag}
+        pre_action=${action}
+
+      elif [ ${exp} == "model" ]
+      then
+        model_message="MODEL EXECUTION ENDS NORMALY"
+        model_status_text=$(cat ${mlog} | grep -a "${model_message}")
+        if [[ $? -eq 0 ]]; then model_status=0; else model_status=1; fi
+        flag_text ${model_status} ${exp}
+        model_flag=${flag}
+        note_text ${exp} ${nlog}
+        model_note=${note}
+        action_text ${nlog} ${exp} ${model_flag}
+        model_action=${action}
+
+      elif [ ${exp} == "pos" ]
+      then
+        pos_message="THE FILE LIST WAS FINALIZED"
+        pos_status_text=$(cat ${mlog} | grep -a "${pos_message}")
+        if [[ $? -eq 0 ]]; then pos_status=0; else pos_status=1; fi
+        flag_text ${pos_status} ${exp}
+        pos_flag=${flag}
+        note_text ${exp} ${nlog}
+        pos_note=${note}
+        action_text ${nlog} ${exp} ${pos_flag}
+        pos_action=${action}
+
+      fi
+
+    fi
+  done  
+
+  #odate=$(${inctime} ${data} +0h %y4-%m2-%d2-%h2:00)
+  #cdate=$(${inctime} ${data} -3h %y4-%m2-%d2-%h2:00)
+  odate=$(data -u +%Y-%m-%d-%H:00 -d "${data:0:8} ${data:8:2} +0 hours")
+  cdate=$(data -u +%Y-%m-%d-%H:00 -d "${data:0:8} ${data:8:2} -3 hours")
+
+  echo "${cdate},${odate},${gsi_flag},${pre_flag},${model_flag},${pos_flag},${gsi_note},${pre_note},${model_note},${pos_note},${gsi_action},${pre_action},${model_action},${pos_action}" >> logs_tmp.csv
+
+  #data=$(${inctime} ${data} +6h %y4%m2%d2%h2)
+  data=$(data -u +%Y%m%d%H -d "${data:0:8} ${data:8:2} +6 hours")
+
+done
+
+tac logs_tmp.csv > logs.csv
+
+sed -i '1 i\Current Date,Last Operational Run,Status GSI,Status PRE,Status MODEL,Status POS,Note GSI,Note PRE,Note MODEL,Note POS,Action GSI,Action PRE,Action MODEL,Action POS' logs.csv
+
+exit 0

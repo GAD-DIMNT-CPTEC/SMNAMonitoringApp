@@ -8,13 +8,13 @@
 
 #inctime=/home/carlos.bastarz/bin/inctime
 
-datai=#DATAI#
-dataf=#DATAF#
+datai=2024031506
+dataf=2024032206
 
 data=${datai}
 
 lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp/logs
-burl=https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/logs/
+burl=https://dataserver.cptec.inpe.br/dataserver_dimnt/das/dist/carlos.bastarz/SMNAMonitoringApp/logs/
 
 if [ -e ${lpath}/logs_tmp.csv ]; then rm ${lpath}/logs_tmp.csv; fi
 if [ -e ${lpath}/logs.csv ]; then rm ${lpath}/logs.csv; fi
@@ -43,18 +43,18 @@ action_text() {
   then
     if [ ${1} -gt 2 ]
     then
-      #action="⚠ CHECK LOGS"
-      action="⚠ <a href="${burl}/${2}/${2}_${4}.log" target="_blank">CHECK LOGS</a>"
+      action="⚠ CHECK LOGS"
+      #action="⚠ <a href="${burl}/${2}/${2}_${4}.log" target="_blank">CHECK LOGS</a>"
     elif [ ${1} -lt 2 ]
     then
-      action="⚙ WAIT FINISH"
+      action="🕓 WAIT FINISH"
     else
       if [ ${3} == "C" ]
       then
-        action="✅  GOOD"          
+        action="✅ GOOOD"          
       elif [ ${3} == "P" ]
       then
-        action="⚙️ WAIT FINISH"
+        action="🕓 WAIT FINISH"
       else
         action="💩"
       fi
@@ -62,18 +62,18 @@ action_text() {
   else
     if [ ${1} -gt 1 ]
     then
-      #action="⚠ CHECK LOGS"
-      action="⚠ <a href="${burl}/${2}/${2}_${4}.log" target="_blank">CHECK LOGS</a>"
+      action="⚠ CHECK LOGS"
+      #action="⚠ <a href="${burl}/${2}/${2}_${4}.log" target="_blank">CHECK LOGS</a>"
     elif [ ${1} -lt 1 ]
     then
-      action="⚙ WAIT FINISH"
+      action="🕓 WAIT FINISH"
     else
       if [ ${3} == "C" ]
       then
         action="✅ GOOD"
       elif [ ${3} == "P" ]
       then
-        action="⚙ WAIT FINISH"
+        action="🕓 WAIT FINISH"
       else
         action="💩"
       fi
@@ -81,21 +81,18 @@ action_text() {
   fi
 }
 
-Exps=(gsi pre model pos)
-
 while [ ${data} -le ${dataf} ]
 do
 
-#  if [ ${data:8:2} -eq 00 ]
-#  then        
-#    Exps=(gsi pre model pos)
+  if [ ${data:8:2} -eq 00 ]
+  then        
+    Exps=(gsi pre model pos)
 #  else
 #    Exps=(gsi pre model)
 #  fi  
 
   for exp in ${Exps[@]}
   do
- 
     if [ ${exp} == "model" ]
     then
       #datafct=$(${inctime} ${data} +9h %y4%m2%d2%h2)
@@ -125,6 +122,7 @@ do
         gsi_note=${note}
         action_text ${nlog} ${exp} ${gsi_flag} ${data}
         gsi_action=${action}
+
       elif [ ${exp} == "pre" ]
       then
         pre_message="Master Processor Received finished signal"
@@ -136,6 +134,7 @@ do
         pre_note=${note}
         action_text ${nlog} ${exp} ${pre_flag} ${data}
         pre_action=${action}
+
       elif [ ${exp} == "model" ]
       then
         model_message="MODEL EXECUTION ENDS NORMALY"
@@ -147,6 +146,7 @@ do
         model_note=${note}
         action_text ${nlog} ${exp} ${model_flag} ${data}
         model_action=${action}
+
       elif [ ${exp} == "pos" ]
       then
         pos_message="THE FILE LIST WAS FINALIZED"
@@ -158,29 +158,37 @@ do
         pos_note=${note}
         action_text ${nlog} ${exp} ${pos_flag} ${data}
         pos_action=${action}
+
       fi
+
     else
+
       if [ ${exp} == "gsi" ]
       then
         gsi_flag="A"
         gsi_note="0 TRIAL(S)"
         gsi_action="🕓 WAIT START"
+
       elif [ ${exp} == "pre" ]
       then
         pre_flag="A"
         pre_note="0 TRIAL(S)"
         pre_action="🕓 WAIT START"
+
       elif [ ${exp} == "model" ]
       then
         model_flag="A"
         model_note="0 TRIAL(S)"
         model_action="🕓 WAIT START"
+
       elif [ ${exp} == "pos" ]
       then
         pos_flag="A"
         pos_note="0 TRIAL(S)"
         pos_action="🕓 WAIT START"
+
       fi
+
     fi
   done  
 
@@ -199,7 +207,5 @@ done
 tac ${lpath}/logs_tmp.csv > ${lpath}/logs.csv
 
 sed -i '1 i\Current Date,Last Operational Run,Status GSI,Status PRE,Status MODEL,Status POS,Note GSI,Note PRE,Note MODEL,Note POS,Action GSI,Action PRE,Action MODEL,Action POS' ${lpath}/logs.csv
-
-chmod -R 755 ${lpath}/*
 
 exit 0

@@ -1,0 +1,347 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# # SMNA-Dashboard
+# 
+# Este notebook trata da organização dos resultados do GSI em relação à minimização da função custo do 3DVar. Especificamente, são tratadas as seguintes informações, obtidas a partir do arquivo de log do GSI:
+# 
+# ```
+# Begin Jo table outer loop
+#     Observation Type           Nobs                        Jo        Jo/n
+# surface pressure             101588    3.6963295810242533E+04       0.364
+# temperature                   54009    8.4362268122117763E+04       1.562
+# wind                         174592    2.2575676441332555E+05       1.293
+# moisture                      21242    9.4984707783307513E+03       0.447
+# gps                          280594    5.4391758277321467E+05       1.938
+# radiance                     171806    1.8338082096514766E+05       1.067
+#                                Nobs                        Jo        Jo/n
+#            Jo Global         803831    1.0838792028623789E+06       1.348
+# End Jo table outer loop
+# ```
+# 
+# A depender da quantidade de outer e inner loops, o GSI registra um número diferente de informações sobre o número de observações consideradas (`Nobs`), o custo da minimização (`Jo`) e o custo da minimização normalizado pelo número de observações (`Jo/n`). A configuração do GSI/3DVar aplicado ao SMNA (válido para a data de escrita deste notebook), considera `miter=2` e `niter=3`, ou seja, 2 outer loops com 3 inner loops cada. Nesse sentido, as informações obtidas a partir das iterações do processo de minimização da função custo, consideram o seguinte:
+# 
+# * OMF: início do primeiro outer loop, onde o estado do sistema é dado pelo background;
+# * OMF (1st INNER LOOP): final do primeiro inner loop do primeiro outer loop, onde o estado do sistema ainda é dado pelo background;
+# * OMF (2nd INNER LOOP): final do segundo inner loop do primeiro outer loop, onde o estado do sistema ainda é dado pelo background;
+# * OMA (AFTER 1st OUTER LOOP): início do segundo outer loop, onde o estado do sistema é dado pela análise;
+# * OMA (1st INNER LOOP): final do primeiro inner loop do segundo outer loop, onde o estado do sistema é dado pela análise;
+# * OMA (2nd INNER LOOP): final do segundo inner loop do segundo outer loop, onde o estado do sistema é dado pela análise;
+# * OMA (AFTER 2nd OUTER LOOP): final do segundo outer loop, análise final.
+# 
+# **Nota:** as informações das iterações `OMF` e `OMF (1st INNER LOOP)` são iguais, assim como as informações das iterações `OMA (AFTER 1st OUTER LOOP)` e `OMA (1st INNER LOOP)`.
+# 
+# As informações do log do GSI são organizadas em um dataframe com a marcação das datas e a inclusão das informações sobre os outer e inner loops:
+# 
+# ```
+#      Date                Observation Type Nobs   Jo            Jo/n  Iter
+#    0 2023-02-16 06:00:00 surface pressure 104308 32537.652151  0.312 OMF
+#    1 2023-02-16 06:00:00 temperature      25065  9857.265337   0.393 OMF
+#    2 2023-02-16 06:00:00 wind             127888 61267.072233  0.479 OMF
+#    3 2023-02-16 06:00:00 moisture         8705   2103.832442   0.242 OMF
+#    4 2023-02-16 06:00:00 gps              291665 600962.196931 2.060 OMF
+#  ...                 ...              ...    ...           ...   ... ...
+# 5399 2023-03-16 00:00:00 wind             203048 129312.187759 0.637 OMA (AFTER 2nd OUTER LOOP)
+# 5400 2023-03-16 00:00:00 moisture         22219  4948.997007   0.223 OMA (AFTER 2nd OUTER LOOP)
+# 5401 2023-03-16 00:00:00 gps              264466 392890.280946 1.486 OMA (AFTER 2nd OUTER LOOP)
+# 5402 2023-03-16 00:00:00 radiance         183884 56169.185410  0.305 OMA (AFTER 2nd OUTER LOOP)
+# 5403 2023-03-16 00:00:00 Jo Global        832986 645663.456547 0.775 OMA (AFTER 2nd OUTER LOOP)
+# ```
+# 
+# Considerando vários experimentos, os dataframes são concatenados em um só (`dfs`), o qual é salvo em disco no formato CSV. A indexação do dataframe `dfs` pode ser feita da seguinte forma:
+# 
+# 1. Escolha de um subdataframe: 
+# 
+#     `df_dtc1 = dfs.xs('df_dtc', axis=1)`
+# 
+# 2. Escolha de uma variável: 
+# 
+#     `df_dtc1.loc[df_dtc1['Observation Type'] == 'surface pressure'].reset_index(drop=True)`
+#     
+# 3. Escolha de um parâmetro: 
+# 
+#     `df_dtc1.loc[df_dtc1['Observation Type'] == 'surface pressure'].loc[df_dtc1['Iter'] == 'OMF'].reset_index(drop=True)`
+#     
+# 4. Escolha de um horário: 
+# 
+#     `df_dtc1.loc[df_dtc1['Observation Type'] == 'surface pressure'].loc[df_dtc1['Iter'] == 'OMF'].set_index('Date').at_time(str('00:00:00')).reset_index(drop=False)`
+#     
+# 5. Escolha de um intervalo de datas (e.g., `2023-02-17` a `2023-03-19`):
+# 
+#     `df_dtc1.set_index(['Date']).loc['2023-02-17':'2023-02-19']`    
+# 
+# **Nota:** nesta versão, a consideração dos valores de `miter` e `niter` não está generalizada. Para outras configurações, será necessário ajustar os valores de `i` na função `df_Nobs`.
+# 
+# ---
+# 
+# Carlos Frederico Bastarz (carlos.bastarz@inpe.br), Abril de 2023.
+
+# In[1]:
+
+
+import os
+import re
+import numpy as np
+import pandas as pd
+
+from datetime import datetime, timedelta
+
+
+# In[2]:
+
+
+# Função para ler os arquivos de log e separar as seções que se iniciam por 'Begin Jo'
+# Nota: as opções 'outer' e 'inner' esão sendo desconsideradas
+
+def df_Nobs(fname, nexp, mname):
+   
+    colnames = ['Observation Type', 'Nobs', 'Jo', 'Jo/n', 'Iter']
+    
+    dfNobs = pd.DataFrame(columns=colnames)
+    
+    # definição das palavras-chave que devem constar no começo das linhas de interesse
+    begin = 'Begin Jo'
+    end = 'End Jo'
+    
+    with open(fname, 'r') as file: # abre o arquivo para leitura
+        match = False
+        i = 0
+
+        for line in file: # percorre as linhas do arquivo
+            line = line.strip() # separa as palavras de cada linha
+            
+            # procura as linhas que começam com begin e end definidos acima
+            if re.match(begin, line):
+                match = True
+                continue
+            elif re.match(end, line):
+                match = False
+                continue
+            elif match: # quando a linha com o padrão é encontrada
+                
+                sline = line.split() # separa as palavras 
+                if len(sline) == 5: 
+                    ltmp = [sline[0] + ' ' + sline[1]] + sline[2:]
+                elif len(sline) == 3:
+                    ltmp = [''] + sline
+                else: 
+                    ltmp = sline                    
+                    
+                if ltmp[0] == 'Observation Type': # se o primeiro elemento for a string 'Observation Type', passa para a próxima linha
+                    pass
+                elif ltmp[1] == 'Nobs': # idem
+                    pass
+                else: # atribui os valores para cada coluna do dataframe
+                    if ltmp[0] == '':
+                        ltmp[0] = np.nan
+                    else:
+                        ltmp[0] = str(ltmp[0])
+                    
+                    if ltmp[1] == '':
+                        ltmp[1] = 0
+                    else:
+                        ltmp[1] = int(ltmp[1])
+                    
+                    if ltmp[2] == '-999.999':
+                        ltmp[2] = np.nan
+                    else:
+                        ltmp[2] = float(ltmp[2])
+                        
+                    if ltmp[3] == '-999.999':
+                        ltmp[3] = np.nan
+                    else:
+                        ltmp[3] = float(ltmp[3])
+                                        
+                    # escreve a informação sobre a iteração (MITER OMF, MITER OMA etc.)
+                    # aqui sempre serão lidas as variáveis surf pres, temp, wind, moist, gps, rad e Jo Global
+                    # para cada uma será atribuído o rótulo daquela iteração
+                    if i <= 8: # as primeras 8 linhas são referentes ao OMF BEGIN (início do primeiro outer loop)
+                        iter_info = 'OMF'
+                    elif i > 8 and i <= 17:
+                        iter_info = 'OMF (1st INNER LOOP)'
+                    elif i > 17 and i <= 26:
+                        iter_info = 'OMF (2nd INNER LOOP)'
+                    elif i > 26 and i <= 35:
+                        iter_info = 'OMA (AFTER 1st OUTER LOOP)'
+                    elif i > 35 and i <= 44:
+                        iter_info = 'OMA (1st INNER LOOP)'
+                    elif i > 44 and i <= 53:
+                        iter_info = 'OMA (2nd INNER LOOP)'
+                    elif i > 53 and i <= 62:
+                        iter_info = 'OMA (AFTER 2nd OUTER LOOP)'
+     
+                    ltmp.append(iter_info)
+                    
+                    dfNobs.loc[i] = ltmp
+                    
+                i += 1
+        
+        dfNobs = dfNobs.set_index('Observation Type')
+        dfNobs.name = str(mname)
+            
+    return dfNobs
+
+
+# In[3]:
+
+
+# Nota: os arquivos de log utilizados neste notebook, podem ser encontrados em /scripts/das/carlos.bastarz/SMNA-Dashboard na máquina Itapemirim
+bpath = '/share/das/dist/carlos.bastarz/SMNAMonitoringApp/jo'
+
+# Função para obter os dataframes em um intervalo de datas para um determinado experimento
+
+def get_df_Nobs(datai, dataf, nexp, mname):
+
+    datai = datetime.strptime(str(datai), '%Y%m%d%H')
+    dataf = datetime.strptime(str(dataf), '%Y%m%d%H')
+    
+    dataifmt=datai.strftime('%Y%m%d%H')
+    
+    delta = 6
+    data = datai
+
+    data = datai + timedelta(hours=delta)
+
+    log_list = {}
+
+    while (data <= dataf):
+
+        datafmt = data.strftime('%Y%m%d%H')
+    
+        fname = os.path.join(bpath, nexp, str(datafmt), str('gsiStdout_' + str(datafmt) + '.log')) 
+        
+        if os.path.isfile(fname):
+    
+            log_list[data] = df_Nobs(fname, nexp, mname)
+    
+        else:
+            
+             print(fname, ' não existe!')
+    
+        data = data + timedelta(hours=delta)
+    
+    dftmp = pd.concat(log_list)
+    dftmp.index.names = ['Date', dftmp.index.names[1]] # inclui as datas na coluna Date
+    dftmp = dftmp.reset_index()
+    dftmp.name = str(mname)
+    
+    return dftmp
+
+
+# In[4]:
+
+
+# Obtenção dos datasframes para um intervalo de datas
+
+datai = '2025100900'
+dataf = '2025101600'
+
+df_preOper = get_df_Nobs(datai, dataf, 'preOper', 'df_preOper')
+#df_preOper_new = get_df_Nobs(datai, dataf, 'preOper_new', 'df_preOper_new')
+df_JGerd = get_df_Nobs(datai, dataf, 'JGerd', 'df_JGerd')
+
+
+# In[5]:
+
+
+#df_preOper
+
+
+# In[6]:
+
+
+#df_JGerd
+
+
+# In[7]:
+
+
+# Concatenação dos dataframes dos experimentos
+
+dfs = pd.concat([df_preOper, df_JGerd], axis=1, keys=([df_preOper.name, df_JGerd.name]))
+#dfs = pd.concat([df_preOper, df_preOper_new, df_JGerd], axis=1, keys=([df_preOper.name, df_preOper_new.name, df_JGerd.name]))
+
+
+## In[8]:
+#
+#
+#dfs
+#
+#
+## In[9]:
+#
+#
+## Escrita do dataframe concatenado em disco no formato CSV
+#
+dfs.to_csv('jo_table_series.csv', index=False)
+#
+#
+## ## Exemplos de indexação do dataframe `dfs`
+#
+## In[10]:
+#
+#
+## Escolha de um subdataframe
+#
+#df_preOper = dfs.xs('df_preOper', axis=1)
+#
+#
+## In[11]:
+#
+#
+#df_preOper
+#
+#
+## In[12]:
+#
+#
+## Escolha de uma variável
+#
+#df_preOper.loc[df_preOper['Observation Type'] == 'surface pressure'].reset_index(drop=True)
+#
+#
+## In[13]:
+#
+#
+## Escolha de um parâmetro
+#
+#df_preOper.loc[df_preOper['Observation Type'] == 'surface pressure'].loc[df_preOper['Iter'] == 'OMF'].reset_index(drop=True)
+#
+#
+## In[14]:
+#
+#
+## Escolha de um horário
+#
+#df_preOper.loc[df_preOper['Observation Type'] == 'surface pressure'].loc[df_preOper['Iter'] == 'OMF'].set_index('Date').at_time(str('00:00:00')).reset_index(drop=False)
+#
+#
+## In[22]:
+#
+#
+#df_preOper.set_index(['Date']).loc['2023-01-01':'2023-02-01']
+#
+#
+## In[21]:
+#
+#
+#df_JGerd.set_index(['Date']).loc['2023-01-01':'2023-02-01']
+#
+#
+## In[23]:
+#
+#
+#df_preOper.loc[df_preOper['Observation Type'] == 'wind'].loc[df_preOper['Iter'] == 'OMF'].set_index('Date').loc['2023-01-01':'2023-02-01'].at_time(str('00:00:00')).reset_index(drop=False)
+#
+#
+## In[24]:
+#
+#
+#df_JGerd.loc[df_JGerd['Observation Type'] == 'wind'].loc[df_JGerd['Iter'] == 'OMF'].set_index('Date').loc['2023-01-01':'2023-02-01'].at_time(str('00:00:00')).reset_index(drop=False)
+#
+#
+## In[ ]:
+#
+#
+#
+#

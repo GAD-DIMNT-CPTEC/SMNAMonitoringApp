@@ -1,0 +1,426 @@
+sources:
+
+  'balprojs_agvin':
+    args:
+      consolidated: true
+      urlpath: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror/smna_berror_balprojs_agvin.zarr
+    description: Vertical Projection of the Stream Function over the Vertical Profile of the Balanced Part of Virtual Temperature
+    driver: intake_xarray.xzarr.ZarrSource
+    metadata:
+      catalog_dir: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror
+      tags:
+        - atmosphere
+        - ocean
+        - analysis
+        - data_assimilation
+        - smna
+        - background error covariance matrix
+      url: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/anls/berror
+
+  'balprojs_bgvin':
+    args:
+      consolidated: true
+      urlpath: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror/smna_berror_balprojs_bgvin.zarr
+    description: Vertical Projection of the Stream Function over the Vertical Profile of the Balanced Part of Velocity Potential
+    driver: intake_xarray.xzarr.ZarrSource
+    metadata:
+      catalog_dir: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror
+      tags:
+        - atmosphere
+        - ocean
+        - analysis
+        - data_assimilation
+        - smna
+        - background error covariance matrix
+      url: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/anls/berror
+
+  'balprojs_wgvin':
+    args:
+      consolidated: true
+      urlpath: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror/smna_berror_balprojs_wgvin.zarr
+    description: Vertical Projection of the Stream Function over the Vertical Profile of the Balanced Part of Surface Pressure
+    driver: intake_xarray.xzarr.ZarrSource
+    metadata:
+      catalog_dir: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror
+      tags:
+        - atmosphere
+        - ocean
+        - analysis
+        - data_assimilation
+        - smna
+        - background error covariance matrix
+      url: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/anls/berror
+
+  'amplitudes_sf':
+    args:
+      consolidated: true
+      urlpath: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror/smna_berror_amplitudes_sf.zarr
+    description: Standard Deviation of Stream Function
+    driver: intake_xarray.xzarr.ZarrSource
+    metadata:
+      catalog_dir: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror
+      tags:
+        - atmosphere
+        - ocean
+        - analysis
+        - data_assimilation
+        - smna
+        - background error covariance matrix
+      url: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/anls/berror
+
+  'amplitudes_vp':
+    args:
+      consolidated: true
+      urlpath: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror/smna_berror_amplitudes_vp.zarr
+    description: Standard Deviation of the Unbalanced Part of Velocity Potential
+    driver: intake_xarray.xzarr.ZarrSource
+    metadata:
+      catalog_dir: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror
+      tags:
+        - atmosphere
+        - ocean
+        - analysis
+        - data_assimilation
+        - smna
+        - background error covariance matrix
+      url: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/anls/berror
+
+  'amplitudes_t':
+    args:
+      consolidated: true
+      urlpath: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror/smna_berror_amplitudes_t.zarr
+    description: Standard Deviation of the Unbalanced Part of Virtual Temperature
+    driver: intake_xarray.xzarr.ZarrSource
+    metadata:
+      catalog_dir: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror
+      tags:
+        - atmosphere
+        - ocean
+        - analysis
+        - data_assimilation
+        - smna
+        - background error covariance matrix
+      url: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/anls/berror
+
+  'amplitudes_q':
+    args:
+      consolidated: true
+      urlpath: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror/smna_berror_amplitudes_q.zarr
+    description: Standard Deviation of the Unbalanced Part of Pseudo-Relative Humidity
+    driver: intake_xarray.xzarr.ZarrSource
+    metadata:
+      catalog_dir: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror
+      tags:
+        - atmosphere
+        - ocean
+        - analysis
+        - data_assimilation
+        - smna
+        - background error covariance matrix
+      url: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/anls/berror
+
+  'amplitudes_qin':
+    args:
+      consolidated: true
+      urlpath: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror/smna_berror_amplitudes_qin.zarr
+    description: Standard Deviation of the Unbalanced Part of Normalized-Relative Humidity
+    driver: intake_xarray.xzarr.ZarrSource
+    metadata:
+      catalog_dir: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror
+      tags:
+        - atmosphere
+        - ocean
+        - analysis
+        - data_assimilation
+        - smna
+        - background error covariance matrix
+      url: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/anls/berror
+
+  'amplitudes_oz':
+    args:
+      consolidated: true
+      urlpath: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror/smna_berror_amplitudes_oz.zarr
+    description: Standard Deviation of the Unbalanced Part of Ozone
+    driver: intake_xarray.xzarr.ZarrSource
+    metadata:
+      catalog_dir: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror
+      tags:
+        - atmosphere
+        - ocean
+        - analysis
+        - data_assimilation
+        - smna
+        - background error covariance matrix
+      url: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/anls/berror
+
+  'amplitudes_ps':
+    args:
+      consolidated: true
+      urlpath: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror/smna_berror_amplitudes_ps.zarr
+    description: Standard Deviation of the Unbalanced Part of Surface Pressure
+    driver: intake_xarray.xzarr.ZarrSource
+    metadata:
+      catalog_dir: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror
+      tags:
+        - atmosphere
+        - ocean
+        - analysis
+        - data_assimilation
+        - smna
+        - background error covariance matrix
+      url: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/anls/berror
+
+  'amplitudes_cw':
+    args:
+      consolidated: true
+      urlpath: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror/smna_berror_amplitudes_cw.zarr
+    description: Standard Deviation of the Unbalanced Part of Cloud Water
+    driver: intake_xarray.xzarr.ZarrSource
+    metadata:
+      catalog_dir: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror
+      tags:
+        - atmosphere
+        - ocean
+        - analysis
+        - data_assimilation
+        - smna
+        - background error covariance matrix
+      url: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/anls/berror
+
+  'amplitudes_sst':
+    args:
+      consolidated: true
+      urlpath: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror/smna_berror_amplitudes_sst.zarr
+    description: Standard Deviation of the Unbalanced Part of Sea Surface Temperature
+    driver: intake_xarray.xzarr.ZarrSource
+    metadata:
+      catalog_dir: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror
+      tags:
+        - atmosphere
+        - ocean
+        - analysis
+        - data_assimilation
+        - smna
+        - background error covariance matrix
+      url: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/anls/berror
+
+  'hscales_sf':
+    args:
+      consolidated: true
+      urlpath: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror/smna_berror_hscales_sf.zarr
+    description: Horizontal Length Scale of Stream Function
+    driver: intake_xarray.xzarr.ZarrSource
+    metadata:
+      catalog_dir: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror
+      tags:
+        - atmosphere
+        - ocean
+        - analysis
+        - data_assimilation
+        - smna
+        - background error covariance matrix
+      url: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/anls/berror
+
+  'hscales_vp':
+    args:
+      consolidated: true
+      urlpath: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror/smna_berror_hscales_vp.zarr
+    description: Horizontal Length Scale of Velocity Potential
+    driver: intake_xarray.xzarr.ZarrSource
+    metadata:
+      catalog_dir: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror
+      tags:
+        - atmosphere
+        - ocean
+        - analysis
+        - data_assimilation
+        - smna
+        - background error covariance matrix
+      url: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/anls/berror
+
+  'hscales_t':
+    args:
+      consolidated: true
+      urlpath: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror/smna_berror_hscales_t.zarr
+    description: Horizontal Length Scale of Temperature
+    driver: intake_xarray.xzarr.ZarrSource
+    metadata:
+      catalog_dir: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror
+      tags:
+        - atmosphere
+        - ocean
+        - analysis
+        - data_assimilation
+        - smna
+        - background error covariance matrix
+      url: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/anls/berror
+
+  'hscales_q':
+    args:
+      consolidated: true
+      urlpath: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror/smna_berror_hscales_q.zarr
+    description: Horizontal Length Scale of Relative Humidity
+    driver: intake_xarray.xzarr.ZarrSource
+    metadata:
+      catalog_dir: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror
+      tags:
+        - atmosphere
+        - ocean
+        - analysis
+        - data_assimilation
+        - smna
+        - background error covariance matrix
+      url: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/anls/berror
+
+  'hscales_oz':
+    args:
+      consolidated: true
+      urlpath: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror/smna_berror_hscales_oz.zarr
+    description: Horizontal Length Scale of Ozone
+    driver: intake_xarray.xzarr.ZarrSource
+    metadata:
+      catalog_dir: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror
+      tags:
+        - atmosphere
+        - ocean
+        - analysis
+        - data_assimilation
+        - smna
+        - background error covariance matrix
+      url: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/anls/berror
+
+  'hscales_cw':
+    args:
+      consolidated: true
+      urlpath: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror/smna_berror_hscales_cw.zarr
+    description: Horizontal Length Scale of Cloud Water
+    driver: intake_xarray.xzarr.ZarrSource
+    metadata:
+      catalog_dir: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror
+      tags:
+        - atmosphere
+        - ocean
+        - analysis
+        - data_assimilation
+        - smna
+        - background error covariance matrix
+      url: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/anls/berror
+
+  'hscales_sst':
+    args:
+      consolidated: true
+      urlpath: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror/smna_berror_hscales_sst.zarr
+    description: Horizontal Length Scale of Sea Surface Temperature
+    driver: intake_xarray.xzarr.ZarrSource
+    metadata:
+      catalog_dir: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror
+      tags:
+        - atmosphere
+        - ocean
+        - analysis
+        - data_assimilation
+        - smna
+        - background error covariance matrix
+      url: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/anls/berror
+
+  'vscales_sf':
+    args:
+      consolidated: true
+      urlpath: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror/smna_berror_vscales_sf.zarr
+    description: Vertical Length Scale of Stream Funcion
+    driver: intake_xarray.xzarr.ZarrSource
+    metadata:
+      catalog_dir: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror
+      tags:
+        - atmosphere
+        - ocean
+        - analysis
+        - data_assimilation
+        - smna
+        - background error covariance matrix
+      url: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/anls/berror
+
+  'vscales_vp':
+    args:
+      consolidated: true
+      urlpath: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror/smna_berror_vscales_vp.zarr
+    description: Vertical Length Scale of Velocity Potential
+    driver: intake_xarray.xzarr.ZarrSource
+    metadata:
+      catalog_dir: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror
+      tags:
+        - atmosphere
+        - ocean
+        - analysis
+        - data_assimilation
+        - smna
+        - background error covariance matrix
+      url: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/anls/berror
+
+  'vscales_t':
+    args:
+      consolidated: true
+      urlpath: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror/smna_berror_vscales_t.zarr
+    description: Vertical Length Scale of Temperature
+    driver: intake_xarray.xzarr.ZarrSource
+    metadata:
+      catalog_dir: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror
+      tags:
+        - atmosphere
+        - ocean
+        - analysis
+        - data_assimilation
+        - smna
+        - background error covariance matrix
+      url: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/anls/berror
+
+  'vscales_q':
+    args:
+      consolidated: true
+      urlpath: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror/smna_berror_vscales_q.zarr
+    description: Vertical Length Scale of Relative Humidity
+    driver: intake_xarray.xzarr.ZarrSource
+    metadata:
+      catalog_dir: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror
+      tags:
+        - atmosphere
+        - ocean
+        - analysis
+        - data_assimilation
+        - smna
+        - background error covariance matrix
+      url: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/anls/berror
+
+  'vscales_oz':
+    args:
+      consolidated: true
+      urlpath: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror/smna_berror_vscales_oz.zarr
+    description: Vertical Length Scale of Ozone
+    driver: intake_xarray.xzarr.ZarrSource
+    metadata:
+      catalog_dir: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror
+      tags:
+        - atmosphere
+        - ocean
+        - analysis
+        - data_assimilation
+        - smna
+        - background error covariance matrix
+      url: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/anls/berror
+
+  'vscales_cw':
+    args:
+      consolidated: true
+      urlpath: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror/smna_berror_vscales_cw.zarr
+    description: Vertical Length Scale of Cloud Water
+    driver: intake_xarray.xzarr.ZarrSource
+    metadata:
+      catalog_dir: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/berror
+      tags:
+        - atmosphere
+        - ocean
+        - analysis
+        - data_assimilation
+        - smna
+        - background error covariance matrix
+      url: https://ftp1.cptec.inpe.br/pesquisa/das/carlos.bastarz/SMNAMonitoringApp/anls/berror

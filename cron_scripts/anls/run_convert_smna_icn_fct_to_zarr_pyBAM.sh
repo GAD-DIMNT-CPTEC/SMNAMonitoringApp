@@ -17,8 +17,8 @@ conda activate pyBAM
 lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls
 rpath=/lustre_xc50/ioper/models/SMNA-Oper/SMG/datainout/bam/model/dataout/TQ0299L064/DAS
 
-datai=#DATAI#
-dataf=#DATAF#
+datai=2025100900
+dataf=2025101600
 
 data=${datai}
 

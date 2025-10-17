@@ -1,4 +1,4 @@
-#! /bin/bash -x
+#! /bin/bash
 
 # Script para obter e organizar os logs do SMNA 
 #
@@ -6,8 +6,8 @@
 
 #inctime=/home/carlos.bastarz/bin/inctime
 
-datai=#DATAI#
-dataf=#DATAF#
+datai=2024030200
+dataf=2024031100
 
 data=${datai}
 
@@ -56,7 +56,7 @@ do
     then
 
       #datafct=$(${inctime} ${data} +9h %y4%m2%d2%h2)
-      datafct=$(date -u +%Y%m%d%H -d "${data:0:8} ${data:8:2} +9 hours")
+      datafct=$(data -u +%Y%m%d%H -d "${data:0:8} ${data:8:2} +9 hours")
       epath=/lustre_xc50/ioper/models/SMNA-Oper/SMG/datainout/bam/model/DAS/exec_CPT${data}/setout
       nlog=$(ssh carlos_bastarz@login-xc50.cptec.inpe.br ls ${epath}/Print.model.${data}.${datafct}.*.MPI*.out | wc -l)
       echo ${nlog} > ${lpath}/nlog_${exp}_${data}.txt
@@ -67,7 +67,7 @@ do
     then
 
       #datafct=$(${inctime} ${data} +11d %y4%m2%d2%h2)
-      datafct=$(date -u +%Y%m%d%H -d "${data:0:8} ${data:8:2} +264 hours")
+      datafct=$(data -u +%Y%m%d%H -d "${data:0:8} ${data:8:2} +11 hours")
       epath=/lustre_xc50/ioper/models/SMNA-Oper/SMG/datainout/bam/pos/exec_CPT${data}/setout
       nlog=$(ssh carlos_bastarz@login-xc50.cptec.inpe.br ls ${epath}/Print.post.${data}.${datafct}.*.MPI*.out | wc -l)
       echo ${nlog} > ${lpath}/nlog_${exp}_${data}.txt
@@ -84,7 +84,7 @@ do
   done
 
   #data=$(${inctime} ${data} +6h %y4%m2%d2%h2)
-  data=$(date -u +%Y%m%d%H -d "${data:0:8} ${data:8:2} +6 hours")
+  data=$(data -u +%Y%m%d%H -d "${data:0:8} ${data:8:2} +6 hours")
 
 done
 

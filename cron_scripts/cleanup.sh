@@ -4,7 +4,7 @@
 #
 # @cfbastarz (March, 2024)
 
-inctime=/home/carlos.bastarz/bin/inctime
+#inctime=/home/carlos.bastarz/bin/inctime
 
 lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp
 
@@ -13,8 +13,10 @@ Logs=(gsi pre model pos)
 
 now=$(date '+%Y%m%d')00
 
-nowm7d=$(${inctime} $now -7d %y4%m2%d2%h2)
-nowm14d=$(${inctime} $now -14d %y4%m2%d2%h2)
+#nowm7d=$(${inctime} $now -7d %y4%m2%d2%h2)
+#nowm14d=$(${inctime} $now -14d %y4%m2%d2%h2)
+now7d=$($now -u +%Y%m%d%H -d "${now:0:8} ${now:8:2} -7 hours")
+now14d=$($now -u +%Y%m%d%H -d "${now:0:8} ${now:8:2} -14 hours")
 
 datai=${nowm14d}
 dataf=${nowm7d}
@@ -63,7 +65,8 @@ do
 
   echo
 
-  data=$(${inctime} ${data} +1d %y4%m2%d2%h2)
+  #data=$(${inctime} ${data} +1d %y4%m2%d2%h2)
+  data=$(date -u +%Y%m%d%H -d "${data:0:8} ${data:8:2} +24 hours")
 
 done
 

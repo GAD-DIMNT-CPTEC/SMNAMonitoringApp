@@ -2,25 +2,28 @@
 
 # Script to start up the processess related to the SMNAMonitoringApp (i.e., get the current date and update the dates within scripts).
 #
-# Note: make sure to run this script at time 01, 07, 13 and 19 UTC (otherwise it will choke at 00 UTC)
+# Note: make sure to run this script at times 01, 07, 13 and 19 UTC (otherwise it will choke at 00 UTC)
 #
 # @cfbastarz (March, 2024)
 
-inctime=${HOME}/bin/inctime
+#inctime=${HOME}/bin/inctime
 
 lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp
 
 #today=$(date '+%Y%m%d%H')
-today=2025022501
+#today=2025022501
+today=2025101601
 #today=2024031407
 #today=2024031413
 #today=2024031419
+
 if [ ${today:8:2} -le 10 ]
 then
   todaym1H=${today:0:8}0$((${today:8:2}-1))
 else
   todaym1H=${today:0:8}$((${today:8:2}-1))
 fi
+
 #yesterday=$(${inctime} ${todaym1H} -1d %y4%m2%d2%h2)
 #aweekbefore=$(${inctime} ${todaym1H} -7d %y4%m2%d2%h2)
 
