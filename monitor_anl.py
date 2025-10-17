@@ -38,14 +38,11 @@ def url_exists(url):
         response = requests.head(url, allow_redirects=True, timeout=5)
         # códigos 200-399 indicam que a URL está acessível
         if response.status_code < 400:
-            #print(f"URL {url} acessível: {response.status_code}")
             print(f"✅ [ANALYSIS PLOTS] Arquivo acessível: {url}")
             catalog_obj = intake.open_catalog(url)
             return True, catalog_obj
         else:
-            #print(f"URL {url} inacessível: {response.status_code}")
             print(f"❌ [ANALYSIS PLOTS] Arquivo não encontrado: {url} (status {response.status_code})")
-            #print(response.status_code)
             return False, None
     except requests.RequestException:
         return False, None
@@ -126,7 +123,7 @@ if anl_exists[0] and bkg_exists[0]:
 
             if variable in vars3d:
                 if showdiff:
-                    tax_diff = rasterize(gv.project(gv.Dataset(dfs_diff).to(gv.Image, ['lon', 'lat'])))
+                    tax_diff = rasterize(gv.project(gv.Dataset(dfs_diff).to(gv.QuadMesh, ['lon', 'lat'])))
                     tax_diff.opts(
                         projection=ccrs.PlateCarree(),
                         cmap=cmap,

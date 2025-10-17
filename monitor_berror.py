@@ -26,20 +26,16 @@ def url_exists(url):
         response = requests.head(url, allow_redirects=True, timeout=5)
         # códigos 200-399 indicam que a URL está acessível
         if response.status_code < 400:
-            #print(f"URL {url} acessível: {response.status_code}")
             print(f"✅ [B ERROR COVARIANCE] Arquivo acessível: {url}")
             catalog_obj = intake.open_catalog(url)
             return True, catalog_obj
         else:
-            #print(f"URL {url} inacessível: {response.status_code}")
             print(f"❌ [B ERROR COVARIANCE] Arquivo não encontrado: {url} (status {response.status_code})")
-            #print(response.status_code)
             return False, None
     except requests.RequestException:
         return False, None
 
 catalog_berror_file = 'https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/berror/catalog_berror.yml'
-#catalog_berror = intake.open_catalog('https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/berror/catalog_berror.yml')
 
 berror_exists = url_exists(catalog_berror_file)
 

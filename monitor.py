@@ -1,5 +1,14 @@
 #! /usr/bin/env python3
 
+import warnings
+
+# Suprimir apenas o aviso específico do intake_xarray
+warnings.filterwarnings(
+    "ignore",
+    category=FutureWarning,
+    module="intake_xarray"
+)
+
 import panel as pn
 
 from monitor_info import MonitoringAppInfo
@@ -20,11 +29,11 @@ from monitor_logs import showLogs, LayoutSidebar
 pn.extension('floatpanel', 'tabulator', sizing_mode="stretch_width")
 
 use_monitor_cstatus  = True
-use_monitor_anl      = True
-use_monitor_mass     = True
+use_monitor_anl      = False
+use_monitor_mass     = False
 use_monitor_jo       = False
-use_monitor_rdiag    = True
-use_monitor_berror   = True
+use_monitor_rdiag    = False
+use_monitor_berror   = False
 use_monitor_objeval  = False
 use_monitor_armobs   = True
 use_monitor_logs     = True

@@ -52,22 +52,16 @@ def url_exists(url):
         response = requests.head(url, allow_redirects=True, timeout=5)
         # códigos 200-399 indicam que a URL está acessível
         if response.status_code < 400:
-            #print(f"URL {url} acessível: {response.status_code}")
             print(f"✅ [OBS STORAGE] Arquivo acessível: {url}")
             dfs_obj = pd.read_csv(url, header=[0], parse_dates=[('Data do Download'), ('Data da Observação')])
             return True, dfs_obj
         else:
-            #print(f"URL {url} inacessível: {response.status_code}")
             print(f"❌ [OBS STORAGE] Arquivo não encontrado: {url} (status {response.status_code})")
-            #print(response.status_code)
             return False, None
     except requests.RequestException:
         return False, None
 
 dfs_file = 'https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/obsm/mon_rec_obs_final.csv'
-#dfs = pd.read_csv(dfs_file, header=[0], parse_dates=[('Data do Download'), ('Data da Observação')])
-#dfs = pd.read_csv('/extra2/SMNAMonitoringApp_DATA/obsm/mon_rec_obs_final.csv', header=[0], 
-#                  parse_dates=[('Data do Download'), ('Data da Observação')])
 
 dfs_exists = url_exists(dfs_file)
 
@@ -79,8 +73,6 @@ if dfs_exists[0]:
     dfs['Data da Observação'] = pd.to_datetime(dfs['Data da Observação'], errors='coerce')
 
     dfs['Diferença de Tempo'] = (dfs['Data do Download'] - dfs['Data da Observação']) - timedelta(hours=3)
-
-    #print(dfs)
 
     monitoring_app_dates = MonitoringAppDates()
     sdate = monitoring_app_dates.getDates()[0].strip()
@@ -118,16 +110,10 @@ if dfs_exists[0]:
 
     date_range = date_range_slider.value
 
-    #print(date_range)
-
     dic_size = {}
     def getSizeDic(dfsp, otype_w):
-        #print('dfsp = ', dfsp)
-        #print('otype_w = ', otype_w)
         dfsp_tot_down_otype = dfsp['Tamanho do Download (KB)'].loc[dfsp['Tipo de Observação'] == otype_w[-1]].sum(axis=0)
-        #print('dfsp_tot_down_otype = ', dfsp_tot_down_otype)
         dic_size[otype_w[-1]] = dfsp_tot_down_otype
-        print('dic_size = ', dic_size)
         return dic_size
 
     def subDataframe(df, start_date, end_date):
@@ -403,9 +389,6 @@ if dfs_exists[0]:
         dfsp_tot_down = dfsp['Tamanho do Download (KB)'].sum(axis=0)
 
         dfsp_dic_down = getSizeDic(dfsp, otype_w)
-
-        #print('dfsp_tot_down_otype = '), dfsp_tot_down_otype
-        print('dfsp_dic_down = '), dfsp_dic_down
 
         data = pd.Series(dfsp_dic_down).reset_index(name='Tamanho do Download (KB)').rename(columns={'index':'Tipo de Observação'})
 

@@ -49,20 +49,16 @@ def url_exists(url):
         response = requests.head(url, allow_redirects=True, timeout=5)
         # códigos 200-399 indicam que a URL está acessível
         if response.status_code < 400:
-            #print(f"URL {url} acessível: {response.status_code}")
             print(f"✅ [OBJ EVALUATION] Arquivo acessível: {url}")
             catalog_obj = intake.open_catalog(url)
             return True, catalog_obj
         else:
-            #print(f"URL {url} inacessível: {response.status_code}")
             print(f"❌ [OBJ EVALUATION] Arquivo não encontrado: {url} (status {response.status_code})")
-            #print(response.status_code)
             return False, None
     except requests.RequestException:
         return False, None
 
 data_catalog_file = 'https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/objeval/catalog-scantec-s0.yml'
-#data_catalog = intake.open_catalog('https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/objeval/catalog-scantec-s0.yml')
 
 data_exists = url_exists(data_catalog_file)
 
@@ -122,11 +118,6 @@ if data_exists[0]:
     Stats = list(set(item.split('-')[2].upper() for item in tmp_list))
     Exps = list(set(item.split('-')[3].upper() for item in tmp_list))
     Refs = list(set(item.split('-')[4] for item in tmp_list))
-
-    #print(Regs)
-    #print(Stats)
-    #print(Exps)
-    #print(Refs)
 
     #
     # Widgets
@@ -195,8 +186,6 @@ if data_exists[0]:
 
     def get_df(reg, exp, stat, ref, varlev):
         kname = 'scantec-' + reg + '-' + stat + '-' + exp.lower() + '-' + ref + '-table'
-        #print(kname)
-        #if data_catalog is not None:
         df = data_catalog[kname].read()
         df.set_index('Unnamed: 0', inplace=True)
         df.index.name = ''
@@ -227,7 +216,6 @@ if data_exists[0]:
                 if count == 0:
                     exp = expt_st[count]
                     exp_tb = expt_st_tb
-                    #print(reg_st, exp, 'vies', ref_st, varlev_st)
                     df_vies = get_df(reg_st, exp, 'vies', ref_st, varlev_st)
 
                     if df_vies is not None:
@@ -453,7 +441,6 @@ if data_exists[0]:
             # Callback to enable/disable the expt_st_tb widget based on the active tab
             def update_expt_st_tb_widget(event):
                 global expt_st_tb
-                #print(f"Tab changed to: {event.new}")  # Debug
                 if event.new == 1:  # Tab index for "TABLES"
                     expt_st_tb.disabled = False
                 else:
@@ -516,8 +503,6 @@ if data_exists[0]:
                 score_table = (1.0 - (p_table2.T / p_table1.T))
 
             if score_table.isnull().values.any():
-
-                #print(score_table)
 
                 # Tentativa de substituir os NaN - que aparecem quando vies e rmse são iguais a zero
                 score_table = score_table.fillna(0.0000001)

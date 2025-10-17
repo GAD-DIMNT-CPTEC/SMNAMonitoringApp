@@ -58,7 +58,7 @@ def create_download_button(log_url):
 
             return log_local
         except requests.exceptions.RequestException as e:
-            print(f"Error downloading file {log_local}: {e}")
+            print(f"❌ Error downloading file {log_local}: {e}")
             return None
 
     return pn.widgets.FileDownload(
