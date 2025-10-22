@@ -88,4 +88,6 @@ do
 
 done
 
+chmod -R 755 ${lpath}/logs ${lpath}/mass ${lpath}/jo ${lpath}/obsm ${lpath}/anls ${lpath}/rdiag
+
 exit 0
