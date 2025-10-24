@@ -6,4 +6,6 @@ O SMNAMonitoringApp é uma aplicação do tipo dashboard que permite a visualiza
 
 ![type:video](https://youtube.com/embed/l8w9VJflkgo)
 
+Versão de demonstração disponível no [HuggingFace Spaces](https://huggingface.co/spaces/cfbastarz/SMNAMonitoringApp).
+
 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode" target="_blank"><img src="https://mirrors.creativecommons.org/presskit/buttons/88x31/png/by-nc-sa.png" alt="CC-BY-NC-SA" width="100"/></a>

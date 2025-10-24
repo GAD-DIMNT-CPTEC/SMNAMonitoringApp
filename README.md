@@ -4,6 +4,10 @@
 
 SMNAMonitoringApp - a Python Dashboard based on Panel developed to monitor the status of the global operational data assimilation system from the Center for Weather Forecasts and Climate Studies (CPTEC).
 
+## Live demo
+
+Check out a live demo of the [SMNAMonitoringApp on Hugging Face Spaces](https://huggingface.co/spaces/cfbastarz/SMNAMonitoringApp).
+
 ## Test locally
 
 First, make sure to have the GNU C and C++ compiler installed. On Debian based distros, install `gcc` and `g++` as such:
