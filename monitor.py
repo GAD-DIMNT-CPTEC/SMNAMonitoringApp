@@ -29,7 +29,7 @@ from monitor_logs import showLogs, LayoutSidebar
 pn.extension('floatpanel', 'tabulator', sizing_mode="stretch_width")
 
 use_monitor_cstatus  = True
-use_monitor_anl      = False
+use_monitor_anl      = True
 use_monitor_mass     = False
 use_monitor_jo       = False
 use_monitor_rdiag    = False
