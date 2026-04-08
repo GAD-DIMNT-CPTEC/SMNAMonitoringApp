@@ -8,7 +8,7 @@ import time
 import pandas as pd
 from datetime import datetime
 from urllib.parse import urljoin
-
+from functools import lru_cache
 from monitor_texts import MonitoringAppTexts
 from monitor_dates import MonitoringAppDates
 
@@ -26,16 +26,34 @@ edate = monitoring_app_dates.getDates()[1].strip()
 start_date = datetime(int(sdate[0:4]), int(sdate[4:6]), int(sdate[6:8]), int(sdate[8:10]))
 end_date = datetime(int(edate[0:4]), int(edate[4:6]), int(edate[6:8]), int(edate[8:10]))
 
-datas = [d.strftime('%Y%m%d%H') for d in pd.date_range(start_date, end_date, freq='6h')][::-1]
+# força 00UTC
+start_date = start_date.replace(hour=0)
+end_date   = end_date.replace(hour=0)
 
-variaveis = [
-    "10_metre_u-wind_component",
-    "10_metre_v-wind_component",
+datas = [d.strftime('%Y%m%d%H') for d in pd.date_range(start_date, end_date, freq='D')][::-1]
+
+#variaveis = [
+#    "10_metre_u-wind_component",
+#    "10_metre_v-wind_component",
+#    "Geopotential_height",
+#    "Meridional_wind_v"
+#]
+
+variaveis = [ 
+    "Zonal_wind_u",
+    "Meridional_wind_v",
+    "Omega",
+    "Stream_function",
+    "Velocity_potential",
     "Geopotential_height",
-    "Meridional_wind_v"
+    "Absolute_temperature",
+    "Specific_humidity",
+    "Vertical_dist_total_cloud_cover",
+    "Time_mean_surface_relative_humidity"
 ]
 
-niveis = ["925", "850", "500"]
+#niveis = ["925", "850", "500"]
+niveis = ["1000", "925", "850", "500", "250", "20", "10", "3"]
 tempos = [str(i) for i in range(0, 73, 6)]
 
 data = pn.widgets.Select(name="Date", options=datas, width=245)
@@ -71,7 +89,8 @@ def img_smna(d, v, l, t):
         return pn.pane.Markdown("Selecione parâmetros")
 
     url = urljoin(BASE_URL, f"SMNA/{d}/{v}/{l}/{t}.jpg")
-    return pn.pane.JPG(f"{url}?t={int(time.time())}", width=800)
+    img = fetch_image_or_fallback(url)
+    return pn.pane.JPG(io.BytesIO(img), width=800)
 
 @pn.depends(data, var, lev, tmp)
 def img_bam(d, v, l, t):
@@ -79,7 +98,23 @@ def img_bam(d, v, l, t):
         return pn.pane.Markdown("Selecione parâmetros")
 
     url = urljoin(BASE_URL, f"BAM/{d}/{v}/{l}/{t}.jpg")
-    return pn.pane.JPG(f"{url}?t={int(time.time())}", width=800)
+    img = fetch_image_or_fallback(url)
+    return pn.pane.JPG(io.BytesIO(img), width=800)
+
+@lru_cache(maxsize=128)
+def fetch_image_or_fallback(url, fallback_path="https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/anls_imgs/imgs/image_not_available.jpg"):
+    try:
+        r = requests.get(url, timeout=5)
+        r.raise_for_status()
+        return r.content
+    except Exception:
+        return get_fallback_image(fallback_path)
+
+@lru_cache(maxsize=1)
+def get_fallback_image(url):
+    r = requests.get(url, timeout=5)
+    r.raise_for_status()
+    return r.content
 
 download_smna = pn.widgets.FileDownload(
     icon="download",
