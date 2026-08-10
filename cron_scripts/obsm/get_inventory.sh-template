@@ -7,7 +7,7 @@
 
 lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp/obsm
 dataloggsi=/share/das/dist/carlos.bastarz/SMNAMonitoringApp/logs/gsi
-dataloggsioper=/lustre_xc50/ioper/models/SMNA-Oper/SMG/datainout/gsi/dataout
+dataloggsioper=#SMNAINSTALL#/datainout/gsi/dataout
 
 datai=#DATAI#
 dataf=#DATAF#
@@ -64,7 +64,7 @@ do
 
   if [ ! -s ${loggsi} ]
   then
-    ssh carlos_bastarz@login-xc50.cptec.inpe.br cat ${dataloggsioper}/${data}/gsiStdout_${data}.runTime*.log > ${loggsi}
+    ssh #HOSTLOGIN#@#SMNAHOST# cat ${dataloggsioper}/${data}/gsiStdout_${data}.runTime*.log > ${loggsi}
   fi 
 
   # Recupera a hora em que o programa principal do GSI iniciou

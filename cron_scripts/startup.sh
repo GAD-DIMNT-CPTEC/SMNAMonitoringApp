@@ -10,6 +10,10 @@
 
 lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp
 
+smna_install=/lustre_xc50/ioper/models/SMNA-Oper
+smna_host=login-xc50.cptec.inpe.br
+host_login=carlos_bastarz
+
 #today=$(date '+%Y%m%d%H')
 #today=2025022501
 today=2025101601

@@ -10,7 +10,7 @@
 #inctime=/home/carlos.bastarz/bin/inctime
 
 lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp/rdiag
-rpath=/lustre_xc50/ioper/models/SMNA-Oper/SMG/datainout/gsi/dataout
+rpath=#SMNAINSTALL#/datainout/gsi/dataout
 
 datai=#DATAI#
 dataf=#DATAF#
@@ -29,7 +29,7 @@ do
 
   for loop in ${Loops[@]}
   do
-    rsync -arv carlos_bastarz@login-xc50.cptec.inpe.br:${rpath}/${data}/diag_conv_0${loop}.${data} .
+    rsync -arv #HOSTLOGIN#@#SMNAHOST#:${rpath}/${data}/diag_conv_0${loop}.${data} .
 
     cat ${lpath}/convert_smna_diag_to_parquet_readDiag.py-template | sed "s,%DATA%,${data},g" > ${lpath}/convert_smna_diag_to_parquet_readDiag.py
     sed -i "s,%LOOP%,${loop},g" ${lpath}/convert_smna_diag_to_parquet_readDiag.py
