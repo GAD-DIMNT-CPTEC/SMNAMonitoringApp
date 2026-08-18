@@ -6,8 +6,10 @@
 
 #inctime=/home/carlos.bastarz/bin/inctime
 
-lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls
-rpath=/lustre_xc50/ioper/models/SMNA-Oper/SMG/datainout/bam/pos/dataout/TQ0299L064
+#lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls
+lpath=#LPATH#/anls/#HOSTNAME#
+#rpath=/lustre_xc50/ioper/models/SMNA-Oper/SMG/datainout/bam/pos/dataout/TQ0299L064
+rpath=#SMNAINSTALL#/datainout/bam/pos/dataout/TQ0299L064
 
 datai=#DATAI#
 dataf=#DATAF#
@@ -18,12 +20,12 @@ while [ ${data} -le ${dataf} ]
 do
 
   # First, get the SMNA analysis from the BAM post-processing in XC50
-  mkdir -p /share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls/grib_tmp/${data}
-  mkdir -p /share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls/${data}
+  mkdir -p ${lpath}/grib_tmp/${data}
+  mkdir -p ${lpath}/${data}
 
-  cd /share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls/grib_tmp/${data}
+  cd ${lpath}/grib_tmp/${data}
 
-  rsync -arv carlos_bastarz@login-xc50.cptec.inpe.br:${rpath}/${data}/GPOSCPT${data}${data}P.icn.TQ0299L064.grb .
+  rsync -arv #HOSTLOGIN#@#SMNAHOST#:${rpath}/${data}/GPOSCPT${data}${data}P.icn.TQ0299L064.grb .
 
   #data=$(${inctime} ${data} +1d %y4%m2%d2%h2)
   data=$(date -u +%Y%m%d%H -d "${data:0:8} ${data:8:2} +24 hours")
@@ -38,4 +40,4 @@ cd ${lpath}
 
 #source /scripts/das/conda/envs/pyNIO/bin/deactivate
 
-/share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls/create_catalog.sh
+${lpath}/create_catalog.sh

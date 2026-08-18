@@ -5,12 +5,13 @@
 
 # @cfbastarz (25/03/2025)
 
-lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp/obsm
-dataloggsi=/share/das/dist/carlos.bastarz/SMNAMonitoringApp/logs/gsi
-dataloggsioper=/lustre_xc50/ioper/models/SMNA-Oper/SMG/datainout/gsi/dataout
+#lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp/obsm
+lpath=/share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/obsm
+dataloggsi=/share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/gsi
+dataloggsioper=/mnt/beegfs/ioper/SMNA_v3.0.0.t12717/SMG/datainout/gsi/dataout
 
-datai=2025100900
-dataf=2025101600
+datai=2026080500
+dataf=2026081200
 
 data=${datai}
 
@@ -64,7 +65,7 @@ do
 
   if [ ! -s ${loggsi} ]
   then
-    ssh carlos_bastarz@login-xc50.cptec.inpe.br cat ${dataloggsioper}/${data}/gsiStdout_${data}.runTime*.log > ${loggsi}
+    ssh #HOSTLOGIN#@#SMNAHOST# cat ${dataloggsioper}/${data}/gsiStdout_${data}.runTime*.log > ${loggsi}
   fi 
 
   # Recupera a hora em que o programa principal do GSI iniciou

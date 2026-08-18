@@ -8,11 +8,14 @@
 
 #inctime=${HOME}/bin/inctime
 
+Hosts=("XC50"  "Egeon")
+
 lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp
 
 smna_install=/lustre_xc50/ioper/models/SMNA-Oper
 smna_host=login-xc50.cptec.inpe.br
 host_login=carlos_bastarz
+host_name=xc50
 
 #today=$(date '+%Y%m%d%H')
 #today=2025022501
@@ -37,45 +40,59 @@ aweekbefore=$(date -u +%Y%m%d%H -d "${todaym1H:0:8} ${todaym1H:8:2} -168 hours")
 echo ${todaym1H} > ${lpath}/todaym1H.txt
 echo ${aweekbefore} > ${lpath}/aweekbefore.txt
 
-echo "Updating script ${lpath}/logs/get_logs.sh"
-cat ${lpath}/logs/get_logs.sh-template | sed "s,#DATAI#,${aweekbefore},g" > ${lpath}/logs/get_logs.sh
-sed -i "s,#DATAF#,${todaym1H},g" ${lpath}/logs/get_logs.sh
+for hostn in ${Hosts[@]}
+do
 
-echo "Updating script ${lpath}/mass/run_create_database.sh"
-cat ${lpath}/mass/run_create_database.sh-template | sed "s,#DATAI#,${aweekbefore},g" > ${lpath}/mass/run_create_database.sh
-sed -i "s,#DATAF#,${todaym1H},g" ${lpath}/mass/run_create_database.sh
+  echo "Updating script ${lpath}/logs/get_logs.sh"
+  cat ${lpath}/logs/get_logs.sh-template | sed "s,#DATAI#,${aweekbefore},g" > ${lpath}/logs/get_logs-${hostn,,}.sh
+  sed -i "s,#DATAF#,${todaym1H},g" ${lpath}/logs/get_logs-${hostn,,}.sh
+  sed -i "s,#SMNAINSTALL#,${smna_install},g" ${lpath}/logs/get_logs-${hostn,,}.sh
+  sed -i "s,#HOSTLOGIN#,${host_login},g" ${lpath}/logs/get_logs-${hostn,,}.sh
+  sed -i "s,#SMNAHOST#,${smna_host},g" ${lpath}/logs/get_logs-${hostn,,}.sh
 
-echo "Updating script ${lpath}/logs/create_log_csv.sh"
-cat ${lpath}/logs/create_log_csv.sh-template | sed "s,#DATAI#,${aweekbefore},g" > ${lpath}/logs/create_log_csv.sh
-sed -i "s,#DATAF#,${todaym1H},g" ${lpath}/logs/create_log_csv.sh
+  echo "Updating script ${lpath}/logs/create_log_csv.sh"
+  cat ${lpath}/logs/create_log_csv.sh-template | sed "s,#DATAI#,${aweekbefore},g" > ${lpath}/logs/create_log_csv-${hostn,,}.sh
+  sed -i "s,#DATAF#,${todaym1H},g" ${lpath}/logs/create_log_csv-${hostn,,}.sh
+  sed -i "s,#HOSTNAME#,${host_name},g" ${lpath}/logs/create_log_csv-${hostn,,}.sh
+  
+  echo "Updating script ${lpath}/mass/run_create_database.sh"
+  cat ${lpath}/mass/run_create_database.sh-template | sed "s,#DATAI#,${aweekbefore},g" > ${lpath}/mass/run_create_database-${hostn,,}.sh
+  sed -i "s,#DATAF#,${todaym1H},g" ${lpath}/mass/run_create_database-${hostn,,}.sh
+  sed -i "s,#HOSTLOGIN#,${host_login},g" ${lpath}/mass/run_create_database-${hostn,,}.sh
+  sed -i "s,#SMNAHOST#,${smna_host},g" ${lpath}/mass/run_create_database-${hostn,,}.sh
+  
+  echo "Updating script ${lpath}/jo/get_nobs.sh"
+  cat ${lpath}/jo/get_nobs.sh-template | sed "s,#DATAI#,${aweekbefore},g" > ${lpath}/jo/get_nobs-${hostn,,}.sh
+  sed -i "s,#DATAF#,${todaym1H},g" ${lpath}/jo/get_nobs-${hostn,,}.sh
+  sed -i "s,#SMNAINSTALL#,${smna_install},g" ${lpath}/jo/get_nobs-${hostn,,}.sh
+  sed -i "s,#HOSTLOGIN#,${host_login},g" ${lpath}/jo/get_nobs-${hostn,,}.sh
+  sed -i "s,#SMNA_HOST#,${smna_host},g" ${lpath}/jo/get_nobs-${hostn,,}.sh
+  
+  echo "Updating script ${lpath}/jo/SMNA-Dashboard_load_files_create_dataframe_save.py"
+  cat ${lpath}/jo/SMNA-Dashboard_load_files_create_dataframe_save.py-template | sed "s,#DATAI#,${aweekbefore},g" > ${lpath}/jo/SMNA-Dashboard_load_files_create_dataframe_save.py
+  sed -i "s,#DATAF#,${todaym1H},g" ${lpath}/jo/SMNA-Dashboard_load_files_create_dataframe_save.py
+  
+  echo "Updating script ${lpath}/anls/run_convert_smna_icn_fct_to_zarr_pyBAM.sh"
+  cat ${lpath}/anls/run_convert_smna_icn_fct_to_zarr_pyBAM.sh-template | sed "s,#DATAI#,${aweekbefore},g" > ${lpath}/anls/run_convert_smna_icn_fct_to_zarr_pyBAM.sh
+  sed -i "s,#DATAF#,${todaym1H},g" ${lpath}/anls/run_convert_smna_icn_fct_to_zarr_pyBAM.sh
+  
+  echo "Updating script ${lpath}/anls/create_catalog.sh"
+  cat ${lpath}/anls/create_catalog.sh-template | sed "s,#DATAI#,${aweekbefore},g" > ${lpath}/anls/create_catalog.sh
+  sed -i "s,#DATAF#,${todaym1H},g" ${lpath}/anls/create_catalog.sh
+  
+  echo "Updating script ${lpath}/rdiag/run_convert_smna_diag_to_parquet_readDiag.sh"
+  cat ${lpath}/rdiag/run_convert_smna_diag_to_parquet_readDiag.sh-template | sed "s,#DATAI#,${aweekbefore},g" > ${lpath}/rdiag/run_convert_smna_diag_to_parquet_readDiag.sh
+  sed -i "s,#DATAF#,${todaym1H},g" ${lpath}/rdiag/run_convert_smna_diag_to_parquet_readDiag.sh
+  
+  echo "Updating script ${lpath}/rdiag/create_catalog.sh"
+  cat ${lpath}/rdiag/create_catalog.sh-template | sed "s,#DATAI#,${aweekbefore},g" > ${lpath}/rdiag/create_catalog.sh
+  sed -i "s,#DATAF#,${todaym1H},g" ${lpath}/rdiag/create_catalog.sh
+
+done
 
 echo "Updating script ${lpath}/obsm/get_inventory.sh"
 cat ${lpath}/obsm/get_inventory.sh-template | sed "s,#DATAI#,${aweekbefore},g" > ${lpath}/obsm/get_inventory.sh
 sed -i "s,#DATAF#,${todaym1H},g" ${lpath}/obsm/get_inventory.sh
-
-echo "Updating script ${lpath}/jo/get_nobs.sh"
-cat ${lpath}/jo/get_nobs.sh-template | sed "s,#DATAI#,${aweekbefore},g" > ${lpath}/jo/get_nobs.sh
-sed -i "s,#DATAF#,${todaym1H},g" ${lpath}/jo/get_nobs.sh
-
-echo "Updating script ${lpath}/jo/SMNA-Dashboard_load_files_create_dataframe_save.py"
-cat ${lpath}/jo/SMNA-Dashboard_load_files_create_dataframe_save.py-template | sed "s,#DATAI#,${aweekbefore},g" > ${lpath}/jo/SMNA-Dashboard_load_files_create_dataframe_save.py
-sed -i "s,#DATAF#,${todaym1H},g" ${lpath}/jo/SMNA-Dashboard_load_files_create_dataframe_save.py
-
-echo "Updating script ${lpath}/anls/run_convert_smna_icn_fct_to_zarr_pyBAM.sh"
-cat ${lpath}/anls/run_convert_smna_icn_fct_to_zarr_pyBAM.sh-template | sed "s,#DATAI#,${aweekbefore},g" > ${lpath}/anls/run_convert_smna_icn_fct_to_zarr_pyBAM.sh
-sed -i "s,#DATAF#,${todaym1H},g" ${lpath}/anls/run_convert_smna_icn_fct_to_zarr_pyBAM.sh
-
-echo "Updating script ${lpath}/anls/create_catalog.sh"
-cat ${lpath}/anls/create_catalog.sh-template | sed "s,#DATAI#,${aweekbefore},g" > ${lpath}/anls/create_catalog.sh
-sed -i "s,#DATAF#,${todaym1H},g" ${lpath}/anls/create_catalog.sh
-
-echo "Updating script ${lpath}/rdiag/run_convert_smna_diag_to_parquet_readDiag.sh"
-cat ${lpath}/rdiag/run_convert_smna_diag_to_parquet_readDiag.sh-template | sed "s,#DATAI#,${aweekbefore},g" > ${lpath}/rdiag/run_convert_smna_diag_to_parquet_readDiag.sh
-sed -i "s,#DATAF#,${todaym1H},g" ${lpath}/rdiag/run_convert_smna_diag_to_parquet_readDiag.sh
-
-echo "Updating script ${lpath}/rdiag/create_catalog.sh"
-cat ${lpath}/rdiag/create_catalog.sh-template | sed "s,#DATAI#,${aweekbefore},g" > ${lpath}/rdiag/create_catalog.sh
-sed -i "s,#DATAF#,${todaym1H},g" ${lpath}/rdiag/create_catalog.sh
 
 #if [ ${todaym1H:8:2} == "00" ]
 #then

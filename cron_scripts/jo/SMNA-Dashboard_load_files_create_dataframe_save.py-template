@@ -186,7 +186,8 @@ def df_Nobs(fname, nexp, mname):
 
 
 # Nota: os arquivos de log utilizados neste notebook, podem ser encontrados em /scripts/das/carlos.bastarz/SMNA-Dashboard na máquina Itapemirim
-bpath = '/share/das/dist/carlos.bastarz/SMNAMonitoringApp/jo'
+#bpath = '/share/das/dist/carlos.bastarz/SMNAMonitoringApp/jo'
+bpath = '#BPATH#/jo'
 
 # Função para obter os dataframes em um intervalo de datas para um determinado experimento
 
@@ -236,21 +237,21 @@ def get_df_Nobs(datai, dataf, nexp, mname):
 datai = '#DATAI#'
 dataf = '#DATAF#'
 
-df_preOper = get_df_Nobs(datai, dataf, 'preOper', 'df_preOper')
-#df_preOper_new = get_df_Nobs(datai, dataf, 'preOper_new', 'df_preOper_new')
-df_JGerd = get_df_Nobs(datai, dataf, 'JGerd', 'df_JGerd')
+df_xc50 = get_df_Nobs(datai, dataf, 'xc50', 'df_xc50')
+#df_xc50_new = get_df_Nobs(datai, dataf, 'preOper_new', 'df_xc50_new')
+df_egeon = get_df_Nobs(datai, dataf, 'egeon', 'df_egeon')
 
 
 # In[5]:
 
 
-#df_preOper
+#df_xc50
 
 
 # In[6]:
 
 
-#df_JGerd
+#df_egeon
 
 
 # In[7]:
@@ -258,8 +259,8 @@ df_JGerd = get_df_Nobs(datai, dataf, 'JGerd', 'df_JGerd')
 
 # Concatenação dos dataframes dos experimentos
 
-dfs = pd.concat([df_preOper, df_JGerd], axis=1, keys=([df_preOper.name, df_JGerd.name]))
-#dfs = pd.concat([df_preOper, df_preOper_new, df_JGerd], axis=1, keys=([df_preOper.name, df_preOper_new.name, df_JGerd.name]))
+dfs = pd.concat([df_xc50, df_egeon], axis=1, keys=([df_xc50.name, df_egeon.name]))
+#dfs = pd.concat([df_xc50, df_xc50_new, df_egeon], axis=1, keys=([df_xc50.name, df_xc50_new.name, df_egeon.name]))
 
 
 ## In[8]:
@@ -283,13 +284,13 @@ dfs.to_csv('jo_table_series.csv', index=False)
 #
 ## Escolha de um subdataframe
 #
-#df_preOper = dfs.xs('df_preOper', axis=1)
+#df_xc50 = dfs.xs('df_xc50', axis=1)
 #
 #
 ## In[11]:
 #
 #
-#df_preOper
+#df_xc50
 #
 #
 ## In[12]:
@@ -297,7 +298,7 @@ dfs.to_csv('jo_table_series.csv', index=False)
 #
 ## Escolha de uma variável
 #
-#df_preOper.loc[df_preOper['Observation Type'] == 'surface pressure'].reset_index(drop=True)
+#df_xc50.loc[df_xc50['Observation Type'] == 'surface pressure'].reset_index(drop=True)
 #
 #
 ## In[13]:
@@ -305,7 +306,7 @@ dfs.to_csv('jo_table_series.csv', index=False)
 #
 ## Escolha de um parâmetro
 #
-#df_preOper.loc[df_preOper['Observation Type'] == 'surface pressure'].loc[df_preOper['Iter'] == 'OMF'].reset_index(drop=True)
+#df_xc50.loc[df_xc50['Observation Type'] == 'surface pressure'].loc[df_xc50['Iter'] == 'OMF'].reset_index(drop=True)
 #
 #
 ## In[14]:
@@ -313,31 +314,31 @@ dfs.to_csv('jo_table_series.csv', index=False)
 #
 ## Escolha de um horário
 #
-#df_preOper.loc[df_preOper['Observation Type'] == 'surface pressure'].loc[df_preOper['Iter'] == 'OMF'].set_index('Date').at_time(str('00:00:00')).reset_index(drop=False)
+#df_xc50.loc[df_xc50['Observation Type'] == 'surface pressure'].loc[df_xc50['Iter'] == 'OMF'].set_index('Date').at_time(str('00:00:00')).reset_index(drop=False)
 #
 #
 ## In[22]:
 #
 #
-#df_preOper.set_index(['Date']).loc['2023-01-01':'2023-02-01']
+#df_xc50.set_index(['Date']).loc['2023-01-01':'2023-02-01']
 #
 #
 ## In[21]:
 #
 #
-#df_JGerd.set_index(['Date']).loc['2023-01-01':'2023-02-01']
+#df_egeon.set_index(['Date']).loc['2023-01-01':'2023-02-01']
 #
 #
 ## In[23]:
 #
 #
-#df_preOper.loc[df_preOper['Observation Type'] == 'wind'].loc[df_preOper['Iter'] == 'OMF'].set_index('Date').loc['2023-01-01':'2023-02-01'].at_time(str('00:00:00')).reset_index(drop=False)
+#df_xc50.loc[df_xc50['Observation Type'] == 'wind'].loc[df_xc50['Iter'] == 'OMF'].set_index('Date').loc['2023-01-01':'2023-02-01'].at_time(str('00:00:00')).reset_index(drop=False)
 #
 #
 ## In[24]:
 #
 #
-#df_JGerd.loc[df_JGerd['Observation Type'] == 'wind'].loc[df_JGerd['Iter'] == 'OMF'].set_index('Date').loc['2023-01-01':'2023-02-01'].at_time(str('00:00:00')).reset_index(drop=False)
+#df_egeon.loc[df_egeon['Observation Type'] == 'wind'].loc[df_egeon['Iter'] == 'OMF'].set_index('Date').loc['2023-01-01':'2023-02-01'].at_time(str('00:00:00')).reset_index(drop=False)
 #
 #
 ## In[ ]:

@@ -2,17 +2,15 @@
 
 #inctime=${HOME}/bin/inctime
 
-lpath=#LPATH#/anls/#HOSTNAME#
-
-url_path=https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/anls
+lpath=/share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/anls/egeon
 
 Names=(anl bkg)
 
 for name in ${Names[@]}
 do
 
-  datai=#DATAI#
-  dataf=#DATAF#
+  datai=2026080500
+  dataf=2026081200
   
   data=${datai}
 
@@ -31,18 +29,18 @@ cat << EOF >> ${lpath}/catalog_${name}.yml
   '${data}':
     args:
       consolidated: true
-      urlpath: ${url_path}/#HOSTNAME#/${data}/GFCTCPT${data}${data}F.icn.TQ0299L064.zarr
+      urlpath: https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/anls/egeon/${data}/GFCTCPT${data}${data}F.icn.TQ0299L064.zarr
     description: SMNA Analysis for ${data}
     driver: intake_xarray.xzarr.ZarrSource
     metadata: 
-      catalog_dir: ${url_path}/#HOSTNAME#/${data}
+      catalog_dir: https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/anls/egeon/${data}
       tags:
         - atmosphere
         - analysis
         - data_assimilation
         - smna
         - field
-      url: ${url_path}/#HOSTNAME#/${data}
+      url: https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/anls/egeon/${data}
 
 EOF
   
@@ -58,18 +56,18 @@ cat << EOF >> ${lpath}/catalog_${name}.yml
   '${data}':
     args:
       consolidated: true
-      urlpath: ${url_path}/#HOSTNAME#/${data}/GFCTCPT${data}${datafct}F.fct.TQ0299L064.zarr
+      urlpath: https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/anls/egeon/${data}/GFCTCPT${data}${datafct}F.fct.TQ0299L064.zarr
     description: SMNA Analysis for ${data}
     driver: intake_xarray.xzarr.ZarrSource
     metadata: 
-      catalog_dir: ${url_path}/#HOSTNAME#/${data}
+      catalog_dir: https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/anls/egeon/${data}
       tags:
         - atmosphere
         - background
         - data_assimilation
         - smna
         - field
-      url: ${url_path}/#HOSTNAME#/${data}
+      url: https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/anls/egeon/${data}
 
 EOF
 

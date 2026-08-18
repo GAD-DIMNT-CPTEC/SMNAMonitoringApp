@@ -92,7 +92,16 @@ class MonitoringAppCStatus:
         }
         """
 
-        cs_table = pn.widgets.Tabulator(df,
+        cs_table1 = pn.widgets.Tabulator(df,
+                show_index=False,
+                disabled=True,
+                theme="bootstrap4",
+                text_align='center',
+                selectable='toggle',
+                stylesheets=[stylesheet],
+                formatters=link_formatters)
+
+        cs_table2 = pn.widgets.Tabulator(df,
                 show_index=False,
                 disabled=True,
                 theme="bootstrap4",
@@ -127,4 +136,4 @@ class MonitoringAppCStatus:
         * **P** = Processing
         """)
 
-        return pn.Column(welcomeText1, cs_table, file_download, welcomeText2, monitor_warning_bottom_main, sizing_mode='stretch_width')
+        return pn.Column(welcomeText1, pn.Tabs(("XC50", cs_table1), ("Egeon", cs_table2), dynamic=True), file_download, welcomeText2, monitor_warning_bottom_main, sizing_mode='stretch_width')

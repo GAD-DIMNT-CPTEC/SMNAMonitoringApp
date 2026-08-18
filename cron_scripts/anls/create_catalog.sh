@@ -2,15 +2,15 @@
 
 #inctime=${HOME}/bin/inctime
 
-lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls
+lpath=/share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts
 
 Names=(anl bkg)
 
 for name in ${Names[@]}
 do
 
-  datai=2025100900
-  dataf=2025101600
+  datai=2026080500
+  dataf=2026081200
   
   data=${datai}
 

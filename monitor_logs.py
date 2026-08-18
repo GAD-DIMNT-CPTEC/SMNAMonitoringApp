@@ -114,7 +114,13 @@ def showLogs(date):
     Navigate trough the tabs below to visualize the logs from the latest run.
     """)
 
-    return pn.Column(main_text, pn.Tabs(*tabs, dynamic=True), monitor_warning_bottom_main, sizing_mode='stretch_width')
+    return pn.Column(main_text,
+            pn.Tabs(
+                ("XC50", pn.Tabs(*tabs, dynamic=True)), 
+                ("Egeon", pn.Tabs(*tabs, dynamic=True)), 
+                dynamic=True), 
+            monitor_warning_bottom_main, 
+            sizing_mode='stretch_width')
 
 def LayoutSidebar():
     card_parameters = pn.Card(pn.Row(date, pn.widgets.TooltipIcon(value='Choose a date', align='start')), title='Parameters', collapsed=False)

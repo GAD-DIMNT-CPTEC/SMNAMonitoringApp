@@ -6,28 +6,28 @@
 # @cfbastarz (25/03/2025)
 
 #lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp/obsm
-lpath=#LPATH#/obsm/#HOSTNAME#
-dataloggsi=#LPATH#/logs/gsi
-dataloggsioper=#SMNAINSTALL#/datainout/gsi/dataout
+lpath=/share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/obsm/egeon
+dataloggsi=/share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/gsi
+dataloggsioper=/mnt/beegfs/ioper/SMNA_v3.0.0.t12717/SMG/datainout/gsi/dataout
 
-datai=#DATAI#
-dataf=#DATAF#
+datai=2026080500
+dataf=2026081200
 
 data=${datai}
 
-rm -rf #HOSTNAME#/txt #HOSTNAME#/csv
+rm -rf egeon/txt egeon/csv
 
-if [ ! -d #HOSTNAME#/txt ]; then mkdir -vp #HOSTNAME#/txt; fi
-if [ ! -d #HOSTNAME#/csv ]; then mkdir -vp #HOSTNAME#/csv; fi
+if [ ! -d egeon/txt ]; then mkdir -vp egeon/txt; fi
+if [ ! -d egeon/csv ]; then mkdir -vp egeon/csv; fi
 
 while [ ${data} -le ${dataf} ]
 do
 
   echo ${data}
 
-  dataobs=#DADOSOBS#
+  dataobs=/oper/dados/dboper/raw/arch/mod/ncep/gdas/${data:0:4}/${data:4:2}/${data:6:2}
 
-  ssh #HOSTLOGIN#@#SMNAHOST# ls -l --full-time ${dataobs} > ${lpath}/txt/obs-tmp_${data}.txt
+  ssh carlos.bastarz@egeon.cptec.inpe.br ls -l --full-time ${dataobs} > ${lpath}/txt/obs-tmp_${data}.txt
 
   # Remove a primeira linha
   sed -i '1d' ${lpath}/txt/obs-tmp_${data}.txt
@@ -65,7 +65,7 @@ do
 
   if [ ! -s ${loggsi} ]
   then
-    ssh #HOSTLOGIN#@#SMNAHOST# cat ${dataloggsioper}/${data}/gsiStdout_${data}.runTime*.log > ${loggsi}
+    ssh carlos.bastarz@egeon.cptec.inpe.br cat ${dataloggsioper}/${data}/gsiStdout_${data}.runTime*.log > ${loggsi}
   fi 
 
   # Recupera a hora em que o programa principal do GSI iniciou

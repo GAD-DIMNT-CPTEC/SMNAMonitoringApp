@@ -174,10 +174,20 @@ def LayoutMainAnl():
     Set the parameters on the left to update the maps.
     """)
 
-    plots = pn.Row(
-        pn.Column("### SMNA", img_smna, download_smna),
-        pn.Column("### BAM", img_bam, download_bam)
+    plots = pn.Tabs(
+        ("XC50",
+            pn.Row(
+                pn.Column("### SMNA", img_smna, download_smna),
+                pn.Column("### BAM", img_bam, download_bam)
+            )),
+        ("Egeon",
+            pn.Row(
+                pn.Column("### SMNA", img_smna, download_smna),
+                pn.Column("### BAM", img_bam, download_bam)
+            )       
+        ), dynamic=True
     )
+
 
     return pn.Column(
         main_text,

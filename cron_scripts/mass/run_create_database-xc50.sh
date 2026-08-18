@@ -7,12 +7,12 @@
 #inctime=/home/carlos.bastarz/bin/inctime
 
 #lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp/mass
-lpath=#LPATH#/mass
+lpath=/share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/mass
 rpath=#SMNAINSTALL#/datainout/gsi/dataout
 fout=costFile_Oper.db 
 
-datai=#DATAI#
-dataf=#DATAF#
+datai=2026080500
+dataf=2026081200
 
 data=${datai}
 
@@ -26,7 +26,7 @@ do
 
   cd ${lpath}/mass_tmp/${data}
 
-  rsync -arv #HOSTLOGIN#@#SMNAHOST#:${rpath}/${data}/fort.220 .
+  rsync -arv carlos_bastarz@login-xc50.cptec.inpe.br:${rpath}/${data}/fort.220 .
 
 #  data=$(${inctime} ${data} +6h %y4%m2%d2%h2)
   data=$(date -u +%Y%m%d%H -d "${data:0:8} ${data:8:2} +6 hours")

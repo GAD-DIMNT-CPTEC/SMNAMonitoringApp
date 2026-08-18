@@ -8,13 +8,13 @@
 
 #inctime=/home/carlos.bastarz/bin/inctime
 
-datai=#DATAI#
-dataf=#DATAF#
+datai=2026080500
+dataf=2026081200
 
 data=${datai}
 
-#lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp/logs/#HOSTNAME#
-lpath=#LPATH#/logs/#HOSTNAME#
+#lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp/logs/egeon
+lpath=/share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/egeon
 burl=https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/logs/
 
 if [ -e ${lpath}/logs_tmp.csv ]; then rm ${lpath}/logs_tmp.csv; fi

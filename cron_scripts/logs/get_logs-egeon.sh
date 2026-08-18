@@ -6,8 +6,8 @@
 
 #inctime=/home/carlos.bastarz/bin/inctime
 
-datai=#DATAI#
-dataf=#DATAF#
+datai=2026080500
+dataf=2026081200
 
 data=${datai}
 
@@ -31,26 +31,26 @@ do
 
     #lpath=/pesq/share/das/dist/carlos.bastarz/SMNAMonitoringApp/logs/${exp}
     #lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp/logs/${exp}
-    lpath=#LPATH#/logs/#HOSTNAME#/${exp}
+    lpath=/share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/egeon/${exp}
 
     echo ${data} ${exp}
 
     if [ ${exp} == "gsi" ]
     then        
 
-      epath=#SMNAINSTALL#/datainout/gsi/dataout/${data}
-      nlog=$(ssh #HOSTLOGIN#@#SMNAHOST# ls ${epath}/gsiStdout_${data}.runTime-*.log | wc -l)
+      epath=/mnt/beegfs/ioper/SMNA_v3.0.0.t12717/SMG/datainout/gsi/dataout/${data}
+      nlog=$(ssh carlos.bastarz@egeon.cptec.inpe.br ls ${epath}/gsiStdout_${data}.runTime-*.log | wc -l)
       echo ${nlog} > ${lpath}/nlog_${exp}_${data}.txt
-      logf=$(ssh #HOSTLOGIN#@#SMNAHOST# ls -t1 ${epath}/gsiStdout_${data}.runTime-*.log | head -1)
+      logf=$(ssh carlos.bastarz@egeon.cptec.inpe.br ls -t1 ${epath}/gsiStdout_${data}.runTime-*.log | head -1)
       logl=gsi_${data}.log
 
     elif [ ${exp} == "pre" ]
     then
 
-      epath=#SMNAINSTALL#/datainout/bam/pre/exec        
-      nlog=$(ssh #HOSTLOGIN#@#SMNAHOST# ls ${epath}/saida_${data}_*.txt | wc -l)
+      epath=/mnt/beegfs/ioper/SMNA_v3.0.0.t12717/SMG/datainout/bam/pre/exec        
+      nlog=$(ssh carlos.bastarz@egeon.cptec.inpe.br ls ${epath}/saida_${data}_*.txt | wc -l)
       echo ${nlog} > ${lpath}/nlog_${exp}_${data}.txt
-      logf=$(ssh #HOSTLOGIN#@#SMNAHOST# ls -t1 ${epath}/saida_${data}_*.txt | head -1)
+      logf=$(ssh carlos.bastarz@egeon.cptec.inpe.br ls -t1 ${epath}/saida_${data}_*.txt | head -1)
       logl=pre_${data}.log
 
     elif [ ${exp} == "model" ]
@@ -58,10 +58,10 @@ do
 
       #datafct=$(${inctime} ${data} +9h %y4%m2%d2%h2)
       datafct=$(date -u +%Y%m%d%H -d "${data:0:8} ${data:8:2} +9 hours")
-      epath=#SMNAINSTALL#/datainout/bam/model/DAS/exec_CPT${data}/setout
-      nlog=$(ssh #HOSTLOGIN#@#SMNAHOST# ls ${epath}/Print.model.${data}.${datafct}.*.MPI*.out | wc -l)
+      epath=/mnt/beegfs/ioper/SMNA_v3.0.0.t12717/SMG/datainout/bam/model/DAS/exec_CPT${data}/setout
+      nlog=$(ssh carlos.bastarz@egeon.cptec.inpe.br ls ${epath}/Print.model.${data}.${datafct}.*.MPI*.out | wc -l)
       echo ${nlog} > ${lpath}/nlog_${exp}_${data}.txt
-      logf=$(ssh #HOSTLOGIN#@#SMNAHOST# ls -t1 ${epath}/Print.model.${data}.${datafct}.*.MPI*.out | head -1)
+      logf=$(ssh carlos.bastarz@egeon.cptec.inpe.br ls -t1 ${epath}/Print.model.${data}.${datafct}.*.MPI*.out | head -1)
       logl=model_${data}.${datafct}.log
 
     elif [ ${exp} == "pos" ]
@@ -69,10 +69,10 @@ do
 
       #datafct=$(${inctime} ${data} +11d %y4%m2%d2%h2)
       datafct=$(date -u +%Y%m%d%H -d "${data:0:8} ${data:8:2} +264 hours")
-      epath=#SMNAINSTALL#/datainout/bam/pos/exec_CPT${data}/setout
-      nlog=$(ssh #HOSTLOGIN#@#SMNAHOST# ls ${epath}/Print.post.${data}.${datafct}.*.MPI*.out | wc -l)
+      epath=/mnt/beegfs/ioper/SMNA_v3.0.0.t12717/SMG/datainout/bam/pos/exec_CPT${data}/setout
+      nlog=$(ssh carlos.bastarz@egeon.cptec.inpe.br ls ${epath}/Print.post.${data}.${datafct}.*.MPI*.out | wc -l)
       echo ${nlog} > ${lpath}/nlog_${exp}_${data}.txt
-      logf=$(ssh #HOSTLOGIN#@#SMNAHOST# ls -t1 ${epath}/Print.post.${data}.${datafct}.*.MPI*.out | head -1)
+      logf=$(ssh carlos.bastarz@egeon.cptec.inpe.br ls -t1 ${epath}/Print.post.${data}.${datafct}.*.MPI*.out | head -1)
       logl=pos_${data}.${datafct}.log
 
     fi
@@ -80,7 +80,7 @@ do
 
     mkdir -p ${lpath}/
 
-    scp -v #HOSTLOGIN#@#SMNAHOST#:${logf} ${lpath}/${logl}
+    scp -v carlos.bastarz@egeon.cptec.inpe.br:${logf} ${lpath}/${logl}
 
   done
 
