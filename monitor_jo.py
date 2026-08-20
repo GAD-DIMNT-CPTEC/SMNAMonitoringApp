@@ -41,19 +41,39 @@ monitor_warning_bottom_main = monitor_app_texts.warnings()
 pn.extension('floatpanel')
 pn.extension(sizing_mode='stretch_width', notifications=True)
 
-#dfs = pd.read_csv('https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/jo/jo_table_series.csv', header=[0, 1], parse_dates=[('df_preOper', 'Date'), ('df_preOper_new', 'Date'), ('df_JGerd', 'Date')])
-#dfs = pd.read_csv('https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/jo/jo_table_series.csv', header=[0, 1], parse_dates=[('df_preOper', 'Date'), ('df_JGerd', 'Date')])
-dfs = pd.read_csv('https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/jo/jo_table_series.csv', header=[0, 1], parse_dates=[('df_preOper', 'Date')])
+EGEON_CSV_URL = 'https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/jo/jo_table_series_egeon.csv'
+XC50_CSV_URL = 'https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/jo/jo_table_series_xc50.csv'
 
-# Separa os dataframes de interesse
-df_preOper = dfs.df_preOper
-#df_preOper_new = dfs.df_preOper_new
-#df_JGerd = dfs.df_JGerd
 
-# Atribui nomes aos dataframes
-df_preOper.name = 'df_preOper'
-#df_preOper_new.name = 'df_preOper_new'
-#df_JGerd.name = 'df_JGerd'
+def read_jo_csv(url, expected_experiment):
+    """Lê um CSV de Jo, que possui cabeçalho de dois níveis.
+
+    O nome do experimento é obtido do próprio arquivo como fallback. Assim, a
+    aplicação continua funcional se o gerador alterar ``df_egeon``/``df_xc50``.
+    """
+    dfs = pd.read_csv(url, header=[0, 1])
+    experiment_names = [
+        name for name in dfs.columns.get_level_values(0).unique()
+        if not str(name).startswith('Unnamed:')
+    ]
+    experiment_name = expected_experiment if expected_experiment in experiment_names else experiment_names[0]
+    df = dfs.xs(experiment_name, axis=1, level=0).copy()
+    df['Date'] = pd.to_datetime(df['Date'])
+    df.name = expected_experiment
+    return df
+
+
+# GSI 3.7 (egeon) e GSI 3.4 (xc50) são mantidos separados: as variáveis e
+# iterações disponíveis não são necessariamente iguais entre as versões.
+df_egeon = read_jo_csv(EGEON_CSV_URL, 'df_egeon')
+df_xc50 = read_jo_csv(XC50_CSV_URL, 'df_xc50')
+DATASETS = {'df_egeon': df_egeon, 'df_xc50': df_xc50}
+EXPERIMENT_LABELS = {
+    'df_egeon': 'GSI 3.7 (egeon)',
+    'df_xc50': 'GSI 3.4 (xc50)',
+}
+# Panel usa dicionários de opções no formato {rótulo exibido: valor}.
+EXPERIMENT_OPTIONS = {label: key for key, label in EXPERIMENT_LABELS.items()}
 
 monitoring_app_dates = MonitoringAppDates()
 sdate = monitoring_app_dates.getDates()[0].strip()
@@ -84,16 +104,20 @@ date_range_slider = pn.widgets.DatetimeRangePicker(name='Date Range', value=valu
 #experiment_list2 = ['df_preOper', 'df_preOper_new', 'df_JGerd']
 #experiment_list = [df_preOper, df_JGerd]
 #experiment_list2 = ['df_preOper', 'df_JGerd']
-experiment_list = [df_preOper]
-experiment_list2 = ['df_preOper']
-variable_list = ['surface pressure', 'temperature', 'wind', 'moisture', 'gps', 'radiance'] 
+experiment_list = [df_egeon, df_xc50]
+experiment_list2 = list(DATASETS)
+variable_list = list(dict.fromkeys(
+    item for df in DATASETS.values() for item in df['Observation Type'].dropna()
+))
 synoptic_time_list = ['00Z', '06Z', '12Z', '18Z', '00Z e 12Z', '06Z e 18Z', '00Z, 06Z, 12Z e 18Z']
-iter_fcost_list = ['OMF', 'OMF (1st INNER LOOP)', 'OMF (2nd INNER LOOP)', 'OMA (AFTER 1st OUTER LOOP)', 'OMA (1st INNER LOOP)', 'OMA (2nd INNER LOOP)', 'OMA (AFTER 2nd OUTER LOOP)']
+iter_fcost_list = list(dict.fromkeys(
+    item for df in DATASETS.values() for item in df['Iter'].dropna()
+))
 
 date_range = date_range_slider.value
 
-experiment = pn.widgets.MultiChoice(name='Experiments (Plots)', value=[experiment_list[0].name], options=[i.name for i in experiment_list], solid=False, width=240)
-experiment2 = pn.widgets.Select(name='Experiment (Table)', value=experiment_list[0].name, options=[i.name for i in experiment_list], disabled=True, width=240)
+experiment = pn.widgets.MultiChoice(name='Experiments (Plots)', value=[experiment_list[0].name], options=EXPERIMENT_OPTIONS, solid=False, width=240)
+experiment2 = pn.widgets.Select(name='Experiment (Table)', value=experiment_list[0].name, options=EXPERIMENT_OPTIONS, disabled=True, width=240)
 variable = pn.widgets.Select(name='Variable', value=variable_list[0], options=variable_list, width=240)
 synoptic_time = pn.widgets.RadioBoxGroup(name='Synoptic Time', value=synoptic_time_list[-1], options=synoptic_time_list, inline=False, width=240)
 iter_fcost = pn.widgets.Select(name='Iteration', value=iter_fcost_list[0], options=iter_fcost_list, width=240)
@@ -113,14 +137,14 @@ def subset_dataframe(df, start_date, end_date, send_notification):
     mask = (df['Date'] >= start_date) & (df['Date'] <= end_date)
     return df.loc[mask]
 
+
 height=250
 
 @pn.depends(variable, experiment, synoptic_time, iter_fcost, date_range_slider.param.value)
 def plotCurves(variable, experiment, synoptic_time, iter_fcost, date_range):
     for count, i in enumerate(experiment):
         if count == 0:
-            sdf = globals()[i]
-            df = dfs.xs(sdf.name, axis=1)
+            df = DATASETS[i]
             
             send_notification = True
             start_date, end_date = date_range
@@ -153,19 +177,18 @@ def plotCurves(variable, experiment, synoptic_time, iter_fcost, date_range):
                 
             xticks = len(df_s['Date'].values)    
                 
-            ax_nobs = df_s.hvplot.line(x='Date', y='Nobs', xlabel='Date', ylabel=str('Nobs'), persist=True, rot=90, grid=True, label=str(i), line_width=3, height=height, responsive=True)    
-            ax_jo = df_s.hvplot.line(x='Date', y='Jo', xlabel='Date', ylabel=str('Jo'), persist=True, rot=90, grid=True, label=str(i), line_width=3, height=height, responsive=True)    
-            ax_jon = df_s.hvplot.line(x='Date', y='Jo/n', xlabel='Date', ylabel=str('Jo/n'), persist=True, rot=90, grid=True, label=str(i), line_width=3, height=height, responsive=True)
+            ax_nobs = df_s.hvplot.line(x='Date', y='Nobs', xlabel='Date', ylabel=str('Nobs'), persist=True, rot=90, grid=True, label=EXPERIMENT_LABELS[i], line_width=3, height=height, responsive=True)
+            ax_jo = df_s.hvplot.line(x='Date', y='Jo', xlabel='Date', ylabel=str('Jo'), persist=True, rot=90, grid=True, label=EXPERIMENT_LABELS[i], line_width=3, height=height, responsive=True)
+            ax_jon = df_s.hvplot.line(x='Date', y='Jo/n', xlabel='Date', ylabel=str('Jo/n'), persist=True, rot=90, grid=True, label=EXPERIMENT_LABELS[i], line_width=3, height=height, responsive=True)
             
             # Adiciona pontos às curvas
-            sax_nobs = df_s.hvplot.scatter(x='Date', y='Nobs', height=height, label=str(i), persist=True, responsive=True).opts(size=5, marker='o')    
-            sax_jo = df_s.hvplot.scatter(x='Date', y='Jo', height=height, label=str(i), persist=True, responsive=True).opts(size=5, marker='o')     
-            sax_jon = df_s.hvplot.scatter(x='Date', y='Jo/n', height=height, label=str(i), persist=True, responsive=True).opts(size=5, marker='o')             
+            sax_nobs = df_s.hvplot.scatter(x='Date', y='Nobs', height=height, label=EXPERIMENT_LABELS[i], persist=True, responsive=True).opts(size=5, marker='o')
+            sax_jo = df_s.hvplot.scatter(x='Date', y='Jo', height=height, label=EXPERIMENT_LABELS[i], persist=True, responsive=True).opts(size=5, marker='o')
+            sax_jon = df_s.hvplot.scatter(x='Date', y='Jo/n', height=height, label=EXPERIMENT_LABELS[i], persist=True, responsive=True).opts(size=5, marker='o')
             
         else:
             
-            sdf = globals()[i]
-            df = dfs.xs(sdf.name, axis=1)
+            df = DATASETS[i]
             
             send_notification = False
             start_date, end_date = date_range
@@ -195,14 +218,14 @@ def plotCurves(variable, experiment, synoptic_time, iter_fcost, date_range):
                 
             xticks = len(df_s['Date'].values)
             
-            ax_nobs *= df_s.hvplot.line(x='Date', y='Nobs', xlabel='Date', ylabel=str('Nobs'), persist=True, rot=90, grid=True, label=str(i), line_width=3, height=height, responsive=True)
-            ax_jo *= df_s.hvplot.line(x='Date', y='Jo', xlabel='Date', ylabel=str('Jo'), persist=True, rot=90, grid=True, label=str(i), line_width=3, height=height, responsive=True)
-            ax_jon *= df_s.hvplot.line(x='Date', y='Jo/n', xlabel='Date', ylabel=str('Jo/n'), persist=True, rot=90, grid=True, label=str(i), line_width=3, height=height, responsive=True)
+            ax_nobs *= df_s.hvplot.line(x='Date', y='Nobs', xlabel='Date', ylabel=str('Nobs'), persist=True, rot=90, grid=True, label=EXPERIMENT_LABELS[i], line_width=3, height=height, responsive=True)
+            ax_jo *= df_s.hvplot.line(x='Date', y='Jo', xlabel='Date', ylabel=str('Jo'), persist=True, rot=90, grid=True, label=EXPERIMENT_LABELS[i], line_width=3, height=height, responsive=True)
+            ax_jon *= df_s.hvplot.line(x='Date', y='Jo/n', xlabel='Date', ylabel=str('Jo/n'), persist=True, rot=90, grid=True, label=EXPERIMENT_LABELS[i], line_width=3, height=height, responsive=True)
             
             # Adiciona pontos às curvas
-            sax_nobs *= df_s.hvplot.scatter(x='Date', y='Nobs', height=height, label=str(i), persist=True, responsive=True).opts(size=5, marker='o')    
-            sax_jo *= df_s.hvplot.scatter(x='Date', y='Jo', height=height, label=str(i), persist=True, responsive=True).opts(size=5, marker='o')     
-            sax_jon *= df_s.hvplot.scatter(x='Date', y='Jo/n', height=height, label=str(i), persist=True, responsive=True).opts(size=5, marker='o')             
+            sax_nobs *= df_s.hvplot.scatter(x='Date', y='Nobs', height=height, label=EXPERIMENT_LABELS[i], persist=True, responsive=True).opts(size=5, marker='o')
+            sax_jo *= df_s.hvplot.scatter(x='Date', y='Jo', height=height, label=EXPERIMENT_LABELS[i], persist=True, responsive=True).opts(size=5, marker='o')
+            sax_jon *= df_s.hvplot.scatter(x='Date', y='Jo/n', height=height, label=EXPERIMENT_LABELS[i], persist=True, responsive=True).opts(size=5, marker='o')
             
     return pn.Column(ax_nobs*sax_nobs, ax_jo*sax_jo, ax_jon*sax_jon, sizing_mode='stretch_width')
 
@@ -210,8 +233,7 @@ def plotCurves(variable, experiment, synoptic_time, iter_fcost, date_range):
 def getTable(variable, experiment2, synoptic_time, iter_fcost, date_range):
     #for count, i in enumerate(experiment):
     #    if count == 0:
-    sdf = globals()[experiment2]
-    df = dfs.xs(sdf.name, axis=1)
+    df = DATASETS[experiment2]
     
     send_notification = False            
     start_date, end_date = date_range
@@ -349,25 +371,18 @@ def monitor_jo_sidebar():
     return settings
 
 def monitor_jo_main():
-    #tabs_contents_jb = pn.Tabs(('PLOTS', plotCurves), ('TABLE', getTable), active=0)
     tabs_contents_jo = pn.Tabs(('PLOTS', plotCurves), ('TABLE', getTable), dynamic=True, active=0)
-    tabs_contents = pn.Tabs(('Jo', pn.Column('Jo minimization diagnostics.', tabs_contents_jo)), dynamic=True)#, 
-                            #('Jb', pn.Column('Jb minimization diagnostics.', tabs_contents_jb)),
-                            #('Jc', pn.Column('Jc minimization diagnostics.', tabs_contents_jo)), active=1)
+    tabs_contents = pn.Tabs(('Jo', pn.Column('Jo minimization diagnostics.', tabs_contents_jo)), dynamic=True)
     main_text = pn.Column("""
     # Minimization Plots
 
     Navigate through the tabs to visualize the minimization results. Set the parameters on the left to update the curves. Click on the `TABLE` tab to visualize the tabular data.
     """)
 
-    # Callback to enable/disable the experiment2 widget based on the active tab
+    # A tabela apresenta somente um experimento; as curvas podem sobrepor os dois.
     def update_experiment2_widget(event):
-        if event.new == 1:  # Tab index for "TABLE"
-            experiment2.disabled = False
-        else:
-            experiment2.disabled = True
+        experiment2.disabled = event.new != 1
 
-    # Attach the callback to the active parameter of the tabs
     tabs_contents_jo.param.watch(update_experiment2_widget, 'active')
 
     return pn.Column(main_text, tabs_contents, monitor_warning_bottom_main, sizing_mode='stretch_width')
