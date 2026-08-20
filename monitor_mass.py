@@ -59,7 +59,7 @@ class MonitoringAppMass:
             f.write(self.r.content)
 
     def load_data(self):
-        url_db = "https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/mass/costFile_Oper.db"
+        url_db = "https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/mass/costFile_Oper.db"
 
         # Checa se arquivo existe
         try:

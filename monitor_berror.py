@@ -35,7 +35,7 @@ def url_exists(url):
     except requests.RequestException:
         return False, None
 
-catalog_berror_file = 'https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/berror/catalog_berror.yml'
+catalog_berror_file = 'https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/berror/catalog_berror.yml'
 
 berror_exists = url_exists(catalog_berror_file)
 

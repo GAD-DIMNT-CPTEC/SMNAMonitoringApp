@@ -76,10 +76,10 @@ def showLogs(date):
     datepfct = calcDate(date, int(264))
 
     logs = {
-        "GSI": f"https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/logs/gsi/gsi_{date}.log",
-        "MODEL": f"https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/logs/model/model_{date}.{datemfct}.log",
-        "POS": f"https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/logs/pos/pos_{date}.{datepfct}.log",
-        "PRE": f"https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/logs/pre/pre_{date}.log"
+        "GSI": f"https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/gsi/gsi_{date}.log",
+        "MODEL": f"https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/model/model_{date}.{datemfct}.log",
+        "POS": f"https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/pos/pos_{date}.{datepfct}.log",
+        "PRE": f"https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/pre/pre_{date}.log"
     }
 
     tabs = []

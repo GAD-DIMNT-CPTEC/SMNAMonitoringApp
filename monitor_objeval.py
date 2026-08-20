@@ -58,7 +58,7 @@ def url_exists(url):
     except requests.RequestException:
         return False, None
 
-data_catalog_file = 'https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/objeval/catalog-scantec-s0.yml'
+data_catalog_file = 'https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/objeval/catalog-scantec-s0.yml'
 
 data_exists = url_exists(data_catalog_file)
 

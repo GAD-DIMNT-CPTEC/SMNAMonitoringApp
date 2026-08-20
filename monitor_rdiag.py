@@ -36,9 +36,9 @@ def url_exists(url):
     except requests.RequestException:
         return False, None
 
-catalog_diag_conv_01_file = 'https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/rdiag/catalog_diag_conv_01.yml'
+catalog_diag_conv_01_file = 'https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/rdiag/catalog_diag_conv_01.yml'
 
-catalog_diag_conv_03_file = 'https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/rdiag/catalog_diag_conv_03.yml'
+catalog_diag_conv_03_file = 'https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/rdiag/catalog_diag_conv_03.yml'
 #catalog_diag_conv_01 = intake.open_catalog('https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/rdiag/catalog_diag_conv_01.yml')
 #catalog_diag_conv_03 = intake.open_catalog('https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/rdiag/catalog_diag_conv_03.yml')
 

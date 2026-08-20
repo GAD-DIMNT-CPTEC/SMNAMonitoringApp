@@ -15,8 +15,8 @@ class MonitoringAppDates:
         return decoded_line
 
     def getDates(self):
-        sdate = "https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/aweekbefore.txt"
-        edate = "https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/todaym1H.txt"
+        sdate = "https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/aweekbefore.txt"
+        edate = "https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/todaym1H.txt"
 
         start_date = self.openFile(sdate)
         end_date = self.openFile(edate)

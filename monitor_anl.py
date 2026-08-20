@@ -14,7 +14,7 @@ from monitor_dates import MonitoringAppDates
 
 pn.extension()
 
-BASE_URL = "https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/anls_imgs/imgs/"
+BASE_URL = "https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/anls_imgs/imgs/"
 
 monitor_app_texts = MonitoringAppTexts()
 monitor_warning_bottom_main = monitor_app_texts.warnings()
@@ -102,7 +102,7 @@ def img_bam(d, v, l, t):
     return pn.pane.JPG(io.BytesIO(img), width=800)
 
 @lru_cache(maxsize=128)
-def fetch_image_or_fallback(url, fallback_path="https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/anls_imgs/imgs/image_not_available.jpg"):
+def fetch_image_or_fallback(url, fallback_path="https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/anls_imgs/image_not_available.jpg"):
     try:
         r = requests.get(url, timeout=5)
         r.raise_for_status()
