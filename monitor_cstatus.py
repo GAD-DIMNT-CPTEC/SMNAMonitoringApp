@@ -63,20 +63,26 @@ class MonitoringAppCStatus:
         return pn.Column(logos)
 
     def LayoutMain(self):
-        self.logs = "https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/logs/logs.csv"
+        logs_urls = {
+            "XC50": "https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/xc50/logs.csv",
+            "Egeon": "https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/egeon/logs.csv",
+        }
 
-        # --- Verifica se a URL existe antes de ler ---
-        try:
-            response = requests.head(self.logs, allow_redirects=True, timeout=5)
-            if response.status_code >= 400:
-                print(f"❌ [CURRENT STATUS] Logs não encontrados: {self.logs} (status {response.status_code})")
-                df = pd.DataFrame()  # cria um DataFrame vazio
-            else:
-                print(f"✅ [CURRENT STATUS] Logs acessíveis: {self.logs}")
-                df = pd.read_csv(self.logs)
-        except requests.RequestException as e:
-            print(f"⚠️ [CURRENT STATUS] Erro ao acessar {self.logs}: {e}")
-            df = pd.DataFrame()  # cria um DataFrame vazio
+        # --- Verifica cada URL antes de ler ---
+        def read_logs(name, url):
+            try:
+                response = requests.head(url, allow_redirects=True, timeout=5)
+                if response.status_code >= 400:
+                    print(f"❌ [CURRENT STATUS] Logs {name} não encontrados: {url} (status {response.status_code})")
+                    return pd.DataFrame()
+                print(f"✅ [CURRENT STATUS] Logs {name} acessíveis: {url}")
+                return pd.read_csv(url)
+            except requests.RequestException as e:
+                print(f"⚠️ [CURRENT STATUS] Erro ao acessar logs {name}: {e}")
+                return pd.DataFrame()
+
+        df_xc50 = read_logs("XC50", logs_urls["XC50"])
+        df_egeon = read_logs("Egeon", logs_urls["Egeon"])
 
         # --- Configuração do Tabulator ---
         link_formatters = {
@@ -92,7 +98,8 @@ class MonitoringAppCStatus:
         }
         """
 
-        cs_table1 = pn.widgets.Tabulator(df,
+        def status_table(df):
+            return pn.widgets.Tabulator(df,
                 show_index=False,
                 disabled=True,
                 theme="bootstrap4",
@@ -101,28 +108,25 @@ class MonitoringAppCStatus:
                 stylesheets=[stylesheet],
                 formatters=link_formatters)
 
-        cs_table2 = pn.widgets.Tabulator(df,
-                show_index=False,
-                disabled=True,
-                theme="bootstrap4",
-                text_align='center',
-                selectable='toggle',
-                stylesheets=[stylesheet],
-                formatters=link_formatters)
+        def csv_download(df, filename):
+            def get_csv():
+                io_buffer = io.BytesIO()
+                df.to_csv(io_buffer, index=False)
+                io_buffer.seek(0)
+                return io_buffer
 
-        def get_csv():
-            io_buffer = io.BytesIO()
-            df.to_csv(io_buffer, index=False)
-            io_buffer.seek(0)
-            return io_buffer
+            return pn.widgets.FileDownload(
+                icon='download',
+                callback=get_csv,
+                filename=filename,
+                button_type='success',
+                width=310,
+            )
 
-        file_download = pn.widgets.FileDownload(
-          icon='download',
-          callback=get_csv,
-          filename='current_status.csv',
-          button_type='success',
-          width=310
-        )
+        cs_table1 = status_table(df_xc50)
+        cs_table2 = status_table(df_egeon)
+        download_xc50 = csv_download(df_xc50, 'current_status_xc50.csv')
+        download_egeon = csv_download(df_egeon, 'current_status_egeon.csv')
 
         welcomeText1 = pn.pane.Markdown("""
         # Current Status
@@ -136,4 +140,14 @@ class MonitoringAppCStatus:
         * **P** = Processing
         """)
 
-        return pn.Column(welcomeText1, pn.Tabs(("XC50", cs_table1), ("Egeon", cs_table2), dynamic=True), file_download, welcomeText2, monitor_warning_bottom_main, sizing_mode='stretch_width')
+        return pn.Column(
+            welcomeText1,
+            pn.Tabs(
+                ("XC50", pn.Column(cs_table1, download_xc50)),
+                ("Egeon", pn.Column(cs_table2, download_egeon)),
+                dynamic=True,
+            ),
+            welcomeText2,
+            monitor_warning_bottom_main,
+            sizing_mode='stretch_width',
+        )
