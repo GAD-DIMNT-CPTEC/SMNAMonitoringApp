@@ -15,16 +15,16 @@ do
   then
 
     REMOTE="carlos_bastarz@login-xc50.cptec.inpe.br"
-    SCRIPT="/lustre_xc50/carlos_bastarz/SMNAMonitoringApp/cron_scripts/anls_img/qsub_plot_map.sh"
-    LOG="/share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/anls_img/plot_map-$host.log"
+    SCRIPT="/lustre_xc50/carlos_bastarz/SMNAMonitoringApp/cron_scripts/anls_imgs/qsub_plot_map.sh"
+    LOG="/share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/anls_imgs/plot_map-$host.log"
     RUNCMD="/opt/pbs/default/bin/qsub"
 
   elif [ $host == "egeon" ]
   then
 
     REMOTE="carlos.bastarz@egeon.cptec.inpe.br"
-    SCRIPT="/mnt/beegfs/carlos.bastarz/SMNAMonitoringApp/cron_scripts/anls_img/qsub_plot_map.sh"
-    LOG="/share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/anls_img/plot_map-$host.log"
+    SCRIPT="/mnt/beegfs/carlos.bastarz/SMNAMonitoringApp/cron_scripts/anls_imgs/qsub_plot_map.sh"
+    LOG="/share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/anls_imgs/plot_map-$host.log"
     RUNCMD="/usr/bin/sbatch"
 
   fi

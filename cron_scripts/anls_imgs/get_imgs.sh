@@ -11,24 +11,24 @@ Hosts=(xc50 egeon)
 for host in ${Hosts[@]}
 do
 
-  LOCAL_PATH="/share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/anls_img"
+  LOCAL_PATH="/share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/anls_imgs"
 
   if [ $host == "xc50" ]
   then
 
     REMOTE="carlos_bastarz@login-xc50.cptec.inpe.br"
-    REMOTE_PATH="/lustre_xc50/carlos_bastarz/SMNAMonitoringApp/cron_scripts/anls_img/imgs"
-    SCRIPT="/lustre_xc50/carlos_bastarz/SMNAMonitoringApp/cron_scripts/anls_img/qsub_plot_map.sh"
-    LOG="/share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/anls_img/get_imgs-$host.log"
+    REMOTE_PATH="/lustre_xc50/carlos_bastarz/SMNAMonitoringApp/cron_scripts/anls_imgs/imgs"
+    SCRIPT="/lustre_xc50/carlos_bastarz/SMNAMonitoringApp/cron_scripts/anls_imgs/qsub_plot_map.sh"
+    LOG="/share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/anls_imgs/get_imgs-$host.log"
     RUNCMD="/opt/pbs/default/bin/qsub"
 
   elif [ $host == "egeon" ]
   then
 
     REMOTE="carlos.bastarz@egeon.cptec.inpe.br"
-    REMOTE_PATH="/mnt/beegfs/carlos.bastarz/SMNAMonitoringApp/cron_scripts/anls_img/imgs"
-    SCRIPT="/mnt/beegfs/carlos.bastarz/SMNAMonitoringApp/cron_scripts/anls_img/qsub_plot_map.sh"
-    LOG="/share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/anls_img/get_imgs-$host.log"
+    REMOTE_PATH="/mnt/beegfs/carlos.bastarz/SMNAMonitoringApp/cron_scripts/anls_imgs/imgs"
+    SCRIPT="/mnt/beegfs/carlos.bastarz/SMNAMonitoringApp/cron_scripts/anls_imgs/qsub_plot_map.sh"
+    LOG="/share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/anls_imgs/get_imgs-$host.log"
     RUNCMD="/usr/bin/sbatch"
 
   fi
