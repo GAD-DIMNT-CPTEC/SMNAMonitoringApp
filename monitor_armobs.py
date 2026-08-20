@@ -61,18 +61,43 @@ def url_exists(url):
     except requests.RequestException:
         return False, None
 
-dfs_file = 'https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/obsm/mon_rec_obs_final.csv'
+dfs_files = {
+    'xc50': 'https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/obsm/xc50/mon_rec_obs_final.csv',
+    'egeon': 'https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/obsm/egeon/mon_rec_obs_final.csv',
+}
 
-dfs_exists = url_exists(dfs_file)
+DATASETS = {}
+for dataset_name, dataset_url in dfs_files.items():
+    exists, dataset = url_exists(dataset_url)
+    if exists:
+        dataset['Data do Download'] = pd.to_datetime(dataset['Data do Download'], errors='coerce')
+        dataset['Data da Observação'] = pd.to_datetime(dataset['Data da Observação'], errors='coerce')
+        invalid_observation_dates = dataset['Data da Observação'].isna()
+        if invalid_observation_dates.any():
+            # Alguns CSVs do Egeon trazem esta coluna com uma string do nome
+            # BUFR. O horário sinótico e a data de download permitem recuperar
+            # a data de referência sem alterar registros já válidos.
+            synoptic_hours = pd.to_numeric(dataset['Horário Sinótico'], errors='coerce')
+            inferred_dates = (
+                dataset['Data do Download'].dt.normalize()
+                + pd.to_timedelta(synoptic_hours, unit='h')
+            )
+            dataset.loc[invalid_observation_dates, 'Data da Observação'] = inferred_dates
+            print(
+                f"⚠️ [OBS STORAGE] {dataset_name}: "
+                f"{invalid_observation_dates.sum()} datas de observação recuperadas "
+                "a partir da data de download e do horário sinótico."
+            )
+        dataset['Diferença de Tempo'] = (
+            dataset['Data do Download'] - dataset['Data da Observação'] - timedelta(hours=3)
+        )
+        DATASETS[dataset_name] = dataset
 
-if dfs_exists[0]:
+if DATASETS:
 
-    dfs = url_exists(dfs_file)[1]
-
-    dfs['Data do Download'] = pd.to_datetime(dfs['Data do Download'], errors='coerce')
-    dfs['Data da Observação'] = pd.to_datetime(dfs['Data da Observação'], errors='coerce')
-
-    dfs['Diferença de Tempo'] = (dfs['Data do Download'] - dfs['Data da Observação']) - timedelta(hours=3)
+    # A aba XC50 é a primeira exibida; as funções reativas usam ``dfs`` ativo.
+    active_dataset = 'xc50' if 'xc50' in DATASETS else next(iter(DATASETS))
+    dfs = DATASETS[active_dataset]
 
     monitoring_app_dates = MonitoringAppDates()
     sdate = monitoring_app_dates.getDates()[0].strip()
@@ -107,6 +132,8 @@ if dfs_exists[0]:
     otype_w = pn.widgets.MultiChoice(name='Observation type', value=otype, options=otype, solid=False, width=260)
     ftype_w = pn.widgets.MultiChoice(name='File type', value=[ftype[0]], options=ftype, solid=False, width=260)
     synoptic_time = pn.widgets.RadioBoxGroup(name='Synopit time', value=synoptic_time_list[-1], options=synoptic_time_list, inline=False, width=240)
+    # Parâmetro interno: força a atualização dos conteúdos ao mudar de aba.
+    dataset_selector = pn.widgets.Select(value=active_dataset, options=list(DATASETS))
 
     date_range = date_range_slider.value
 
@@ -195,8 +222,8 @@ if dfs_exists[0]:
 
         return pn.Column(tot_down, sizing_mode="stretch_both")
 
-    @pn.depends(otype_w, ftype_w, synoptic_time, date_range_slider.param.value, units_w)
-    def getTable(otype_w, ftype_w, synoptic_time, date_range, units_w):
+    @pn.depends(otype_w, ftype_w, synoptic_time, date_range_slider.param.value, units_w, dataset_selector)
+    def getTable(otype_w, ftype_w, synoptic_time, date_range, units_w, dataset_name):
         start_date, end_date = date_range
         dfs_tmp = dfs.copy()
         dfs2 = subDataframe(dfs_tmp, start_date, end_date)
@@ -286,7 +313,7 @@ if dfs_exists[0]:
         file_download = pn.widgets.FileDownload(
             icon='download',
             callback=get_csv,
-            filename='obs_storage.csv',
+            filename=f'obs_storage_{dataset_name}.csv',
             #filename=lambda: f"dados_{date_range.value[0].strftime('%Y%m%d')}_{date_range.value[1].strftime('%Y%m%d')}.csv",
             button_type='success',
             width=310
@@ -427,6 +454,20 @@ if dfs_exists[0]:
 
         return pn.Column(pn.pane.Bokeh(p))
 
+    def select_dataset(dataset_name):
+        """Troca a fonte de dados ao selecionar a aba do experimento."""
+        global dfs
+        dfs = DATASETS[dataset_name]
+        dataset_selector.value = dataset_name
+        dic_size.clear()
+
+        otype = list(dfs['Tipo de Observação'].dropna().unique())
+        ftype = list(dfs['Tipo de Arquivo'].dropna().unique())
+        otype_w.options = otype
+        otype_w.value = otype
+        ftype_w.options = ftype
+        ftype_w.value = [ftype[0]] if ftype else []
+
     card_parameters = pn.Card(pn.Row(date_range_slider, pn.widgets.TooltipIcon(value='Choose a date range', align='start')),
                             pn.Row(synoptic_time, pn.widgets.TooltipIcon(value='Choose a synoptic time', align='start')),
                             pn.Row(units_w, pn.widgets.TooltipIcon(value='Choose a unit', align='start')),
@@ -434,9 +475,19 @@ if dfs_exists[0]:
                             pn.Row(pn.Column(otype_w, height=450), pn.widgets.TooltipIcon(value='Choose one or more observation types', align='start')),
                             title='Parameters', collapsed=False)
 
-    #tabs_contents = pn.Tabs(('PLOTS', pn.Row(plotLine, pn.Row(plotSelSize, width=600))), ('TABLE', getTable))
-    tabs_contents = pn.Tabs(('PLOTS', plotLine), ('TABLE', getTable), dynamic=True)
-    #tabs_contents = pn.Tabs(('PLOTS', pn.Row(pn.Column('Time series for the observation storage.', plotLine), pn.Column('Pie chart for the observation storage relative to the chosen date range.', plotSelSize))), ('TABLE', pn.Column('Summary table for the observation storage.', getTable)))
+    def obs_tabs():
+        return pn.Tabs(('PLOTS', plotLine), ('TABLE', getTable), dynamic=True)
+
+    dataset_tabs = pn.Tabs(dynamic=True)
+    dataset_order = [name for name in ('xc50', 'egeon') if name in DATASETS]
+    dataset_labels = {'xc50': 'XC50', 'egeon': 'Egeon'}
+    for dataset_name in dataset_order:
+        dataset_tabs.append((dataset_labels[dataset_name], pn.Column(obs_tabs())))
+
+    def update_dataset(event):
+        select_dataset(dataset_order[event.new])
+
+    dataset_tabs.param.watch(update_dataset, 'active')
 
     def monitor_armobs_sidebar():
         return card_parameters
@@ -446,7 +497,7 @@ if dfs_exists[0]:
                         # Observation Storage
 
                         Set the parameters on the sidebar to update the plots. Click on the `TABLE` tab to get an overview of the observation stored.
-                        """, tabs_contents,  monitor_warning_bottom_main, sizing_mode='stretch_width')
+                        """, dataset_tabs, monitor_warning_bottom_main, sizing_mode='stretch_width')
 else:
 
     def monitor_armobs_sidebar():
