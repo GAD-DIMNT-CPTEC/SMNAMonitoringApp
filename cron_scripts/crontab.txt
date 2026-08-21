@@ -6,7 +6,8 @@
 # 
 # To define the time you can provide concrete values for
 # minute (m), hour (h), day of month (dom), month (mon),
-# and day of week (dow) or use '*' in these fields (for 'any').# 
+# and day of week (dow) or use '*' in these fields (for 'any').
+# 
 # Notice that tasks will be started based on the cron's system
 # daemon's notion of time and timezones.
 # 
@@ -21,48 +22,97 @@
 # 
 # m h  dom mon dow   command
 #
-# RUN ON ITAPEMIRIM MACHINE
+# RUN ON BASTOS MACHINE
 #
+## For 00Z 
+#00 01 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/startup.sh
+#15 01 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/logs/get_logs.sh
+#15 01 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/jo/get_nobs.sh
+#20 01 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/jo/run_SMNA-Dashboard_load_files_create_dataframe_save.py
+#30 01 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/logs/create_log_csv.sh
+#30 01 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/obsm/get_inventory.sh
+#00 02 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls/run_convert_smna_icn_fct_to_zarr_pyBAM.sh
+#00 02 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/rdiag/run_convert_smna_diag_to_parquet_readDiag.sh
+#00 02 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls_imgs/get_images.sh
+##00 03 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/cleanup.sh
+#
+## For 06Z
+#00 07 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/startup.sh
+#15 07 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/logs/get_logs.sh
+#15 07 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/jo/get_nobs.sh
+#20 07 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/jo/run_SMNA-Dashboard_load_files_create_dataframe_save.py
+#30 07 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/logs/create_log_csv.sh
+#30 07 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/obsm/get_inventory.sh
+#00 08 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls/run_convert_smna_icn_fct_to_zarr_pyBAM.sh
+#00 08 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/rdiag/run_convert_smna_diag_to_parquet_readDiag.sh
+##00 09 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/cleanup.sh
+#
+## For 12Z
+#00 13 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/startup.sh
+#15 13 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/logs/get_logs.sh
+#15 13 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/jo/get_nobs.sh
+#20 13 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/jo/run_SMNA-Dashboard_load_files_create_dataframe_save.py
+#30 13 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/logs/create_log_csv.sh
+#30 13 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/obsm/get_inventory.sh
+#00 14 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls/run_convert_smna_icn_fct_to_zarr_pyBAM.sh
+#00 14 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/rdiag/run_convert_smna_diag_to_parquet_readDiag.sh
+##00 15 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/cleanup.sh
+#
+## For 18Z
+#00 19 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/startup.sh
+#15 19 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/logs/get_logs.sh
+#15 19 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/jo/get_nobs.sh
+#20 19 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/jo/run_SMNA-Dashboard_load_files_create_dataframe_save.py
+#30 19 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/logs/create_log_csv.sh
+#30 19 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/obsm/get_inventory.sh
+#00 20 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls/run_convert_smna_icn_fct_to_zarr_pyBAM.sh
+#00 20 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/rdiag/run_convert_smna_diag_to_parquet_readDiag.sh
+##00 21 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/cleanup.sh
+
+# NOVOS SCRIPTS, CONSIDERANDO O SMNA EXECUTADO NAS MÁQUINAS XC50 E EGEON
 # For 00Z 
-00 01 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/startup.sh
-15 01 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/logs/get_logs.sh
-15 01 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/jo/get_nobs.sh
-20 01 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/jo/run_SMNA-Dashboard_load_files_create_dataframe_save.py
-30 01 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/logs/create_log_csv.sh
-30 01 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/obsm/get_inventory.sh
-00 02 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls/run_convert_smna_icn_fct_to_zarr_pyBAM.sh
-00 02 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/rdiag/run_convert_smna_diag_to_parquet_readDiag.sh
-00 03 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/cleanup.sh
+00 01 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/startup.sh
+00 01 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/anls_imgs/run_jobs.sh
+15 01 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/get_logs.sh
+15 01 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/jo/get_nobs.sh
+20 01 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/jo/run_SMNA-Dashboard_load_files_create_dataframe_save.py
+30 01 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/create_log_csv.sh
+30 01 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/obsm/get_inventory.sh
+00 02 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/anls/run_convert_smna_icn_fct_to_zarr_pyBAM.sh
+00 02 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/rdiag/run_convert_smna_diag_to_parquet_readDiag.sh
+00 02 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/anls_imgs/get_imgs.sh
+#00 03 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/cleanup.sh
 
 # For 06Z
-00 07 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/startup.sh
-15 07 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/logs/get_logs.sh
-15 07 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/jo/get_nobs.sh
-20 07 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/jo/run_SMNA-Dashboard_load_files_create_dataframe_save.py
-30 07 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/logs/create_log_csv.sh
-30 07 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/obsm/get_inventory.sh
-00 08 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls/run_convert_smna_icn_fct_to_zarr_pyBAM.sh
-00 08 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/rdiag/run_convert_smna_diag_to_parquet_readDiag.sh
-00 09 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/cleanup.sh
+00 07 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/startup.sh
+15 07 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/get_logs.sh
+15 07 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/jo/get_nobs.sh
+20 07 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/jo/run_SMNA-Dashboard_load_files_create_dataframe_save.py
+30 07 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/create_log_csv.sh
+30 07 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/obsm/get_inventory.sh
+00 08 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/anls/run_convert_smna_icn_fct_to_zarr_pyBAM.sh
+00 08 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/rdiag/run_convert_smna_diag_to_parquet_readDiag.sh
+#00 09 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/cleanup.sh
 
 # For 12Z
-00 13 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/startup.sh
-15 13 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/logs/get_logs.sh
-15 13 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/jo/get_nobs.sh
-20 13 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/jo/run_SMNA-Dashboard_load_files_create_dataframe_save.py
-30 13 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/logs/create_log_csv.sh
-30 13 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/obsm/get_inventory.sh
-00 14 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls/run_convert_smna_icn_fct_to_zarr_pyBAM.sh
-00 14 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/rdiag/run_convert_smna_diag_to_parquet_readDiag.sh
-00 15 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/cleanup.sh
+00 13 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/startup.sh
+15 13 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/get_logs.sh
+15 13 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/jo/get_nobs.sh
+20 13 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/jo/run_SMNA-Dashboard_load_files_create_dataframe_save.py
+30 13 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/create_log_csv.sh
+30 13 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/obsm/get_inventory.sh
+00 14 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/anls/run_convert_smna_icn_fct_to_zarr_pyBAM.sh
+00 14 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/rdiag/run_convert_smna_diag_to_parquet_readDiag.sh
+#00 15 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/cleanup.sh
 
 # For 18Z
-00 19 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/startup.sh
-15 19 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/logs/get_logs.sh
-15 19 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/jo/get_nobs.sh
-20 19 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/jo/run_SMNA-Dashboard_load_files_create_dataframe_save.py
-30 19 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/logs/create_log_csv.sh
-30 19 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/obsm/get_inventory.sh
-00 20 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/anls/run_convert_smna_icn_fct_to_zarr_pyBAM.sh
-00 20 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/rdiag/run_convert_smna_diag_to_parquet_readDiag.sh
-00 21 * * * /share/das/dist/carlos.bastarz/SMNAMonitoringApp/cleanup.sh
+00 19 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/startup.sh
+15 19 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/get_logs.sh
+15 19 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/jo/get_nobs.sh
+20 19 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/jo/run_SMNA-Dashboard_load_files_create_dataframe_save.py
+30 19 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/create_log_csv.sh
+30 19 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/obsm/get_inventory.sh
+00 20 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/anls/run_convert_smna_icn_fct_to_zarr_pyBAM.sh
+00 20 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/rdiag/run_convert_smna_diag_to_parquet_readDiag.sh
+#00 21 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/cleanup.sh
+

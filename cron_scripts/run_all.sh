@@ -1,11 +1,9 @@
 #! /bin/bash
 
-#datai=2025021800
-#dataf=2025022500
-datai=2025100300
-dataf=2025101000
+datai=2026081400
+dataf=2026082100
 
-lpath=/share/das/dist/carlos.bastarz/SMNAMonitoringApp
+lpath=/share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts
 
 data=${datai}
 
@@ -19,16 +17,17 @@ do
 
       # For 00Z 
       ${lpath}/startup.sh
+      ${lpath}/anls_imgs/run_jobs.sh
       ${lpath}/logs/get_logs.sh
-      ${lpath}/mass/run_create_database.sh
       ${lpath}/jo/get_nobs.sh
-      ${lpath}/jo/run_SMNA-Dashboard_load_files_create_dataframe_save.sh
+      ${lpath}/jo/run_SMNA-Dashboard_load_files_create_dataframe_save.py
       ${lpath}/logs/create_log_csv.sh
       ${lpath}/obsm/get_inventory.sh
       ${lpath}/anls/run_convert_smna_icn_fct_to_zarr_pyBAM.sh
       ${lpath}/rdiag/run_convert_smna_diag_to_parquet_readDiag.sh
+      ${lpath}/anls_imgs/get_imgs.sh
       #${lpath}/cleanup.sh
-    
+
       wait
 
     elif [ ${UTC} = 06 ]
@@ -37,15 +36,14 @@ do
       # For 06Z
       ${lpath}/startup.sh
       ${lpath}/logs/get_logs.sh
-      ${lpath}/mass/run_create_database.sh
       ${lpath}/jo/get_nobs.sh
-      ${lpath}/jo/run_SMNA-Dashboard_load_files_create_dataframe_save.sh
+      ${lpath}/jo/run_SMNA-Dashboard_load_files_create_dataframe_save.py
       ${lpath}/logs/create_log_csv.sh
       ${lpath}/obsm/get_inventory.sh
       ${lpath}/anls/run_convert_smna_icn_fct_to_zarr_pyBAM.sh
       ${lpath}/rdiag/run_convert_smna_diag_to_parquet_readDiag.sh
-      #${lpath}/cleanup.sh
-    
+      #${lpath}/cleanup.sh 
+
       wait
 
     elif [ ${UTC} = 12 ]
@@ -54,15 +52,14 @@ do
       # For 12Z
       ${lpath}/startup.sh
       ${lpath}/logs/get_logs.sh
-      ${lpath}/mass/run_create_database.sh
       ${lpath}/jo/get_nobs.sh
-      ${lpath}/jo/run_SMNA-Dashboard_load_files_create_dataframe_save.sh
+      ${lpath}/jo/run_SMNA-Dashboard_load_files_create_dataframe_save.py
       ${lpath}/logs/create_log_csv.sh
       ${lpath}/obsm/get_inventory.sh
       ${lpath}/anls/run_convert_smna_icn_fct_to_zarr_pyBAM.sh
       ${lpath}/rdiag/run_convert_smna_diag_to_parquet_readDiag.sh
-      #${lpath}/cleanup.sh
-
+      #${lpath}p/cleanup.sh
+      
       wait
     
     elif [ ${UTC} = 18 ]
@@ -71,9 +68,8 @@ do
       # For 18Z
       ${lpath}/startup.sh
       ${lpath}/logs/get_logs.sh
-      ${lpath}/mass/run_create_database.sh
       ${lpath}/jo/get_nobs.sh
-      ${lpath}/jo/run_SMNA-Dashboard_load_files_create_dataframe_save.sh
+      ${lpath}/jo/run_SMNA-Dashboard_load_files_create_dataframe_save.py
       ${lpath}/logs/create_log_csv.sh
       ${lpath}/obsm/get_inventory.sh
       ${lpath}/anls/run_convert_smna_icn_fct_to_zarr_pyBAM.sh
@@ -88,6 +84,6 @@ do
 
 done
 
-chmod -R 755 ${lpath}/logs ${lpath}/mass ${lpath}/jo ${lpath}/obsm ${lpath}/anls ${lpath}/rdiag
+chmod -R 755 ${lpath}/logs ${lpath}/mass ${lpath}/jo ${lpath}/obsm ${lpath}/anls ${lpath}/anls_imgs ${lpath}/rdiag
 
 exit 0
