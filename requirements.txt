@@ -19,6 +19,7 @@ distro
 docutils==0.21.2
 frozendict 
 geopandas
+geoparquet
 geoviews
 hvplot
 idna 
