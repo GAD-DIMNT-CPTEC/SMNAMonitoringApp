@@ -1,5 +1,6 @@
 aiohttp
 archspec 
+beautifulsoup4
 boltons 
 Brotli 
 cartopy
@@ -39,6 +40,7 @@ more-itertools==10.4.0
 nh3==0.2.18
 packaging 
 panel
+parquet
 pkginfo==1.10.0
 platformdirs 
 pluggy 
