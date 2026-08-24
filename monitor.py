@@ -132,7 +132,6 @@ class MonitoringApp:
             sidebars.append(sidebar_anl)
 
         if use_monitor_mass:
-            monitoring_app_mass = MonitoringAppMass()
             tabs.append(("◾MASS CONSTRAINS PLOTS", pn.Column(monitoring_app_mass.LayoutMain(), sizing_mode="stretch_both")))
             sidebars.append(sidebar_mass)
 

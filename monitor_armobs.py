@@ -504,12 +504,12 @@ else:
         return pn.Column("""
                         # Observation Storage
 
-                        Set the parameters on the sidebar to update the plots. Click on the `TABLE` tab to get an overview of the observation stored.
-                        """, tabs_contents,  monitor_warning_bottom_main, sizing_mode='stretch_width')
+                        🛑 Observation-storage data are currently unavailable.
+                        """, monitor_warning_bottom_main, sizing_mode='stretch_width')
 
     def monitor_armobs_main():
         return pn.Column("""
                         # Observation Storage
 
-                        Set the parameters on the sidebar to update the plots. Click on the `TABLE` tab to get an overview of the observation stored.
-                        """, tabs_contents,  monitor_warning_bottom_main, sizing_mode='stretch_width')
+                        🛑 Observation-storage data are currently unavailable. Try again after the CSV files are published.
+                        """, monitor_warning_bottom_main, sizing_mode='stretch_width')
