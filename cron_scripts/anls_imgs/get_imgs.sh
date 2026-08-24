@@ -49,7 +49,7 @@ do
   else
       rc=$?
       echo "[$(timestamp)] ERRO: Acesso às imagens falhou (status $rc) no host $host" >> "$LOG"
-      exit "$rc"
+      #exit "$rc"
   fi
 
 done

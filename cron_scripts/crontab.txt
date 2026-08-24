@@ -79,6 +79,8 @@
 15 01 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/jo/get_nobs-xc50.sh
 20 01 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/jo/run_SMNA-Dashboard_load_files_create_dataframe_save-egeon.py
 20 01 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/jo/run_SMNA-Dashboard_load_files_create_dataframe_save-xc50.py
+30 01 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/mass/run_create_database-egeon.sh
+30 01 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/mass/run_create_database-xc50.sh
 30 01 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/create_log_csv-egeon.sh
 30 01 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/create_log_csv-xc50.sh
 30 01 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/obsm/get_inventory-egeon.sh
@@ -99,6 +101,8 @@
 15 07 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/jo/get_nobs-xc50.sh
 20 07 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/jo/run_SMNA-Dashboard_load_files_create_dataframe_save-egeon.py
 20 07 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/jo/run_SMNA-Dashboard_load_files_create_dataframe_save-xc50.py
+30 07 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/mass/run_create_database-egeon.sh
+30 07 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/mass/run_create_database-xc50.sh
 30 07 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/create_log_csv-egeon.sh
 30 07 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/create_log_csv-xc50.sh
 30 07 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/obsm/get_inventory-egeon.sh
@@ -117,6 +121,8 @@
 15 13 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/jo/get_nobs-xc50.sh
 20 13 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/jo/run_SMNA-Dashboard_load_files_create_dataframe_save-egeon.py
 20 13 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/jo/run_SMNA-Dashboard_load_files_create_dataframe_save-xc50.py
+30 13 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/mass/run_create_database-egeon.sh
+30 13 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/mass/run_create_database-xc50.sh
 30 13 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/create_log_csv-egeon.sh
 30 13 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/create_log_csv-xc50.sh
 30 13 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/obsm/get_inventory-egeon.sh
@@ -135,6 +141,8 @@
 15 19 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/jo/get_nobs-xc50.sh
 20 19 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/jo/run_SMNA-Dashboard_load_files_create_dataframe_save-egeon.py
 20 19 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/jo/run_SMNA-Dashboard_load_files_create_dataframe_save-xc50.py
+30 19 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/mass/run_create_database-egeon.sh
+30 19 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/mass/run_create_database-xc50.sh
 30 19 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/create_log_csv-egeon.sh
 30 19 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/create_log_csv-xc50.sh
 30 19 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/obsm/get_inventory-egeon.sh

@@ -48,7 +48,7 @@ do
   else
       rc=$?
       echo "[$(timestamp)] ERRO: qsub remoto falhou (status $rc) no host $host" >> "$LOG"
-      exit "$rc"
+      #exit "$rc"
   fi
 
 done
