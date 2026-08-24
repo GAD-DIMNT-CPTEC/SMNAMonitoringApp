@@ -1,368 +1,206 @@
 #!/usr/bin/env python
 # coding: utf-8
+"""Painel de diagnósticos convencionais do GSI para XC50 e Egeon."""
 
-import os
-import random
 import intake
-import requests
-import hvplot.pandas
 import pandas as pd
 import panel as pn
 
-from datetime import datetime
-
 from monitor_texts import MonitoringAppTexts
-from monitor_dates import MonitoringAppDates
 
 pn.extension()
-
 monitor_app_texts = MonitoringAppTexts()
 monitor_warning_bottom_main = monitor_app_texts.warnings()
 
-def url_exists(url):
-    try:
-        response = requests.head(url, allow_redirects=True, timeout=5)
-        # códigos 200-399 indicam que a URL está acessível
-        if response.status_code < 400:
-            #print(f"URL {url} acessível: {response.status_code}")
-            print(f"✅ [ANALYSIS DIAG] Arquivo acessível: {url}")
-            catalog_obj = intake.open_catalog(url)
-            return True, catalog_obj
-        else:
-            #print(f"URL {url} inacessível: {response.status_code}")
-            print(f"❌ [ANALYSIS DIAG] Arquivo não encontrado: {url} (status {response.status_code})")
-            #print(response.status_code)
-            return False, None
-    except requests.RequestException:
-        return False, None
+CATALOG_URLS = {
+    'xc50': {
+        '01': 'https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/rdiag/xc50/catalog_diag_conv_01.yml',
+        '03': 'https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/rdiag/xc50/catalog_diag_conv_03.yml',
+    },
+    'egeon': {
+        '01': 'https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/rdiag/egeon/catalog_diag_conv_01.yml',
+        '03': 'https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/rdiag/egeon/catalog_diag_conv_03.yml',
+    },
+}
 
-catalog_diag_conv_01_file = 'https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/rdiag/catalog_diag_conv_01.yml'
-
-catalog_diag_conv_03_file = 'https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/rdiag/catalog_diag_conv_03.yml'
-#catalog_diag_conv_01 = intake.open_catalog('https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/rdiag/catalog_diag_conv_01.yml')
-#catalog_diag_conv_03 = intake.open_catalog('https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/SMNAMonitoringApp/rdiag/catalog_diag_conv_03.yml')
-
-catalog_diag_conv_01_exists = url_exists(catalog_diag_conv_01_file)
-catalog_diag_conv_03_exists = url_exists(catalog_diag_conv_03_file)
-
-if catalog_diag_conv_01_exists[0] and catalog_diag_conv_03_exists[0]:
-
-    catalog_diag_conv_01 = catalog_diag_conv_01_exists[1]
-    catalog_diag_conv_03 = catalog_diag_conv_03_exists[1]
+KX_VALUES = {
+    'q': [181, 120, 187, 180, 183],
+    'ps': [181, 180, 120, 187, 183],
+    't': [181, 180, 120, 187, 183, 130, 126],
+    'uv': [257, 258, 281, 280, 253, 243, 254, 220, 287, 221, 284, 230, 244, 259, 252, 242, 250, 210, 229, 224, 282],
+    'gps': [42, 269, 5, 44, 43, 3, 754, 752, 755, 753, 751, 750],
+}
+TILES = ['CartoDark', 'CartoLight', 'EsriImagery', 'EsriNatGeo', 'EsriUSATopo',
+         'EsriTerrain', 'EsriStreet', 'EsriReference', 'OSM', 'OpenTopoMap']
 
 
-    monitoring_app_dates = MonitoringAppDates()
-    sdate = monitoring_app_dates.getDates()[0].strip()
-    edate = monitoring_app_dates.getDates()[1].strip()
+class RdiagExperiment:
+    """Estado e visualizações de um experimento de diagnósticos."""
 
-    start_date = datetime(int(sdate[0:4]), int(sdate[4:6]), int(sdate[6:8]), int(sdate[8:10]))
-    end_date = datetime(int(edate[0:4]), int(edate[4:6]), int(edate[6:8]), int(edate[8:10]))
-    date_range = [d.strftime('%Y%m%d%H') for d in pd.date_range(start_date, end_date, freq='6h')][::-1]
-    date = pn.widgets.Select(name='Date', value=date_range[0], options=date_range, width=235)
+    def __init__(self, name, urls):
+        self.name = name
+        self.key = name.lower()
+        self.catalogs = {}
+        self.errors = []
+        self._data_cache = {}
+        for loop, url in urls.items():
+            try:
+                self.catalogs[loop] = intake.open_catalog(url)
+                print(f'✅ [ANALYSIS DIAG] {name} loop {loop}: catálogo acessível')
+            except Exception as exc:
+                self.errors.append(f'loop {loop}: {exc}')
+                print(f'⚠️ [ANALYSIS DIAG] {name} loop {loop}: {exc}')
+        self.available = bool(self.catalogs)
+        if self.available:
+            self.create_widgets()
 
-    loop = pn.widgets.Select(name='Loop', value='01', options=['01', '03'], width=230)
+    def source_names(self, loop=None):
+        catalogs = [self.catalogs[loop]] if loop else self.catalogs.values()
+        return {source for catalog in catalogs for source in catalog}
 
-    Tiles = ['CartoDark', 'CartoLight', 'EsriImagery', 'EsriNatGeo', 'EsriUSATopo',
-            'EsriTerrain', 'EsriStreet', 'EsriReference', 'OSM', 'OpenTopoMap']
-    tile = pn.widgets.Select(name='Tiles', value=Tiles[8], options=Tiles, width=230)
+    def create_widgets(self):
+        source_names = self.source_names()
+        variables = sorted({source.split('_', 1)[0] for source in source_names})
+        dates = sorted({source.rsplit('_', 1)[-1] for source in source_names if source.rsplit('_', 1)[-1].isdigit()}, reverse=True)
+        loops = sorted(self.catalogs)
+        self.date = pn.widgets.Select(name='Date', options=dates, value=dates[0], width=235)
+        self.loop = pn.widgets.Select(name='Loop', options=loops, value=loops[0], width=230)
+        self.variable = pn.widgets.Select(name='Variable', options=variables, value=variables[0], width=230)
+        self.kx = pn.widgets.MultiChoice(name='kx', options=[], value=[], solid=False, width=230)
+        self.level = pn.widgets.Select(name='Level', options=[1000.0, 900.0, 800.0, 700.0, 600.0, 500.0, 400.0, 300.0, 250.0, 200.0, 150.0, 100.0, 50.0, 0.0], value=1000.0, width=230)
+        self.iuse = pn.widgets.Select(name='iuse', options=[-1, 1], value=1, width=230)
+        self.tile = pn.widgets.Select(name='Tiles', options=TILES, value='OSM', width=230)
+        self.by_level = pn.widgets.Toggle(name='by Level', value=False, button_type='success', width=230)
+        self.by_kx = pn.widgets.Toggle(name='by kx', value=False, button_type='success', width=230)
+        self._update_kx()
+        self.variable.param.watch(lambda event: self._update_kx(), 'value')
 
-    # From the catalogs, assemble a dictionary with all the kx values:
-    variable_list_tmp = []
-    for source in catalog_diag_conv_01:
-        var = source.split('_')[0]
-        variable_list_tmp.append(var)
+    def _update_kx(self):
+        options = KX_VALUES.get(self.variable.value, [])
+        self.kx.options = options
+        self.kx.value = options
 
-    variable_set = set(variable_list_tmp)
-    variable_list = list(variable_set)
+    def source_name(self, variable, loop, date):
+        return f'{variable}_diag_conv_{loop}_{date}'
 
-    zlevs = [1000.0, 900.0, 800.0, 700.0, 600.0, 500.0, 400.0, 300.0, 250.0, 200.0, 150.0, 100.0, 50.0, 0.0]
-
-    _kx_values = {'q':   [181, 120, 187, 180, 183],
-                'ps':  [181, 180, 120, 187, 183],
-                't':   [181, 180, 120, 187, 183, 130, 126],
-                'uv':  [257,  258,  281,  280,  253,  243,  254,  220,  287,  221,  284,  230,  244,  259,  252,  242,  250,  210,  229,  224,  282],
-                'gps': [42, 269, 5, 44, 43, 3, 754, 752, 755, 753, 751, 750]}
-
-    _kx_valuesn = _kx_values.copy()
-    _kx_valuess = _kx_values.copy()
-
-    varn = pn.widgets.Select(name='Variable', value=variable_list[0], options=variable_list, width=230)
-    kxn = pn.widgets.MultiChoice(name='kx', value=_kx_values[varn.value], options=_kx_values[varn.value], solid=False, width=230)
-
-    @pn.depends(varn.param.value, watch=True)
-    def _update_kx_valuesn(select_varn):
-        kx_valuesn = _kx_valuesn[select_varn]
-        kxn.options = kx_valuesn
-        kxn.value = kx_valuesn
-
-    vars = pn.widgets.Select(name='Variable', value=variable_list[0], options=variable_list, width=230)
-    kxs = pn.widgets.MultiChoice(name='kx', value=_kx_values[vars.value], options=_kx_values[vars.value], solid=False, width=230)
-
-    @pn.depends(vars.param.value, watch=True)
-    def _update_kx_valuess(select_vars):
-        kx_valuess = _kx_valuess[select_vars]
-        kxs.options = kx_valuess
-        kxs.value = kx_valuess
-
-    level = pn.widgets.Select(name='Level', value=zlevs[0], options=zlevs, width=230)
-    iuse = pn.widgets.Select(name='iuse', value=1, options=[-1, 1], width=230)
-
-    by_level = pn.widgets.Toggle(name='by Level', value=False, button_type='success', width=230)
-    by_kx = pn.widgets.Toggle(name='by kx', value=False, button_type='success', width=230)
-
-    @pn.cache
-    def loadData(lfname, loop):
-        print(loop)
+    def load_data(self, source_name, loop):
+        cache_key = (source_name, loop)
+        if cache_key in self._data_cache:
+            return self._data_cache[cache_key]
         try:
-            if loop == '01':
-                ax = catalog_diag_conv_01[lfname].read()
-            elif loop == '03':
-                ax = catalog_diag_conv_03[lfname].read()
-        except:
-            ax = monitor_app_texts.warnings_rdiag(lfname + ' (loadData)')
-        return ax
+            source = self.catalogs[loop][source_name]
+            # Os catálogos publicados ainda apontam para o diretório legado
+            # ``SMNAMonitoringApp/rdiag``. Os Parquets estão publicados sob
+            # ``cron_scripts/rdiag`` para ambos os experimentos.
+            source.urlpath = source.urlpath.replace(
+                '/SMNAMonitoringApp/rdiag/',
+                '/SMNAMonitoringApp/cron_scripts/rdiag/',
+            )
+            result = (source.read(), None)
+        except Exception as exc:
+            result = (None, str(exc))
+        self._data_cache[cache_key] = result
+        return result
 
-    @pn.depends(vars, kxs, level, iuse, date, loop, tile)
-    def plotPtmap(vars, kxs, level, iuse, date, loop, tile):
-        try:
-            lfname = str(vars) + '_diag_conv_' + str(loop) + '_' + str(date)
-            obsInfo = loadData(lfname, loop)
-            df = obsInfo
+    def filtered_data(self, variable, kx, level, iuse, date, loop):
+        source_name = self.source_name(variable, loop, date)
+        data, error = self.load_data(source_name, loop)
+        if error:
+            return None, f'Não foi possível ler `{source_name}`: {error}'
+        frame = data.reset_index() if 'kx' not in data.columns else data.copy()
+        if kx:
+            frame = frame[frame['kx'].isin(kx)]
+        if 'press' in frame:
+            frame = frame[frame['press'] == level]
+        if 'iuse' in frame:
+            frame = frame[frame['iuse'] == iuse]
+        return frame, None
 
-            maskl = df['press'] == level
-            dffl = df[maskl]
+    def plot_counts(self, variable, kx, by_level, by_kx, date, loop):
+        source_name = self.source_name(variable, loop, date)
+        data, error = self.load_data(source_name, loop)
+        if error:
+            return pn.pane.Alert(f'🛑 {error}', alert_type='danger')
+        frame = data.reset_index() if 'kx' not in data.columns else data.copy()
+        if kx:
+            frame = frame[frame['kx'].isin(kx)]
+        if frame.empty:
+            return pn.pane.Alert('Nenhuma observação encontrada para a seleção.', alert_type='warning')
+        title = f'{variable} | loop {loop} | valid for {date}'
+        if by_level:
+            result = frame.groupby('press').size().reset_index(name='counts')
+            return result.hvplot.bar(x='press', y='counts', rot=45, height=600, responsive=True, ylabel='Number of Observations', title=title)
+        if by_kx:
+            result = frame.groupby(['press', 'kx']).size().reset_index(name='counts')
+            return result.hvplot.barh(y='press', x='counts', by='kx', height=700, responsive=True, ylabel='Pressure (hPa)', title=title).opts(invert_yaxis=True)
+        result = frame.groupby('kx').size().reset_index(name='counts')
+        return result.hvplot.bar(x='kx', y='counts', rot=45, height=600, responsive=True, ylabel='Number of Observations', title=title)
 
-            maski = dffl['iuse'] == iuse
-            dffi = dffl[maski]
+    def plot_map(self, variable, kx, level, iuse, date, loop, tile):
+        frame, error = self.filtered_data(variable, kx, level, iuse, date, loop)
+        if error:
+            return pn.pane.Alert(f'🛑 {error}', alert_type='danger')
+        if frame.empty:
+            return pn.pane.Alert('Nenhuma observação encontrada para a seleção.', alert_type='warning')
+        if not {'lon', 'lat'}.issubset(frame.columns):
+            return pn.pane.Alert('O diagnóstico não contém as colunas geográficas esperadas (`lon`, `lat`).', alert_type='danger')
+        return frame.hvplot.points(x='lon', y='lat', geo=True, by='kx', tiles=tile, frame_height=650, responsive=True, title=f'{variable} | kx={kx} | {level} hPa | iuse={iuse} | loop={loop} | {date}')
 
-            instr = getVarInfo(kxs, vars, 'instrument')
-            label = '\n'.join(wrap(vars + '-' + str(kxs) + ' | ' + instr,30))
+    def sidebar(self):
+        if not self.available:
+            return pn.Column(pn.pane.Alert(f'🛑 {self.name}: ' + ('; '.join(self.errors) or 'catálogos indisponíveis'), alert_type='danger'))
+        counts = pn.Card(
+            pn.Row(self.variable, pn.widgets.TooltipIcon(value='Choose a variable', align='start')),
+            pn.Row(self.loop, pn.widgets.TooltipIcon(value='Choose a loop', align='start')),
+            pn.Row(self.by_level, pn.widgets.TooltipIcon(value='Group counts by pressure level', align='start')),
+            pn.Row(self.by_kx, pn.widgets.TooltipIcon(value='Group counts by kx and pressure', align='start')),
+            pn.Row(self.kx, pn.widgets.TooltipIcon(value='Choose one or more kx values', align='start')),
+            title='Number of Observations', collapsed=False,
+        )
+        spatial = pn.Card(
+            pn.Row(self.tile, pn.widgets.TooltipIcon(value='Choose a basemap', align='start')),
+            pn.Row(self.level, pn.widgets.TooltipIcon(value='Choose a pressure level', align='start')),
+            pn.Row(self.iuse, pn.widgets.TooltipIcon(value='1 = used; -1 = not used', align='start')),
+            title='Spatial Distribution', collapsed=True,
+        )
+        return pn.Column(pn.Card(pn.Row(self.date, pn.widgets.TooltipIcon(value='Choose a date', align='start')), counts, spatial, title='Parameters', collapsed=False))
 
-            ax = dffi.hvplot(global_extent=True,
-                            grid=True,
-                            tiles=tile,
-                            title=label,
-                            frame_height=750)
-        except:
-            ax = monitor_app_texts.warnings_rdiag(lfname + ' (plotPtmap)')
-        return pn.Column(ax)
+    def main(self):
+        if not self.available:
+            return pn.pane.Alert(f'🛑 Analysis diagnostics for {self.name} are unavailable.', alert_type='danger')
+        counts = pn.bind(self.plot_counts, self.variable, self.kx, self.by_level, self.by_kx, self.date, self.loop)
+        spatial = pn.bind(self.plot_map, self.variable, self.kx, self.level, self.iuse, self.date, self.loop, self.tile)
+        return pn.Tabs(
+            ('NUMBER OF OBSERVATIONS', pn.Column('Number of observations by kx and pressure.', counts)),
+            ('SPATIAL DISTRIBUTION', pn.Column('Spatial distribution of observations.', spatial)),
+            dynamic=True,
+        )
 
-    @pn.depends(vars, kxs, level, iuse, date, loop, tile)
-    def plotPtmapMulti(vars, kxs, level, iuse, date, loop, tile):
-        try:
-            lfname = str(vars) + '_diag_conv_' + str(loop) + '_' + str(date)
-            obsInfo = loadData(lfname, loop)
-            df = obsInfo.loc[kxs]
 
-            maskl = df['press'] == level
-            dffl = df[maskl]
+_experiments = {name: RdiagExperiment(name.upper(), urls) for name, urls in CATALOG_URLS.items()}
+_order = [name for name in ('xc50', 'egeon') if name in _experiments]
+_sidebar = pn.Column()
+_tabs = pn.Tabs(dynamic=True)
+for name in _order:
+    _tabs.append((name.upper() if name == 'xc50' else 'Egeon', _experiments[name].main()))
 
-            maski = dffl['iuse'] == iuse
-            dffi = dffl[maski]
 
-            color = [random.choice(['b', 'g', 'r', 'c', 'm', 'y', 'k']) for _ in range(len(_kx_values[str(vars)]))]
+def _update_sidebar(event=None):
+    _sidebar[:] = [_experiments[_order[_tabs.active]].sidebar()]
 
-            for count, i in enumerate(kxs):
-                if count == 0:
-                    ax = dffi.hvplot.points(x='lon',
-                                        y='lat',
-                                        geo=True,
-                                        color=color,
-                                        tiles=tile,
-                                        #responsive=True,
-                                        frame_height=600,
-                                        frame_width=800,
-                                        title=f'{vars} | kx = {kxs} | {level} hPa | iuse = {iuse} | loop = {loop} | valid for {date}')
-                else:
-                    ax *= dffi.hvplot.points(x='lon',
-                                        y='lat',
-                                        geo=True,
-                                        color=color,
-                                        tiles=tile,
-                                        #responsive=True,
-                                        frame_height=600,
-                                        frame_width=800,
-                                        title=f'{vars} | kx = {kxs} | {level} hPa | iuse = {iuse} | loop = {loop} | valid for {date}')
-        except:
-            ax = monitor_app_texts.warnings_rdiag(lfname + ' (plotPtmapMulti)')
-        return pn.Column(ax)
 
-    @pn.depends(varn, kxn, by_level, date, loop)
-    def plotPcount(varn, kxn, by_level, date, loop):
-        try:
-            lfname = str(varn) + '_diag_conv_' + str(loop) + '_' + str(date)
-            obsInfo = loadData(lfname, loop)
-            if by_level:
-                df = obsInfo.loc[kxn].groupby('press').size()
-                ax = df.hvplot.bar(x='press',
-                                grid=True,
-                                rot=45,
-                                width=1000,
-                                height=600,
-                                bar_width=1,
-                                ylabel='Number of Observations',
-                                title=f'{varn} | kx = {kxn} | loop = {loop} | valid for {date}')
-            else:
-                df = obsInfo.groupby(level=0).size()
-                ax = df.hvplot.bar(x='kx',
-                                grid=True,
-                                rot=45,
-                                width=1000,
-                                height=600,
-                                bar_width=1,
-                                ylabel='Number of Observations',
-                                title=f'{varn} | all levels | loop {loop} | valid for {date}')
-        except:
-            ax = monitor_app_texts.warnings_rdiag(lfname + ' (plotPcount)')
-        return pn.Column(ax)
+_tabs.param.watch(_update_sidebar, 'active')
+_update_sidebar()
 
-    @pn.depends(varn, kxn, by_level, by_kx, date, loop)
-    def plotPcount2(varn, kxn, by_level, by_kx, date, loop):
-        try:
-            lfname = str(varn) + '_diag_conv_' + str(loop) + '_' + str(date)
-            obsInfo = loadData(lfname, loop)
-            if by_level:
-                df = obsInfo.loc[kxn].groupby('press').size().reset_index(name='counts')
-                df.columns = ['kx', 'counts']
-                ax = df.hvplot.bar(#stacked=True,
-                                x='kx',
-                                y='counts',
-                                legend='top_left',
-                                rot=45,
-                                #width=1000,
-                                height=600,
-                                #bar_width=1000.0,
-                                line_width=1,
-                                responsive=True,
-                                ylabel='Number of Observations',
-                                title=f'{varn} | kx = {kxn} | loop = {loop} | valid for {date}')
-            elif by_kx:
-                obsInfo = obsInfo.reset_index()
-                if kxn:
-                    df = obsInfo[obsInfo['kx'].isin(kxn)].groupby(['press', 'kx']).size()
-                else:
-                    df = pd.Series(dtype=int)
 
-                ax = df.hvplot.barh(
-                    legend='bottom_right',
-                    rot=45,
-                    height=900,
-                    #bar_width=1.0,
-                    line_width=1,
-                    responsive=True,
-                    ylabel='Number of Observations',
-                    title=f'{varn} | loop = {loop} | valid for {date}'
-                )
-                ax.opts(invert_yaxis=True)
-            else:
-                #df = obsInfo.groupby(level=0).size()
-                df = obsInfo.groupby(level=0).size().reset_index(name='counts')
-                df.columns = ['kx', 'counts']
-                ax = df.hvplot.bar(x='kx',
-                                y='counts',
-                                grid=True,
-                                rot=45,
-                                #width=1000,
-                                height=600,
-                                #bar_width=1.0,
-                                line_width=1,
-                                responsive=True,
-                                ylabel='Number of Observations',
-                                title=f'{varn} | all levels | loop {loop} | valid for {date}')
-        except:
-            ax = monitor_app_texts.warnings_rdiag(lfname + ' (plotPcount2)')
-        return pn.Column(ax)
+def LayoutSidebarRdiag():
+    return _sidebar
 
-    @pn.depends(varn, kxn, by_level, date, loop)
-    def getTable(varn, kxn, by_level, date, loop):
-        try:
-            lfname = str(varn) + '_diag_conv_' + str(loop) + '_' + str(date)
-            #print(lfname)
-            obsInfo = loadData(lfname, loop)
-            if by_level:
-                ax = obsInfo[varn].head(50)#[varn].loc[kxn]#.loc[kxn].groupby('press')#.size()
-                #ax = pn.widgets.Tabulator(df)
-            else:
-                ax = obsInfo[varn].groupby(level=0)#.size()
-                #ax = pn.widgets.Tabulator(df)
-        except:
-            ax = monitor_app_texts.warnings_rdiag(lfname + ' (getTable)')
-        return pn.Column(ax)
 
-    def LayoutSidebarRdiag():
+def LayoutMainRdiag():
+    main_text = pn.Column('''
+    # Analysis Diagnostics
 
-        card1 = pn.Card(pn.Row(varn, pn.widgets.TooltipIcon(value='Choose a variable', align='start')),
-                        pn.Row(loop, pn.widgets.TooltipIcon(value='Choose a loop', align='start')),
-                        pn.Row(by_level, pn.widgets.TooltipIcon(value='Whether to plot by level', align='start')),
-                        pn.Row(kxn, pn.widgets.TooltipIcon(value='Choose a variable type', align='start')),
-                        pn.Row(by_kx, pn.widgets.TooltipIcon(value='Whether to plot by variable type', align='start')),
-                        title='Number of Observations', collapsed=False)
-        #pn.Card(varn, by_level, kxn, title='Table', collapsed=True)
-        card2 = pn.Card(pn.Row(vars, pn.widgets.TooltipIcon(value='Choose a variable', align='start')),
-                        pn.Row(loop, pn.widgets.TooltipIcon(value='Choose a loop', align='start')),
-                        pn.Row(tile, pn.widgets.TooltipIcon(value='Choose a tile type', align='start')),
-                        pn.Row(kxs, pn.widgets.TooltipIcon(value='Choose a variable type', align='start')),
-                        pn.Row(level, pn.widgets.TooltipIcon(value='Choose a level', align='start')),
-                        pn.Row(iuse, pn.widgets.TooltipIcon(value='Choose a use flag (1 = used; -1 = not used)', align='start')),
-                        title='Spatial Distribution', collapsed=True)
-
-        # Função para alternar os estados dos cards
-        def toggle_cards(event):
-            if event.new == False:  # Se um card foi aberto, fecha o outro
-                if event.obj is card1:
-                    card2.collapsed = True
-                elif event.obj is card2:
-                    card1.collapsed = True
-
-        # Monitorando mudanças no estado `collapsed`
-        card1.param.watch(toggle_cards, 'collapsed')
-        card2.param.watch(toggle_cards, 'collapsed')
-
-        global cards_rdiag
-        cards_rdiag = [card1, card2]
-
-        card_parameters = pn.Card(pn.Row(date, pn.widgets.TooltipIcon(value='Choose a date', align='start')), card1, card2, title='Parameters', collapsed=False)
-
-        return pn.Column(card_parameters)
-
-    def LayoutMainRdiag():
-        main_text = pn.Column("""
-        # Analysis Diagnostics
-
-        Set the parameters on the left to update the map below and explore our analysis features.
-        """)
-
-        tabs_rdiag = pn.Tabs(('NUMBER OF OBSERVATIONS', pn.Column('Number of Observations for a variable by level and type (kx).', plotPcount2)),
-                            #('Table', pn.Column('Table.', getTable)),
-                            ('SPATIAL DISTRIBUTION', pn.Column('Spatial distribution of observations by level and type (kx).', plotPtmapMulti)), dynamic=True)
-
-        # Função para abrir o card correspondente e fechar os outros
-        def on_tab_change(event):
-            index = event.new  # Obtém o índice da aba selecionada
-            for i, card in enumerate(cards_rdiag):
-                card.collapsed = i != index  # Abre o card correspondente e fecha os outros
-
-        # Monitorando mudanças na aba selecionada
-        tabs_rdiag.param.watch(on_tab_change, "active")
-
-        return pn.Column(main_text, tabs_rdiag,  monitor_warning_bottom_main, sizing_mode="stretch_both")
-
-else:
-
-    def LayoutSidebarRdiag():
-        main_text = pn.Column("""
-        # Analysis Diagnostics
-
-        Set the parameters on the left to update the map below and explore our analysis features.
-        """)
-
-        return pn.Column(main_text, sizing_mode="stretch_both")
-
-    def LayoutMainRdiag():
-        main_text = pn.Column("""
-        # Analysis Diagnostics
-
-        Set the parameters on the left to update the map below and explore our analysis features.
-        """)
-
-        return pn.Column(main_text, sizing_mode="stretch_both")
+    Select an experiment, then use the controls on the left to explore conventional-observation diagnostics.
+    ''')
+    return pn.Column(main_text, _tabs, monitor_warning_bottom_main, sizing_mode='stretch_both')
