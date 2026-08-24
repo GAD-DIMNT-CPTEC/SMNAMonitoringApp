@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import os
+import io
 import requests
 import panel as pn
 import pandas as pd
@@ -45,18 +46,16 @@ def check_url_exists(url):
     except requests.exceptions.RequestException:
         return False  
 
-def create_download_button(log_url):
-    log_local = os.path.basename(log_url)
+def create_download_button(log_url, experiment):
+    log_name = os.path.basename(log_url)
+    stem, extension = os.path.splitext(log_name)
+    log_local = f"{stem}_{experiment.lower()}{extension}"
 
     def log_download():
         try:
             response = requests.get(log_url, timeout=10)
             response.raise_for_status()
-
-            with open(log_local, "wb") as f:
-                f.write(response.content)
-
-            return log_local
+            return io.BytesIO(response.content)
         except requests.exceptions.RequestException as e:
             print(f"❌ Error downloading file {log_local}: {e}")
             return None
@@ -66,7 +65,7 @@ def create_download_button(log_url):
         button_type='success',
         callback=log_download if check_url_exists(log_url) else None,
         filename=log_local,
-        width=310,
+        width=380,
         disabled=not check_url_exists(log_url),
     )
 
@@ -75,38 +74,40 @@ def showLogs(date):
     datemfct = calcDate(date, int(9))
     datepfct = calcDate(date, int(264))
 
-    logs = {
-        "GSI": f"https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/gsi/gsi_{date}.log",
-        "MODEL": f"https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/model/model_{date}.{datemfct}.log",
-        "POS": f"https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/pos/pos_{date}.{datepfct}.log",
-        "PRE": f"https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/pre/pre_{date}.log"
+    base_urls = {
+        "XC50": "https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/xc50",
+        "Egeon": "https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/logs/egeon",
     }
 
-    tabs = []
-    
-    for name, log_url in logs.items():
-        log_local = os.path.basename(log_url)
-        
-        if check_url_exists(log_url):
-            read_log = openFile(log_url)
-            log_display = pn.Column(
-                pn.pane.Str(read_log, styles={'font-size': '10pt', 'line-height': '120%'}),
-                auto_scroll_limit=10,
-                view_latest=True,
-                scroll=True,
-                styles=dict(background='WhiteSmoke'),
-                height=500)
-            #log_display = pn.Column( 
-            #    pn.widgets.CodeEditor(value=read_log, 
-            #                          language="plaintext", 
-            #                          height=500, 
-            #                          readonly=True))
-            download_button = create_download_button(log_url)
-        else:
-            log_display = pn.pane.Alert(f"🛑 **Error:** Log file is not available. File name is **`{log_local}` (check_url_exists)**.", alert_type='danger')
-            download_button = None
+    def experiment_tabs(base_url, experiment):
+        logs = {
+            "GSI": f"{base_url}/gsi/gsi_{date}.log",
+            "MODEL": f"{base_url}/model/model_{date}.{datemfct}.log",
+            "POS": f"{base_url}/pos/pos_{date}.{datepfct}.log",
+            "PRE": f"{base_url}/pre/pre_{date}.log",
+        }
+        tabs = []
 
-        tabs.append((name, pn.Column(f"Log from {name} run.", log_display, download_button)))
+        for name, log_url in logs.items():
+            log_local = os.path.basename(log_url)
+
+            if check_url_exists(log_url):
+                read_log = openFile(log_url)
+                log_display = pn.Column(
+                    pn.pane.Str(read_log, styles={'font-size': '10pt', 'line-height': '120%'}),
+                    auto_scroll_limit=10,
+                    view_latest=True,
+                    scroll=True,
+                    styles=dict(background='WhiteSmoke'),
+                    height=500)
+                download_button = create_download_button(log_url, experiment)
+            else:
+                log_display = pn.pane.Alert(f"🛑 **Error:** Log file is not available. File name is **`{log_local}` (check_url_exists)**.", alert_type='danger')
+                download_button = None
+
+            tabs.append((name, pn.Column(f"Log from {name} run.", log_display, download_button)))
+
+        return pn.Tabs(*tabs, dynamic=True)
 
     main_text = pn.Column("""
     # Full Logs
@@ -116,8 +117,8 @@ def showLogs(date):
 
     return pn.Column(main_text,
             pn.Tabs(
-                ("XC50", pn.Tabs(*tabs, dynamic=True)), 
-                ("Egeon", pn.Tabs(*tabs, dynamic=True)), 
+                ("XC50", experiment_tabs(base_urls["XC50"], "xc50")),
+                ("Egeon", experiment_tabs(base_urls["Egeon"], "egeon")),
                 dynamic=True), 
             monitor_warning_bottom_main, 
             sizing_mode='stretch_width')

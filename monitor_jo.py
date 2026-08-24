@@ -293,7 +293,10 @@ def getTable(variable, experiment2, synoptic_time, iter_fcost, date_range):
     file_download = pn.widgets.FileDownload(
         icon='download',
         callback=get_csv, 
-        filename='jo_table.csv',
+        filename={
+            'df_xc50': 'jo_table_xc50.csv',
+            'df_egeon': 'jo_table_egeon.csv',
+        }[experiment2],
         button_type='success',
         width=310
         )
