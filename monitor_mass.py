@@ -24,6 +24,7 @@
 import os
 import requests
 import sqlite3
+import tempfile
 import numpy as np
 import pandas as pd
 import panel as pn
@@ -50,65 +51,73 @@ class MonitoringAppMass:
         self.create_widgets()
         self.create_layout()
 
-    # ------------------- Download e leitura de arquivo -------------------
-    def download_file(self, path):
-        self.r = requests.get(path)
-        self.filename = path.split("/")[-1]
-        self.fullname = os.path.join(os.getcwd(), self.filename)
-        with open(self.fullname, 'wb') as f:
-            f.write(self.r.content)
-
     def load_data(self):
-        url_db = "https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/mass/costFile_Oper.db"
+        self.dataset_urls = {
+            'xc50': 'https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/mass/xc50/costFile_Oper.db',
+            'egeon': 'https://dataserver.cptec.inpe.br/dataserver_dimnt/das/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/mass/egeon/costFile_Oper.db',
+        }
+        self.datasets = {}
+        for name, url in self.dataset_urls.items():
+            dataset = self.read_dataset(name, url)
+            if dataset is not None:
+                self.datasets[name] = dataset
 
-        # Checa se arquivo existe
-        try:
-            response = requests.head(url_db, allow_redirects=True, timeout=5)
-            if response.status_code >= 400:
-                print(f"❌ [MASS CONSTRAINS PLOTS] Arquivo não encontrado: {url_db} (status {response.status_code})")
-                self.df = pd.DataFrame()
-                self.dc = pd.DataFrame()
-                self.min_date = None
-                self.max_date = None
-                return
-            else:
-                print(f"✅ [MASS CONSTRAINS PLOTS] Arquivo acessível: {url_db}")
-        except requests.RequestException as e:
-            print(f"⚠️ [MASS CONSTRAINS PLOTS] Erro ao acessar {url_db}: {e}")
+        self.active_dataset = 'xc50' if 'xc50' in self.datasets else next(iter(self.datasets), None)
+        if self.active_dataset is None:
             self.df = pd.DataFrame()
             self.dc = pd.DataFrame()
             self.min_date = None
             self.max_date = None
             return
+        self.set_active_data(self.active_dataset)
 
-        # Baixa e processa o arquivo
+    def read_dataset(self, name, url):
+        """Baixa um banco SQLite, extrai as tabelas e remove o arquivo temporário."""
         try:
-            self.download_file(url_db)
-            con = sqlite3.connect(self.filename)
+            response = requests.head(url, allow_redirects=True, timeout=5)
+            if response.status_code >= 400:
+                print(f"❌ [MASS CONSTRAINS PLOTS] {name}: arquivo não encontrado ({response.status_code})")
+                return None
+            print(f"✅ [MASS CONSTRAINS PLOTS] {name}: arquivo acessível")
+        except requests.RequestException as e:
+            print(f"⚠️ [MASS CONSTRAINS PLOTS] Erro ao acessar {name}: {e}")
+            return None
 
-            self.df = pd.read_sql_query(
+        temp_path = None
+        try:
+            response = requests.get(url, timeout=30)
+            response.raise_for_status()
+            with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as temp_file:
+                temp_file.write(response.content)
+                temp_path = temp_file.name
+
+            with sqlite3.connect(temp_path) as con:
+                df = pd.read_sql_query(
                 "SELECT * FROM costCons ORDER BY date",
                 con,
                 parse_dates=["date"],
                 index_col='date'
-            ).replace(-1e38, np.nan)
-
-            self.dc = pd.read_sql_query(
+                ).replace(-1e38, np.nan)
+                dc = pd.read_sql_query(
                 "SELECT * FROM costFunc ORDER BY date",
                 con,
                 parse_dates=["date"],
                 index_col='date'
-            ).replace(-1e38, np.nan)
-
-            self.min_date = self.dc.index.min().date() if not self.dc.empty else None
-            self.max_date = self.dc.index.max().date() if not self.dc.empty else None
+                ).replace(-1e38, np.nan)
+            return df, dc
 
         except Exception as e:
-            print(f"❌ Erro ao processar o arquivo: {e}")
-            self.df = pd.DataFrame()
-            self.dc = pd.DataFrame()
-            self.min_date = None
-            self.max_date = None
+            print(f"❌ [MASS CONSTRAINS PLOTS] Erro ao processar {name}: {e}")
+            return None
+        finally:
+            if temp_path and os.path.exists(temp_path):
+                os.unlink(temp_path)
+
+    def set_active_data(self, name):
+        self.active_dataset = name
+        self.df, self.dc = self.datasets[name]
+        self.min_date = self.dc.index.min().date() if not self.dc.empty else None
+        self.max_date = self.dc.index.max().date() if not self.dc.empty else None
 
     # ------------------- Widgets -------------------
     def create_widgets(self):
@@ -132,6 +141,7 @@ class MonitoringAppMass:
         self.Vars = pn.widgets.Select(name='Variables', options=variables, width=250)
         self.use_mean = pn.widgets.Checkbox(name='Mean', width=250)
         self.column_name = pn.widgets.Select(name='Column to Plot', options=column_options, width=250)
+        self.dataset_version = pn.widgets.IntInput(value=0, visible=False)
 
         if self.min_date and self.max_date:
             self.date_time_picker = pn.widgets.DatetimePicker(
@@ -157,11 +167,39 @@ class MonitoringAppMass:
                 width=250
             )
 
+    def activate_dataset(self, name):
+        """Atualiza os dados e os controles compartilhados ao trocar de aba."""
+        self.set_active_data(name)
+        hours = self.df.index.hour.unique().tolist() if not self.df.empty else []
+        outers = self.df['outer'].unique().tolist() if 'outer' in self.df.columns else []
+        variables = self.df.columns[2:].tolist() if not self.df.empty else []
+        column_options = self.dc.columns.tolist()[3:] if not self.dc.empty and len(self.dc.columns) > 3 else []
+
+        self.Hour.options = hours
+        self.Outer.options = outers
+        self.Outer.value = outers[0] if outers else None
+        self.Vars.options = variables
+        self.Vars.value = variables[0] if variables else None
+        self.column_name.options = column_options
+        self.column_name.value = column_options[0] if column_options else None
+
+        if self.min_date and self.max_date:
+            start = datetime(self.min_date.year, self.min_date.month, self.min_date.day)
+            end = datetime(self.max_date.year, self.max_date.month, self.max_date.day)
+            self.date_time_picker.start = self.min_date
+            self.date_time_picker.end = self.max_date
+            self.date_time_picker.value = start
+            self.date_range_slider.value = (start, end)
+        self.dataset_version.value += 1
+
     def create_layout(self):
 
-        self.tab1 = pn.Column(
-            pn.bind(self.plotMassFig, self.Vars, self.Outer, self.use_mean, self.date_range_slider.param.value),
-            height=800)
+        def mass_tab():
+            return pn.Column(
+                pn.bind(self.plotMassFig, self.Vars, self.Outer, self.use_mean,
+                        self.date_range_slider.param.value, self.dataset_version),
+                height=800,
+            )
 
         # Layout da barra lateral
         sidebar1 = pn.Column(
@@ -179,11 +217,21 @@ class MonitoringAppMass:
             title="SMNAMonitoringApp",
         )
 
-        #self.app.main.append(tabs)
         self.app.sidebar.append(col)
 
+        self.dataset_order = [name for name in ('xc50', 'egeon') if name in self.datasets]
+        labels = {'xc50': 'XC50', 'egeon': 'Egeon'}
+        self.dataset_tabs = pn.Tabs(dynamic=True)
+        for name in self.dataset_order:
+            self.dataset_tabs.append((labels[name], mass_tab()))
+
+        def update_dataset(event):
+            self.activate_dataset(self.dataset_order[event.new])
+
+        self.dataset_tabs.param.watch(update_dataset, 'active')
+
     # ------------------- Plotagem -------------------
-    def plotMassFig(self, var, outer, use_mean, date_range):
+    def plotMassFig(self, var, outer, use_mean, date_range, dataset_version):
         if self.df.empty or var not in self.df.columns:
             return pn.pane.Markdown("❌ Nenhum dado disponível para plotagem.", width=600)
 
@@ -242,5 +290,4 @@ class MonitoringAppMass:
 
         Set the parameters on the left to update the curves.
         """)
-        return pn.Column(main_text, self.tab1, monitor_warning_bottom_main, sizing_mode='stretch_width')
-
+        return pn.Column(main_text, self.dataset_tabs, monitor_warning_bottom_main, sizing_mode='stretch_width')

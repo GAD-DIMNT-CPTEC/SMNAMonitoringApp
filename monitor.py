@@ -30,7 +30,7 @@ pn.extension('floatpanel', 'tabulator', sizing_mode="stretch_width")
 
 use_monitor_cstatus  = True
 use_monitor_anl      = True
-use_monitor_mass     = False
+use_monitor_mass     = True
 use_monitor_jo       = True
 use_monitor_rdiag    = False
 use_monitor_berror   = False

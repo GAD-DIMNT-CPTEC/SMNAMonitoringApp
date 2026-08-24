@@ -244,7 +244,10 @@ for d,LABEL in enumerate(iter_time(args.LABELI, args.LABELF, args.incr)):
             # Parse mass conservation terms
             #
             if 'mean_ps,' in line:
-               massRows.append(l[4:7])
+               # O GSI 3.7 inclui o número da iteração após ``Q_DIAG:``;
+               # o GSI 3.4 não. Os três valores de interesse são sempre os
+               # três últimos elementos da linha nos dois formatos.
+               massRows.append(l[-3:])
                date2.append(LABEL.strftime('%Y-%m-%d %H:%M:%S'))
                hour2.append(LABEL.strftime('%H'))
 
@@ -253,13 +256,14 @@ for d,LABEL in enumerate(iter_time(args.LABELI, args.LABELF, args.incr)):
             # Parse Negative and Supersaturated Humidity
             #
             if 'NEG RH COUNT,RMS=' in line:
-               qNegRows.append(l[3:4])
+               # Os dois últimos campos são COUNT e RMS; armazena COUNT.
+               qNegRows.append(l[-2:-1])
 
             #
             #
             #
             if 'SUPERSAT RH COUNT,RMS='in line:
-               qSupRows.append(l[3:4])
+               qSupRows.append(l[-2:-1])
 
                
       # To get the gnorm value from the fort.220 file using the line that starts 
@@ -320,4 +324,3 @@ conn.close()
 
 #EOC
 #-----------------------------------------------------------------------------#
-
