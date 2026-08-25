@@ -1,0 +1,241 @@
+#! /bin/bash
+
+#SBATCH --output=/mnt/beegfs/carlos.bastarz/SMNAMonitoringApp/cron_scripts/anls_imgs/run_plot_map-bam.out
+#SBATCH --error=/mnt/beegfs/carlos.bastarz/SMNAMonitoringApp/cron_scripts/anls_imgs/run_plot_map-bam.err
+#SBATCH --time=05:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1
+#SBATCH --export=ALL
+#SBATCH --job-name=PlotFigsBAM
+#SBATCH --partition=PESQ2
+#SBATCH --array=0-8
+
+module swap PrgEnv-cray/6.0.4 PrgEnv-gnu
+module unload craype-x86-skylake
+
+datai=#DATAI#
+
+hours=$((${SLURM_ARRAY_TASK_ID} * 24))
+data=$(date -u +%Y%m%d%H -d "${datai:0:8} ${datai:8:2} +${hours} hours")  
+
+bpath=/mnt/beegfs/carlos.bastarz/SMNAMonitoringApp/cron_scripts/anls_imgs
+
+cd ${bpath}
+
+#VarsAnl=("Topography" 
+#         "Land sea mask"
+#         "Surface pressure"
+#         "Zonal wind (u)"
+#         "Meridional wind (v)"
+#         "Omega"
+#         "Stream function"
+#         "Velocity potential"
+#         "Geopotential height"
+#         "Pressure reduced to msl"
+#         "Absolute temperature"
+#         "Specific humidity"
+#         "Inst. precipitable water"
+#         "Surface temperature"
+#         "var161 undefined"
+#         "var199 undefined"  
+#         "10 metre u-wind component"
+#         "10 metre v-wind component" 
+#         "Vertical dist total cloud cover"
+#         "Time mean surface relative humidity")
+VarsAnl=("Surface pressure"
+         "Zonal wind (u)"
+         "Meridional wind (v)"
+         "Omega"
+         "Stream function"
+         "Velocity potential"
+         "Geopotential height"
+         "Pressure reduced to msl"
+         "Absolute temperature"
+         "Specific humidity"
+         "Inst. precipitable water"
+         "Surface temperature"
+         "var161 undefined"
+         "var199 undefined"  
+         "10 metre u-wind component"
+         "10 metre v-wind component" 
+         "Vertical dist total cloud cover"
+         "Time mean surface relative humidity")
+
+Fcts=$(seq 0 24 264)
+
+for fct in ${Fcts[@]}
+do
+
+  if [ ${fct} -eq 0 ]; then type="icn"; else type="fct"; fi
+
+  datafct=$(date -u +%Y%m%d%H -d "${data:0:8} ${data:8:2} +${fct} hours")
+
+  #fname_grb=/oper/dados/modelo/bam/TQ0666L064/brutos/${data:0:4}/${data:4:2}/${data:6:2}/${data:8:2}/GPOSNMC${data}${datafct}P.${type}.TQ0666L064.grb
+  fname_grb=/mnt/beegfs/ioper/SMNA_v3.0.0.t12717/SMG/datainout/bam/pos/dataout/TQ0299L064/${data}/GPOSNMC${data}${datafct}P.${type}.TQ0666L064.grb
+
+  for varanl in "${VarsAnl[@]}"
+  do
+
+    if [[ "${varanl}" == "Zonal wind (u)" ]] ||
+       [[ "${varanl}" == "Meridional wind (v)" ]] || 
+       [[ "${varanl}" == "Omega" ]] ||
+       [[ "${varanl}" == "Stream function" ]] || 
+       [[ "${varanl}" == "Velocity potential" ]] || 
+       [[ "${varanl}" == "Geopotential height" ]] || 
+       [[ "${varanl}" == "Absolute temperature" ]] || 
+       [[ "${varanl}" == "Specific humidity" ]] ||
+       [[ "${varanl}" == "Vertical dist total cloud cover" ]] ||
+       [[ "${varanl}" == "Time mean surface relative humidity" ]]
+    then 
+      #Levels=(1000 985 975 960 950 930 925 915 900 880 875 850 825 800 775 750 725 700 675 650 600 500 300 250 200 150 100 70 50 30 20 10 3)
+      Levels=(1000 925 850 500 250 20 10 3)
+    else 
+      Levels=(1000)
+    fi
+  
+    for level in ${Levels[@]}
+    do
+
+      if [[ "${varanl}" == "Zonal wind (u)" ]] ||
+         [[ "${varanl}" == "Meridional wind (v)" ]] || 
+         [[ "${varanl}" == "Omega" ]] ||
+         [[ "${varanl}" == "Stream function" ]] || 
+         [[ "${varanl}" == "Velocity potential" ]] || 
+         [[ "${varanl}" == "Geopotential height" ]] || 
+         [[ "${varanl}" == "Absolute temperature" ]] || 
+         [[ "${varanl}" == "Specific humidity" ]] ||
+         [[ "${varanl}" == "Vertical dist total cloud cover" ]] ||
+         [[ "${varanl}" == "Time mean surface relative humidity" ]]
+      then 
+        select_cmd="grb = grib.select(name='${varanl}',level=${level})[0]"
+      else 
+        select_cmd="grb = grib.select(name='${varanl}')[0]"
+      fi
+
+      echo "BAM ${data} ${varanl} ${level} hPa ${fct} h"
+
+      varanl_fmt=$(echo ${varanl} | sed "s, ,_,g" | sed "s,(,,g" | sed "s,),,g")
+
+      fname_fig="${bpath}/imgs/BAM/${data}/${varanl_fmt}/${level}/${fct}.png"
+
+      if [ ! -e ${fname_fig} ]
+      then
+
+mkdir -p ${bpath}/imgs/BAM/${data}/${varanl_fmt}/${level}
+
+cat << EOF > plot_map-bam-${data}-${datafct}.py
+
+#! /usr/bin/env python3
+
+import os
+import pygrib
+import matplotlib.pyplot as plt
+import cartopy, cartopy.crs as ccrs
+import cartopy.feature as cfeature
+import cartopy.io.shapereader as shpreader
+import numpy as np
+from cartopy.util import add_cyclic_point
+
+grib = pygrib.open('${fname_grb}')
+
+nx = 2000
+lon0 = 0.0
+dx = 0.18
+lons = lon0 + dx * np.arange(nx)
+
+ny = 1000
+lat0 = -89.910
+dy = 0.18
+lats = lat0 + dy * np.arange(ny)
+
+#grb = grib.select(name='${varanl}',level=${level})[0]
+${select_cmd}
+
+init  = str(grb.analDate)      # Init date / time
+run   = str(grb.hour).zfill(2) # Run
+valid = str(grb.validDate)     # Valid date / time
+
+tmtmp = grb.values 
+
+tmtmp_plot = np.flipud(tmtmp)
+
+# remove linha branca vertical no meio da figura
+data, lons = add_cyclic_point(tmtmp_plot, coord=lons)
+
+plt.figure(figsize=(30,10))
+ax = plt.axes(projection=ccrs.PlateCarree())
+
+lon2d, lat2d = np.meshgrid(lons, lats)
+
+#data_min = 600
+#data_max = 1000
+#interval = 50
+#levels = np.arange(data_min, data_max+interval, interval)
+
+vmin = np.nanmin(data)
+vmax = np.nanmax(data)
+interval = 50
+levels = np.linspace(vmin, vmax, interval)
+
+img1 = ax.contourf(lon2d, lat2d, data, cmap='jet', levels=levels, extend='both')
+
+#img2 = ax.contour(lon2d, lat2d, data, colors='white', linewidths=0.3, levels=levels)
+#ax.clabel(img2, inline=1, inline_spacing=15, fontsize=10, fmt='%1.0f', colors='white')
+
+shapefile = list(shpreader.Reader('/mnt/beegfs/carlos.bastarz/SMNAMonitoringApp/cron_scripts/anls_imgs/br_unidades_da_federacao/BR_UF_2019.shp').geometries())
+ax.add_geometries(shapefile, ccrs.PlateCarree(), edgecolor='black', facecolor='none', linewidth=0.3)
+
+ax.coastlines(resolution='10m', color='black', linewidth=0.8)
+ax.add_feature(cfeature.BORDERS, edgecolor='black', linewidth=0.5)
+gl = ax.gridlines(crs=ccrs.PlateCarree(), color='gray', alpha=1.0, linestyle='--', linewidth=0.25,
+xlocs=np.arange(-180, 180, 5), ylocs=np.arange(-90, 90, 5), draw_labels=True)
+gl.top_labels = False
+gl.right_labels = False
+
+plt.colorbar(img1, label='${varanl}', orientation='vertical', pad=0.01, fraction=0.05)
+
+plt.title('BAM: ${varanl} @ ${level} hPa, FCT ${fct} h', fontweight='bold', fontsize=12, loc='left')
+plt.title('Valid: ' + valid, fontsize=12, loc='right')
+
+fig_dir = os.path.join('${bpath}/imgs', 'BAM', str(${data}), str(grb.name).replace(' ','_').replace('(','').replace(')',''), str(${level}))
+
+os.makedirs(fig_dir, exist_ok=True)
+
+#fname_fig = 'BAM_' + str(grb.name).replace(' ','_').replace('(','').replace(')','') + '_level_' + str(${level}) + 'hPa_valid_for_' + str(valid).replace(' ','_').replace('-','_').replace(':00:00','Z') + '_fct_' + str(${fct}) + 'h'
+#fname_fig = 'BAM/' + str(grb.name).replace(' ','_').replace('(','').replace(')','') + '/' + str(${level}) + '/' + str(${fct})
+#fname_fig = os.path.join('/home/carlos/GitHub/SMNAMonitoringApp/cron_scripts/anls/imgs', 'BAM', str(grb.name).replace(' ','_').replace('(','').replace(')',''), str(${level}), str(${fct}))
+fname_fig = os.path.join(fig_dir, str(${fct}))
+
+#plt.savefig(fname_fig + '.png', dpi=150, bbox_inches='tight')
+#plt.savefig(fname_fig + '.png', bbox_inches='tight')
+plt.savefig(
+    fname_fig + '.jpg',
+    bbox_inches='tight',
+    dpi=100,
+    format='jpg',
+    pil_kwargs={
+        'quality': 70,
+        'optimize': True,
+        'progressive': True,
+        'subsampling': 2
+    }
+)
+
+grib.close()
+
+EOF
+
+      /home/carlos.bastarz/.conda/envs/SMNAMonitoringApp/bin/python3 plot_map-bam-${data}-${datafct}.py
+ 
+      fi
+
+    done
+
+  done
+
+done
+
+echo "Rodou em: $(date) | UTC: $(date -u)" >> ${bpath}/cron-plot_map-bam-${data}-${datafct}.log
+
+exit 0
