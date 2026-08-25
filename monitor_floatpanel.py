@@ -23,7 +23,7 @@ class MonitoringAppFloatPanel:
         
         ---
         
-        CPTEC-INPE, 2025.
+        CPTEC-INPE, 2026.
         """
         
         float_panel = pn.layout.FloatPanel(
