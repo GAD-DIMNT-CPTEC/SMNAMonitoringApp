@@ -180,7 +180,7 @@ class MonitoringApp:
             meta_author="CPTEC-INPE",
 #            meta_refresh="10",
 #            site_url="https://gad-dimnt-cptec.github.io/SMNAMonitoringApp/monitor.html",
-#            sidebar_footer="CPTEC-INPE, 2025.",
+#            sidebar_footer="CPTEC-INPE, 2026.",
         )
 
         self.app.main.append(tabs)
@@ -188,7 +188,7 @@ class MonitoringApp:
         #self.app.main.append(monitor_warning_bottom_main)
         self.app.main.append(placeholder)
         self.app.sidebar.append(sidebar_col)
-        self.app.sidebar.append(pn.Row(pn.layout.HSpacer(), '##### CPTEC-INPE, 2025.', pn.layout.HSpacer()))
+        self.app.sidebar.append(pn.Row(pn.layout.HSpacer(), '##### CPTEC-INPE, 2026.', pn.layout.HSpacer()))
         self.app.modal.append(pn.Column())
         self.app.sidebar.append(pn.layout.Divider())
         self.app.sidebar.append(self.modal_geninfo())
@@ -213,7 +213,7 @@ class MonitoringApp:
 
         ---
 
-        ##### CPTEC-INPE, 2025.
+        ##### CPTEC-INPE, 2026.
         """
         self.modal_btn = pn.widgets.Button(name='📊 About', button_type='success')
         self.text_about_logs = pn.Column(text_logs_txt)
@@ -278,7 +278,7 @@ class MonitoringApp:
 
         ---
 
-        ##### CPTEC-INPE, 2025.
+        ##### CPTEC-INPE, 2026.
         """
         self.modal_btn = pn.widgets.Button(name='📊 About', button_type='success')
         self.text_about_jo = pn.Column(text_jo_txt)
@@ -300,7 +300,7 @@ class MonitoringApp:
 
         ---
 
-        ##### CPTEC-INPE, 2025.
+        ##### CPTEC-INPE, 2026.
         """
         self.modal_btn = pn.widgets.Button(name='📊 About', button_type='success')
         self.text_about_mass = pn.Column(text_mass_txt)
@@ -324,7 +324,7 @@ class MonitoringApp:
 
         ---
 
-        ##### CPTEC-INPE, 2025.
+        ##### CPTEC-INPE, 2026.
         """
         self.modal_btn = pn.widgets.Button(name='📊 About', button_type='success')
         self.text_about_berror = pn.Column(text_berror_txt)
@@ -348,7 +348,7 @@ class MonitoringApp:
 
         ---
 
-        ##### CPTEC-INPE, 2025.
+        ##### CPTEC-INPE, 2026.
         """
         self.modal_btn = pn.widgets.Button(name='📊 About', button_type='success')
         self.text_about_objeval = pn.Column(text_objeval_txt)
@@ -370,7 +370,7 @@ class MonitoringApp:
 
         ---
 
-        ##### CPTEC-INPE, 2025.
+        ##### CPTEC-INPE, 2026.
         """
         self.modal_btn = pn.widgets.Button(name='📊 About', button_type='success')
         self.text_about_obsstorage = pn.Column(text_obsstorage_txt)
@@ -400,7 +400,7 @@ class MonitoringApp:
 
         ---
 
-        ##### CPTEC-INPE, 2025.
+        ##### CPTEC-INPE, 2026.
         """
         self.modal_btn = pn.widgets.Button(name='📊 About', button_type='success')
         self.text_about_anl = pn.Column(text_anl_txt)
@@ -422,7 +422,7 @@ class MonitoringApp:
 
         ---
 
-        ##### CPTEC-INPE, 2025.
+        ##### CPTEC-INPE, 2026.
         """
         self.modal_btn = pn.widgets.Button(name='🛟 Help', button_type='primary')
         self.text_help = pn.Column(text_help_txt)
@@ -452,7 +452,7 @@ class MonitoringApp:
 
         ---
 
-        ##### CPTEC-INPE, 2025.
+        ##### CPTEC-INPE, 2026.
         """
         self.modal_btn = pn.widgets.Button(name='📖 General Info', button_type='primary')
         self.text_geninfo = pn.Column(text_geninfo_txt)
@@ -474,7 +474,7 @@ class MonitoringApp:
 
         ---
 
-        ##### CPTEC-INPE, 2025.
+        ##### CPTEC-INPE, 2026.
         """
         self.modal_btn = pn.widgets.Button(name='📊 About', button_type='success')
         self.text_about_rdiag = pn.Column(text_rdiag_txt)
