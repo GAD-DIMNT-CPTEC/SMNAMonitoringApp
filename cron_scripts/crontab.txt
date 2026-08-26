@@ -89,8 +89,7 @@
 00 02 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/anls/run_convert_smna_icn_fct_to_zarr_pyBAM-xc50.sh
 00 02 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/rdiag/run_convert_smna_diag_to_parquet_readDiag-egeon.sh
 00 02 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/rdiag/run_convert_smna_diag_to_parquet_readDiag-xc50.sh
-00 02 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/anls_imgs/get_imgs-egeon.sh
-00 02 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/anls_imgs/get_imgs-xc50.sh
+00 02 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/anls_imgs/get_imgs.sh
 #00 03 * * * /share/das/dist/carlos.bastarz/sandbox/SMNAMonitoringApp/cron_scripts/cleanup.sh
 
 # For 06Z

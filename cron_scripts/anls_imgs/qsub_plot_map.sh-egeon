@@ -2,6 +2,7 @@
 
 source ~/.bashrc >> $LOG 2>&1
 
-cd  /mnt/beegfs/carlos.bastarz/SMNAMonitoringApp/cron_scripts/anls_imgs
-/usr/bin/sbatch /mnt/beegfs/carlos.bastarz/SMNAMonitoringApp/cron_scripts/anls_imgs/run_plot_map-smna.sh
+cd /mnt/beegfs/carlos.bastarz/SMNAMonitoringApp/cron_scripts/anls_imgs
+#/usr/bin/sbatch /mnt/beegfs/carlos.bastarz/SMNAMonitoringApp/cron_scripts/anls_imgs/run_plot_map-smna.sh
+/usr/bin/sbatch /mnt/beegfs/carlos.bastarz/SMNAMonitoringApp/cron_scripts/anls_imgs/run_plot_map-smna-new.sh
 #/usr/bin/sbatch /mnt/beegfs/carlos.bastarz/SMNAMonitoringApp/cron_scripts/anls_imgs/run_plot_map-bam.sh
