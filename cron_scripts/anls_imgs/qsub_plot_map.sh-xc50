@@ -2,7 +2,7 @@
 
 source ~/.bashrc >> $LOG 2>&1
 
-cd /lustre_xc50/carlos_bastarz/SMNAMonitoringApp/cron_scripts/anls_img
+cd /lustre_xc50/carlos_bastarz/SMNAMonitoringApp/cron_scripts/anls_imgs
 #/opt/pbs/default/bin/qsub /lustre_xc50/carlos_bastarz/SMNAMonitoringApp/cron_scripts/anls_imgs/run_plot_map-smna.sh
 #/opt/pbs/default/bin/qsub /lustre_xc50/carlos_bastarz/SMNAMonitoringApp/cron_scripts/anls_imgs/run_plot_map-bam.sh
 /opt/pbs/default/bin/qsub /lustre_xc50/carlos_bastarz/SMNAMonitoringApp/cron_scripts/anls_imgs/run_plot_map-smna-new.sh
